@@ -1,0 +1,655 @@
+# Billing system
+import os
+import math
+import logging
+from tkinter import messagebox
+import frontend.config as globals
+from sqlalchemy import table
+from ttkwidgets.autocomplete import AutocompleteEntry
+from tkinter import *
+# frontend imports
+import frontend.windows.dashboard as dashboard
+from frontend.windows.addProducts import createAddProductWindow
+from frontend.windows.addCustomers import createAddCustomerWindow
+from frontend.windows.updateProducts import createUpdateProductWindow
+import frontend.windows.payment as paymentWindow
+from frontend.utils.frontend import makeColumnResponsive
+from frontend.utils.products import updateProduct
+import frontend.utils.bills as billUtils
+# backend imports
+from backend.api.products import get_product
+from backend.api.customers import get_customer
+
+
+log = logging.getLogger("frontend")
+
+
+def clearCustomerDetails():
+        for child in globals.namePhFrame.winfo_children():
+            child.destroy()
+        globals.billingCustomerNameEntry.delete(0, END)
+        Label(globals.namePhFrame, text="Please load customer details.").pack()
+
+
+def clearProductDetails():
+    for child in globals.rateQtyFrame.winfo_children():
+        child.destroy()
+    globals.billingProductNameEntry.delete(0, END)
+    Label(globals.rateQtyFrame, text="Please load product details.").pack()
+
+
+def loadProductDetails(parent, productDetails, toUpdate=False):
+    # destroy childrens of globals.rateQtyFrame
+    # before loading details of another product
+    for child in parent.winfo_children():
+        child.destroy()
+    parent.config(bg="white") if toUpdate else None
+    Label(parent, text=f"Name: {productDetails['product_name']}", font=globals.appFontNormalBold).grid(row=0, column=0, columnspan=2, padx=5, pady=(5,5), sticky=W)
+    Label(parent, text=f"Max Available: {productDetails['stock']}", font=globals.appFontNormalBold).grid(row=0, column=2, columnspan=2, padx=5, pady=(5,5), sticky=W)
+
+    Label(parent, text="Rate").grid(row=1, column=0, padx=5, pady=(5, 20), sticky=W)
+    rateEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+    rateEntry.grid(row=1, column=1, padx=5, pady=(5, 20), sticky=W)
+    rateEntry.insert(0, productDetails["marked_price"] if not toUpdate else productDetails["rate"])
+
+    Label(parent, text="Quantity").grid(row=1, column=2, padx=5, pady=(5, 20), sticky=W)
+    quantityEntry = Spinbox(parent, 
+                            bd=globals.defaultEntryBorderWidth, 
+                            font=globals.appFontNormal, 
+                            from_=1, 
+                            to=int(productDetails["stock"]),
+                            width=5)
+    quantityEntry.grid(row=1, column=3, padx=5, pady=(5, 20), sticky=W)
+    quantityEntry.delete(0, END)
+    quantityEntry.insert(0, 1 if not toUpdate else int(productDetails["quantity"]))
+
+    def validateProductDetails():
+        rate = rateEntry.get()
+        quantity = quantityEntry.get()
+
+        if not rate:
+            rateEntry.focus()
+            return False
+        elif  not quantity:
+            quantityEntry.focus()
+            return False
+
+        if not rate.isdigit():
+            messagebox.showwarning("Invalid", "Rate must be a number.")
+            rateEntry.focus()
+            return False
+        if not quantity.isdigit():
+            messagebox.showwarning("Invalid", "Quantity must be a number.")
+            quantityEntry.focus()
+            return False
+
+        rateChanged = (int(rate)!=int(productDetails["marked_price"])) if not toUpdate else (int(rate)!=int(productDetails.get("rate")))
+        stockChanged = int(quantity)>int(productDetails["stock"])
+
+        if rateChanged:
+            response = messagebox.askyesnocancel("Please confirm", 
+                                        f"""Rate of product you provided: Rs. {rate}\nRate in inventory: Rs. {productDetails["marked_price"]}\n\nClick Yes if you want to update the rate to Rs. {rate} in inventory?\nClick No to proceed without updating the rate in inventory.""")
+            if response==1:
+                productDetails["marked_price"] = str(rate)
+                updateProduct(productDetails["id"], productDetails)
+                productDetails["rate"] = productDetails["marked_price"]
+            elif response==0:
+                productDetails["rate"] = str(rate)
+            else:
+                return None
+
+        if stockChanged:
+            response = messagebox.askyesno("Please confirm", 
+                                        f"""Available stock: {productDetails["stock"]}\nQuantity you provided: {quantity}\n\nDo you want to update the stock in inventory?""")
+            if response==1:
+                createUpdateProductWindow(productDetails)
+                clearProductDetails()
+                return True
+            else:
+                return None
+        
+        if not rateChanged:
+            productDetails["rate"] = str(rate)
+        productDetails["quantity"] = str(quantity)
+
+        addProductToBill(productDetails)
+
+    def addProductToBill(productDetails):
+        if globals.BILL_DETAILS["products"].get(productDetails["id"]) and not toUpdate:
+            messagebox.showinfo("Billing System", f"'{productDetails['product_name']}' is already added to the bill!\nIf you want to update, please click update button.")
+            return True
+        globals.BILL_DETAILS["products"][productDetails["id"]] = {"product_name": productDetails["product_name"],
+                                                                "stock":productDetails["stock"],
+                                                                "quantity":productDetails["quantity"],
+                                                                "marked_price":productDetails["marked_price"],
+                                                                "rate":productDetails["rate"]}
+        clearProductDetails()
+        createBillDetailsTable(globals.billDetailsFrame)
+
+    ctaBtn = Button(parent,
+        text="Add to Bill" if not toUpdate else "Update",
+        bg=globals.appGreen,
+        fg=globals.appWhite,
+        width=10,
+        command=validateProductDetails)
+    ctaBtn.grid(row=1, column=4, pady=(5, 20), padx=5)
+
+    makeColumnResponsive(parent)
+
+
+def loadCustomerDetails(parent, customerDetails):
+    try:
+        log.info(f"Adding customer to bill -> {customerDetails}")
+        # destroy childrens of globals.rateQtyFrame
+        # before loading details of another product
+        for child in parent.winfo_children():
+            child.destroy()
+
+        Label(parent, text="Name").grid(row=1, column=0, padx=5, pady=20)
+        nameEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+        nameEntry.grid(row=1, column=1, padx=5, pady=20)
+        nameEntry.insert(0, customerDetails["full_name"] if customerDetails.get("full_name") else "")
+        nameEntry.config(state=DISABLED)
+
+        Label(parent, text="Company").grid(row=1, column=2, padx=5, pady=20)
+        companyEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+        companyEntry.grid(row=1, column=3, padx=5, pady=20)
+        companyEntry.insert(0, customerDetails["company"] if customerDetails.get("company") else "")
+        companyEntry.config(state=DISABLED)
+        
+        Label(parent, text="Phone").grid(row=2, column=0, padx=5, pady=20)
+        phEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+        phEntry.grid(row=2, column=1, padx=5, pady=20)
+        phEntry.insert(0, customerDetails["phone_number"] if customerDetails.get("phone_number") else "")
+        phEntry.config(state=DISABLED)
+
+        Label(parent, text="Telephone").grid(row=2, column=2, padx=5, pady=20)
+        telEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+        telEntry.grid(row=2, column=3, padx=5, pady=20)
+        telEntry.insert(0, customerDetails["telephone"] if customerDetails.get("telephone") else "")
+        telEntry.config(state=DISABLED)
+
+        def addToBill():
+            customerData = {"customer_id": customerDetails["id"],
+                                                "full_name": customerDetails["full_name"],
+                                                "phone_number": customerDetails["phone_number"] if customerDetails["phone_number"] else "",
+                                                "telephone": customerDetails["telephone"] if customerDetails["telephone"] else "",
+                                                "company":customerDetails["company"] if customerDetails["company"] else ""}
+            
+            globals.BILL_DETAILS["customer"] = customerData
+            createBillDetailsTable(globals.billDetailsFrame)
+
+        Button(parent,
+            text="Add to Bill",
+            bg=globals.appGreen,
+            fg=globals.appWhite,
+            width=10,
+            command=addToBill).grid(row=2, column=4, rowspan=2, padx=5, pady=20)
+
+        makeColumnResponsive(parent)
+    except Exception as e:
+        log.error(f"While loading customer details -> {e}")
+
+
+def createBillDetailsTableHeader(parent):
+    Label(parent, text="S No.", width=4, font=globals.appFontSmallBold).grid(row=1, column=0, sticky=W)
+    Label(parent, text="Particulars", font=globals.appFontSmallBold).grid(row=1, column=1, sticky=W)
+    Label(parent, text="QTY", width=4, font=globals.appFontSmallBold).grid(row=1, column=2, sticky=W)
+    Label(parent, text="Rate", width=6, font=globals.appFontSmallBold).grid(row=1, column=3, sticky=W)
+    Label(parent, text="Amount", font=globals.appFontSmallBold).grid(row=1, column=4, sticky=W)
+    makeColumnResponsive(parent)
+
+
+def createBillDetailsTableBody(parent):
+    if not globals.BILL_DETAILS.get("products"):
+        Label(parent, text="Please add products to bill!").grid(columnspan=5, pady=10)
+        return True
+    for index, record in enumerate(globals.BILL_DETAILS.get("products").items()):
+        bg = "white" if (index+1)%2==0 else globals.appWhite
+        amount = float(record[1].get("quantity")) * float(record[1].get("rate"))
+        Label(parent, text=str(index+1)).grid(row=index+2, column=0, pady=5, sticky=W)
+        Label(parent, text=record[1].get("product_name"), bg=bg, wraplength=140, justify=LEFT).grid(row=index+2, column=1,pady=5, sticky=W, padx=2)
+        Label(parent, text=record[1].get("quantity"), bg=bg).grid(row=index+2, column=2, pady=5, sticky=W, padx=2)
+        Label(parent, text="{:,.2f}".format(float(record[1].get("rate"))), bg=bg).grid(row=index+2, column=3, pady=5, sticky=W, padx=2)
+        Label(parent, text="{:,.2f}".format(amount), bg=bg).grid(row=index+2, column=4, pady=5, sticky=W, padx=2)
+        
+        def proceedToUpdate(id, details):
+            data = {
+                "id": id,
+                "product_name":details["product_name"],
+                "stock":globals.BILL_DETAILS.get("products")[id].get("stock"),
+                "quantity":details["quantity"],
+                "marked_price":globals.BILL_DETAILS.get("products")[id].get("marked_price"),
+                "rate":details["rate"],
+            }
+            loadProductDetails(globals.rateQtyFrame, data, toUpdate=True)
+        
+        Button(parent, text="update", width=6, bg="#47B5FF", command=lambda id=record[0], details=record[1]: proceedToUpdate(id, details)).grid(row=index+2, column=5, pady=5, padx=(0,2), sticky=W)
+        Button(parent, text="delete", width=6, bg="red", command=lambda id=record[0]: deleteProductFromCart(id)).grid(row=index+2, column=6, pady=5, padx=(2,0), sticky=W)
+        
+    makeColumnResponsive(parent)
+
+
+def deleteProductFromCart(id):
+    globals.BILL_DETAILS.get("products").pop(id)
+    createBillDetailsTable(globals.billDetailsFrame)
+
+
+def createBillDetailsTableFooter(parent):
+    baseIndex = len(globals.BILL_DETAILS.get("products")) + 4
+    totalAmount = float(sum([float(record["rate"])*float(record["quantity"]) for record in globals.BILL_DETAILS.get("products").values()]))
+    # creating final entry
+    globals.BILL_DETAILS.get("final")["subtotal"] = totalAmount
+
+    discountAmount = globals.BILL_DETAILS.get("extra").get("discount_amount")
+    discountAmount = float(discountAmount) if discountAmount else 0
+    discountPercentage = globals.BILL_DETAILS.get("extra").get("discount_percentage")
+    discountPercentage = float(discountPercentage) if discountPercentage else 0
+     
+    if not discountAmount:
+        discountAmount = float(math.ceil(totalAmount * (discountPercentage/100)))
+    discountedAmount = float(totalAmount - discountAmount)
+    # creating final entry
+    globals.BILL_DETAILS.get("final")["discount"] = discountAmount
+
+    vat = globals.BILL_DETAILS.get("extra").get("vat")
+    vat = float(vat) if vat else float(0)
+    if vat:
+        vat = float(math.ceil(discountedAmount * (vat/100)))
+    # creating final entry
+    globals.BILL_DETAILS.get("final")["vat"] = vat
+
+    totalPayable = float(discountedAmount + vat)
+    # creating final entry
+    globals.BILL_DETAILS.get("final")["total"] = totalPayable
+
+    Label(parent, text="Total Amount:", font=globals.appFontSmallBold).grid(row=baseIndex,column=0, pady=(20, 0), sticky=W)
+    Label(parent, text="Rs. {:,.2f}".format(totalAmount)).grid(row=baseIndex, column=1, pady=(20, 0), sticky=W)
+    Label(parent, text="Discount:", font=globals.appFontSmallBold).grid(row=baseIndex+1, column=0, sticky=W)
+    Label(parent, text="Rs. {:,.2f}".format(discountAmount)).grid(row=baseIndex+1, column=1, sticky=W)
+    Label(parent, text="VAT:", font=globals.appFontSmallBold).grid(row=baseIndex+2, column=0, sticky=W)
+    Label(parent, text="Rs. {:,.2f}".format(vat)).grid(row=baseIndex+2, column=1, sticky=W)
+    Label(parent, text="Total Payable Amount:", font=globals.appFontSmallBold).grid(row=baseIndex+3, column=0, sticky=W)
+    Label(parent, text="Rs. {:,.2f}".format(totalPayable)).grid(row=baseIndex+3, column=1, sticky=W)
+
+    makeColumnResponsive(parent)
+
+
+def createBillDetailsTableTop(parent):
+    name = globals.BILL_DETAILS.get("customer").get("full_name")
+    phone_number = globals.BILL_DETAILS.get("customer").get("phone_number")
+    company = globals.BILL_DETAILS.get("customer").get("company")
+    Label(parent, text="Customer:", font=globals.appFontSmallBold).grid(row=0, column=0, pady=(10, 5), sticky=W)
+    Label(parent, text=name if name else "**********").grid(row=0, column=1, pady=(10, 5), sticky=W)
+    Label(parent, text="Phone:", font=globals.appFontSmallBold).grid(row=0, column=2, pady=(10, 5), sticky=W)
+    Label(parent, text=phone_number if phone_number else "**********").grid(row=0, column=3, pady=(10, 5), sticky=W)
+    Label(parent, text="Company:", font=globals.appFontSmallBold).grid(row=1, column=0, pady=(5, 10), sticky=W)
+    Label(parent, text=company if company else "**********").grid(row=1, column=1, pady=(5, 10), sticky=W)
+    
+    makeColumnResponsive(parent)
+
+
+def createBillDetailsTable(parent):
+    globals.billDetailsTable.destroy() if globals.billDetailsTable else None
+    globals.billDetailsTable = Frame(parent)
+    globals.billDetailsTable.pack(fill="both")
+
+    createBillDetailsTableTop(globals.billDetailsTable)
+
+    billDetailsHeaderBodyMain = LabelFrame(globals.billDetailsTable, text="Products")
+    billDetailsHeaderBodyMain.grid(row=2, columnspan=4, sticky="wens")
+
+    canvas = Canvas(billDetailsHeaderBodyMain, bg="blue")
+    
+    billDetailsHeaderBody = Frame(canvas)
+    billDetailsHeaderBody.pack(fill="both", padx=5, pady=5)
+    
+    canvasScrollVertical = Scrollbar(billDetailsHeaderBodyMain, orient="vertical", command=canvas.yview)
+    canvas.configure(yscrollcommand=canvasScrollVertical.set)
+    canvasScrollHorizontal = Scrollbar(billDetailsHeaderBodyMain, orient="horizontal", command=canvas.xview)
+    canvas.configure(xscrollcommand=canvasScrollHorizontal.set)
+
+    canvasScrollVertical.pack(side="right", fill="y")
+    canvasScrollHorizontal.pack(side="bottom", fill="x")
+    canvas.pack(side="left", fill="both", expand=True, padx=5, pady=5)
+    canvasframe = canvas.create_window(0,0, window=billDetailsHeaderBody, anchor='nw')
+
+    def frameWidth(event):
+        if event.width > billDetailsHeaderBody.winfo_width():
+            canvas.itemconfig(canvasframe, width=event.width-4)
+        if event.height > billDetailsHeaderBody.winfo_height():
+            canvas.itemconfig(canvasframe, height=event.height-4)
+
+    def OnFrameConfigure(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+    
+    canvas.bind('<Configure>', lambda e: frameWidth(e))
+    billDetailsHeaderBody.bind('<Configure>', lambda e: OnFrameConfigure(e))
+
+    def _bound_to_mousewheel(event):
+       canvas.bind_all("<MouseWheel>",_on_mousewheel)
+
+    def _unbound_to_mousewheel(event):
+       canvas.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(event):
+       canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+    billDetailsHeaderBody.bind('<Enter>',_bound_to_mousewheel)
+    billDetailsHeaderBody.bind('<Leave>',_unbound_to_mousewheel)
+
+    createBillDetailsTableHeader(billDetailsHeaderBody)
+    createBillDetailsTableBody(billDetailsHeaderBody)
+
+    createBillDetailsTableFooter(globals.billDetailsTable)
+    
+    makeColumnResponsive(globals.billDetailsTable)
+
+
+def createCustomerDetailsArea(parent):
+    customerDetailsFrame = Frame(parent)
+    customerDetailsFrame.pack(fill="x", pady=20)
+
+    Label(customerDetailsFrame, text="Search Customer", font=globals.appFontNormalBold).grid(row=0, column=0, padx=5, pady=(5,10))
+    globals.billingCustomerNameEntry = AutocompleteEntry(customerDetailsFrame,
+                                    font=globals.appFontNormal, 
+                                    completevalues=[record["full_name"] for record in globals.CUSTOMERS_LIST])
+    globals.billingCustomerNameEntry.grid(row=0, column=1, padx=5, pady=(5,10))
+    globals.billingCustomerNameEntry.bind("<Return>", lambda x: proceedToLoadCustomerDetails(globals.billingCustomerNameEntry.get()))
+
+    globals.namePhFrame = LabelFrame(customerDetailsFrame, text="Customer Details")
+    globals.namePhFrame.grid(row=1, column=0, columnspan=4, sticky="nswe", pady=10)
+
+    Label(globals.namePhFrame, text="Please search and load customer details.").pack()
+
+    def proceedToLoadCustomerDetails(name):
+        if name:
+            status, customerDetails = get_customer(name=name)
+            if status:
+                loadCustomerDetails(globals.namePhFrame, customerDetails)
+            else:
+                for child in globals.namePhFrame.winfo_children():
+                    child.destroy()
+                Label(globals.namePhFrame, text="Customer does not exist.").pack(pady=5)
+                Button(globals.namePhFrame,
+                    text="Add Customer",
+                    bg=globals.appBlue,
+                    fg=globals.appDarkGreen,
+                    width=20,
+                    command=lambda: createAddCustomerWindow()).pack(pady=5)
+        else:
+            globals.billingCustomerNameEntry.focus()
+
+    loadNamePhButton = Button(customerDetailsFrame,
+                        text="Load Details",
+                        bg=globals.appBlue,
+                        fg=globals.appDarkGreen,
+                        width=10,
+                        command=lambda: proceedToLoadCustomerDetails(globals.billingCustomerNameEntry.get()))
+    loadNamePhButton.grid(row=0, column=2, pady=(5,10))
+
+    Button(customerDetailsFrame,
+        text="Clear",
+        bg=globals.appBlue,
+        fg=globals.appDarkGreen,
+        width=10,
+        command=clearCustomerDetails).grid(row=0, column=3, pady=(5,10))
+    
+    makeColumnResponsive(customerDetailsFrame)
+
+
+def createProductDetailsArea(parent):
+    productDetailsFrame = Frame(parent)
+    productDetailsFrame.pack(fill="x", pady=20)
+
+    Label(productDetailsFrame, text="Search Product", font=globals.appFontNormalBold).grid(row=0, column=0, padx=5, pady=5)
+    globals.billingProductNameEntry = AutocompleteEntry(productDetailsFrame,
+                                    font=globals.appFontNormal, 
+                                    completevalues=[record["product_name"] for record in globals.PRODUCTS_LIST])
+    globals.billingProductNameEntry.grid(row=0, column=1, padx=5, pady=5)
+    globals.billingProductNameEntry.bind("<Return>", lambda x: proceedToLoadProductDetails(globals.billingProductNameEntry.get()))
+
+    globals.rateQtyFrame = LabelFrame(productDetailsFrame, text="Product Details")
+    globals.rateQtyFrame.grid(row=1, column=0, columnspan=4, sticky="nswe")
+
+    Label(globals.rateQtyFrame, text="Please search and load product details.").pack()
+
+    def proceedToLoadProductDetails(name):
+        if name:
+            status, productDetails = get_product(name=name)
+            if status:
+                loadProductDetails(globals.rateQtyFrame, productDetails)
+            else:
+                for child in globals.rateQtyFrame.winfo_children():
+                    child.destroy()
+                Label(globals.rateQtyFrame, text="Product does not exist.").pack(pady=5)
+                Button(globals.rateQtyFrame,
+                    text="Add to inventory",
+                    bg=globals.appBlue,
+                    fg=globals.appDarkGreen,
+                    width=20,
+                    command=lambda: createAddProductWindow()).pack(pady=5)
+                return True
+            if int(productDetails["stock"])==0:
+                for child in globals.rateQtyFrame.winfo_children():
+                    child.destroy()
+                Label(globals.rateQtyFrame, text="Product out of Stock.").pack(pady=5)
+                Button(globals.rateQtyFrame,
+                    text="Add Stock",
+                    bg=globals.appBlue,
+                    fg=globals.appDarkGreen,
+                    width=20,
+                    command=lambda: createUpdateProductWindow(productDetails)).pack(pady=5)
+                return True
+        else:
+            globals.billingProductNameEntry.focus()
+        return True
+
+    loadRateQtyButton = Button(productDetailsFrame,
+                        text="Load Details",
+                        bg=globals.appBlue,
+                        fg=globals.appDarkGreen,
+                        width=10,
+                        command=lambda: proceedToLoadProductDetails(globals.billingProductNameEntry.get()))
+    loadRateQtyButton.grid(row=0, column=2, pady=5)
+
+
+    Button(productDetailsFrame,
+        text="Clear",
+        bg=globals.appBlue,
+        fg=globals.appDarkGreen,
+        width=10,
+        command=clearProductDetails).grid(row=0, column=3, pady=5)
+    
+    makeColumnResponsive(productDetailsFrame)
+
+
+def createExtraDetailsArea(parent):
+    askForDiscount = int(globals.CURRENT_SETTINGS.get("ask_for_discount")) if globals.CURRENT_SETTINGS.get("ask_for_discount") else 0
+    askForVat = int(globals.CURRENT_SETTINGS.get("ask_for_vat")) if globals.CURRENT_SETTINGS.get("ask_for_vat") else 0
+    askForTax = int(globals.CURRENT_SETTINGS.get("ask_for_tax")) if globals.CURRENT_SETTINGS.get("ask_for_tax") else 0
+
+    extraDetails = LabelFrame(parent, text="Extra")
+    extraDetails.pack(fill="x", pady=20)
+
+    dA = globals.BILL_DETAILS.get("extra").get("discount_amount")
+    dA = dA if dA else ""
+    dP = globals.BILL_DETAILS.get("extra").get("discount_percentage")
+    dP = dP if dP else ""
+    v = globals.BILL_DETAILS.get("extra").get("vat")
+    v = v if v else ""
+    t = globals.BILL_DETAILS.get("extra").get("tax")
+    t = t if t else ""
+
+    Label(extraDetails, text="Discount(Amount)").grid(row=0, column=0, padx=5, sticky=W)
+    discountAmount = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+    discountAmount.grid(row=0, column=1, padx=5, pady=5, sticky=W)
+    discountAmount.insert(0, dA)
+    discountAmount.config(state=NORMAL if askForDiscount else DISABLED)
+
+    Label(extraDetails, text="Discount(%)").grid(row=0, column=2, padx=5, sticky=W)
+    discountPercentage = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+    discountPercentage.grid(row=0, column=3, padx=5, pady=5, sticky=W)
+    discountPercentage.insert(0, dP)
+    discountPercentage.config(state=NORMAL if askForDiscount else DISABLED)
+
+    Label(extraDetails, text="VAT(%)").grid(row=1, column=0, padx=5, sticky=W)
+    vatPercentage = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+    vatPercentage.grid(row=1, column=1, padx=5, pady=5, sticky=W)
+    vatPercentage.insert(0, v)
+    vatPercentage.config(state=NORMAL if askForVat else DISABLED)
+
+    Label(extraDetails, text="TAX(%)").grid(row=1, column=2, padx=5, sticky=W)
+    taxPercentage = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+    taxPercentage.grid(row=1, column=3, padx=5, pady=5, sticky=W)
+    taxPercentage.insert(0, v)
+    taxPercentage.config(state=NORMAL if askForTax else DISABLED)
+
+    def addExtraDetailsToBill():
+        dA = discountAmount.get()
+        dP = discountPercentage.get()
+        v = vatPercentage.get()
+        t = taxPercentage.get()
+
+        if not dA and not dP and not v:
+            return False
+        
+        if  dA and dP:
+            messagebox.showwarning("Billing system", "You can add either discount amount or discount percentage.\nYou can not add both.")
+            return False
+
+        if dA and not dA.isdigit():
+            messagebox.showwarning("Invalid", "Discount amount must be a number.")
+            discountAmount.focus()
+            return False
+
+        if dP and not dP.isdigit():
+            messagebox.showwarning("Invalid", "Discount percentage must be a number.")
+            discountPercentage.focus()
+            return False
+        elif dP and (int(dP) > 100):
+            messagebox.showwarning("Invalid", "Discount percentage must not be higher than 100.")
+            discountPercentage.focus()
+            return False
+        
+        if v and not v.isdigit():
+            messagebox.showwarning("Invalid", "VAT percentage must be a number.")
+            vatPercentage.focus()
+            return False
+        elif v and (int(v) > 100):
+            messagebox.showwarning("Invalid", "VAT percentage must not be higher than 100.")
+            discountPercentage.focus()
+            return False
+        
+        if t and not t.isdigit():
+            messagebox.showwarning("Invalid", "Tax percentage must be a number.")
+            taxPercentage.focus()
+            return False
+        elif t and (int(t) > 100):
+            messagebox.showwarning("Invalid", "Tax percentage must not be higher than 100.")
+            taxPercentage.focus()
+            return False
+        
+        globals.BILL_DETAILS["extra"] = {"discount_amount": dA,
+                                        "discount_percentage": dP,
+                                        "vat": v,
+                                        "tax": t,}
+        createBillDetailsTable(globals.billDetailsFrame)
+
+    Button(extraDetails,
+        text="Add to Bill",
+        bg=globals.appGreen,
+        fg=globals.appWhite,
+        width=10,
+        command=addExtraDetailsToBill).grid(row=1, column=4, rowspan=2, padx=5, pady=5)
+
+    makeColumnResponsive(extraDetails)
+
+
+def createDetailsArea(parent):
+    detailsArea = Frame(parent)
+    detailsArea.pack(side="left", fill="both", padx=(0,5), pady=10, expand=True)
+
+    createCustomerDetailsArea(detailsArea)
+    createProductDetailsArea(detailsArea)
+
+    askForDiscount = int(globals.CURRENT_SETTINGS.get("ask_for_discount")) if globals.CURRENT_SETTINGS.get("ask_for_discount") else 0
+    askForVat = int(globals.CURRENT_SETTINGS.get("ask_for_vat")) if globals.CURRENT_SETTINGS.get("ask_for_vat") else 0
+    askForTax = int(globals.CURRENT_SETTINGS.get("ask_for_tax")) if globals.CURRENT_SETTINGS.get("ask_for_tax") else 0
+
+    if askForDiscount or askForVat or askForTax:
+        createExtraDetailsArea(detailsArea)
+
+
+def createBillDetailsArea(parent):
+    cartArea = Frame(parent)
+    cartArea.pack(side="right", fill="both", padx=(5,0), pady=10, expand=True)
+
+    Label(cartArea, text="Billing Details", font=globals.appFontNormalBold).pack(fill="x", pady=5)
+
+    globals.billDetailsFrame = LabelFrame(cartArea, borderwidth=2)
+    globals.billDetailsFrame.pack(fill="both")
+
+    createBillDetailsTable(globals.billDetailsFrame)
+
+
+def createBillingSystemFrame(parent):
+    askForPayment = int(globals.CURRENT_SETTINGS.get("ask_for_payment")) if globals.CURRENT_SETTINGS.get("ask_for_payment") else 0
+    
+    globals.billingSystemFrame = Frame(parent, borderwidth=1)
+    globals.billingSystemFrame.pack(fill="both", expand=True, padx=10, pady=10)
+
+    detailsAndBillingFrame = Frame(globals.billingSystemFrame)
+    detailsAndBillingFrame.pack(fill="both", expand=True)
+
+    createDetailsArea(detailsAndBillingFrame)
+    createBillDetailsArea(detailsAndBillingFrame)
+
+    detailsCommands = LabelFrame(globals.billingSystemFrame, borderwidth=0)
+    detailsCommands.pack(fill="x", pady=5, expand=True)
+
+    def proceedToMakePayment():
+        status = billUtils.preprocess_bill_details()
+        if status:
+            if askForPayment:
+                paymentWindow.createPaymentWindow()
+            else:
+                billUtils.make_payment(0)
+    
+    cta = "Pay and Generate Bill" if askForPayment else "Generate Bill"
+    Button(detailsCommands,
+        text=cta,
+        bg=globals.appBlue,
+        fg=globals.appDarkGreen,
+        width=20,
+        command=proceedToMakePayment,
+        state = DISABLED if not globals.BILL_DETAILS else NORMAL
+        ).pack(side="right", padx=5)
+
+
+    clear = Button(detailsCommands,
+                        text="Clear All",
+                        bg=globals.appBlue,
+                        fg=globals.appDarkGreen,
+                        command=clearBillingFrame)
+    clear.pack(side="right", padx=5)
+    
+
+def clearBillingFrame(force=False):
+        response = 1
+        if not force:
+            response = messagebox.askyesnocancel("Clear all", "Everything will reset.\nAre you sure?")
+        if response==1:
+            globals.BILL_DETAILS["customer"] = {}
+            globals.BILL_DETAILS["products"] = {}
+            globals.BILL_DETAILS["extra"] = {}
+            globals.BILL_DETAILS["final"] = {}
+        dashboard.showFrame(globals.CURRENT_FRAME, True)
+
+
+def openBillingSystem(parent):
+    try:
+        createBillingSystemFrame(parent)
+    except Exception as e:
+        log.error(f"ERROR: while creating billing system frame -> {e}")
+        messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

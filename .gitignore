@@ -1,0 +1,10 @@
+.vscode
+__pycache__
+\env
+.venv
+venv/
+logs/
+bills/
+test.py
+*.db
+*.doc
