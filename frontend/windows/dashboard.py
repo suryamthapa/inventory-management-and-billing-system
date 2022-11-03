@@ -162,8 +162,16 @@ def createSidebar(container):
 def createTopBar(container):
     Settings.topBar = Frame(container, bg="#256D85")
     Settings.topBar.pack(side="top", fill="x")
-  
-    statusLabel = Label(Settings.topBar, text="Status: Active", font=Settings.appFontBigBold, fg="#DFF6FF", bg="#256D85")
+
+    appStatus = ""
+    if Settings.LISENCE_INFO.get("status") == LisenceStatus.not_activated_yet:
+        appStatus = "Inactive"
+    elif Settings.LISENCE_INFO.get("status") == LisenceStatus.active:
+        appStatus = "Active"
+    elif Settings.LISENCE_INFO.get("status") == LisenceStatus.expired:
+        appStatus = "Expired"
+
+    statusLabel = Label(Settings.topBar, text=f"Status: {appStatus}", font=Settings.appFontBigBold, fg="#DFF6FF", bg="#256D85")
     statusLabel.grid(row=0, column=0, sticky="w", pady=22, padx=20)
 
     timeLabel = Label(Settings.topBar, font=Settings.appFontBigBold, fg="#DFF6FF", bg="#256D85")

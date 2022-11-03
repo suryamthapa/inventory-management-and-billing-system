@@ -109,8 +109,7 @@ def generate_and_save_bill():
         if os.path.exists(os.path.join(os.getcwd(),"bills",filename)):
             os.remove(os.path.join(os.getcwd(),"bills",filename))
         log.error(f"Error occured while generating bill -> {e}")
-        return False, filename
-    
+        return False, filename   
 
 
 def preprocess_bill_details():
@@ -132,11 +131,7 @@ def preprocess_bill_details():
         messagebox.showwarning("Missing profile details", f"Please completely fill the details in company profile.\nMissing: Phone number or telephone")
         return False
     return True
-    
+
 
 def preview_pdf_in_browser(filename):
     os.startfile(os.path.join(os.getcwd(),"bills",filename))
-    # time.sleep(5) #Adjust as necessary
-    # shell = win32com.client.Dispatch("WScript.Shell")
-    # shell.SendKeys('^p')
-    # shell.SendKeys('{ENTER}') #dismiss the print dialog box

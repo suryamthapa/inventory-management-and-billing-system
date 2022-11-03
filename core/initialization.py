@@ -9,7 +9,7 @@ def database_initialization():
             from alembic.config import Config
             from alembic import command
             alembic_cfg = Config("./alembic.ini")
-            # command.revision(config=alembic_cfg, message="Initializing database", autogenerate=True)
+            command.revision(config=alembic_cfg, message="Initializing database", autogenerate=True)
             command.upgrade(alembic_cfg, "head")
         return True, "INITIALIZED: database upgraded"
     except Exception as e:

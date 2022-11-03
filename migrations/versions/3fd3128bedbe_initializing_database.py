@@ -1,8 +1,8 @@
 """Initializing database
 
-Revision ID: 1ddf3fda3059
+Revision ID: 3fd3128bedbe
 Revises: 
-Create Date: 2022-10-24 13:06:18.076661
+Create Date: 2022-11-03 22:40:58.806340
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '1ddf3fda3059'
+revision = '3fd3128bedbe'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,13 +31,15 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.Column('full_name', sa.String(), nullable=False),
+    sa.Column('full_name', sa.String(), nullable=True),
     sa.Column('company', sa.String(), nullable=True),
+    sa.Column('company_pan_no', sa.String(), nullable=True),
     sa.Column('phone_number', sa.String(), nullable=True),
     sa.Column('telephone', sa.String(), nullable=True),
     sa.Column('email', sa.String(), nullable=True),
-    sa.Column('address', sa.String(), nullable=True),
+    sa.Column('address', sa.String(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('company'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('phone_number'),
     sa.UniqueConstraint('telephone')
@@ -49,8 +51,9 @@ def upgrade():
     sa.Column('lisence_key', sa.String(), nullable=True),
     sa.Column('activated_on', sa.DateTime(), nullable=True),
     sa.Column('duration', sa.Integer(), nullable=True),
-    sa.Column('status', sa.Enum('active', 'expired', name='lisencestatus'), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('status', sa.Enum('expired', 'active', 'not_activated_yet', name='lisencestatus'), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('lisence_key')
     )
     op.create_table('products',
     sa.Column('id', sa.Integer(), nullable=False),

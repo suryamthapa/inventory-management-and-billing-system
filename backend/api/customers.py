@@ -6,7 +6,9 @@ from sqlalchemy.exc import IntegrityError
 from backend.database.deps import get_db
 from backend.models.customers import Customers
 
+
 log = logging.getLogger("backend")
+
 
 def get_customers(queryDict: dict = {}, asc = True, sort_column: str = "id", 
                 page=1, limit=11, db: Session = get_db()):
@@ -37,6 +39,7 @@ def get_customers(queryDict: dict = {}, asc = True, sort_column: str = "id",
             return {"id": customer.id,
                     "full_name":customer.full_name,
                     "company": customer.company,
+                    "company_pan_no": customer.company_pan_no,
                     "phone_number":customer.phone_number,
                     "telephone": customer.telephone,
                     "email":customer.email,
@@ -58,12 +61,12 @@ def get_customers(queryDict: dict = {}, asc = True, sort_column: str = "id",
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
-def get_customer(id: int = 0, name: str = "", phone_number: str = "",
+def get_customer(id: int = 0, name: str = "", company: str = "", phone_number: str = "",
                 email: str = "", telephone: str = "", db: Session = get_db()):
     try:
         if not id and not name and not phone_number and not email and not telephone:
             db.close()
-            return False, f"Please provide one of the following.\nid/name/email/phone_number/telephone"
+            return False, f"Please provide one of the following.\nid/name/email/phone_number/telephone/company"
 
         customer = db.query(Customers)
         if id:
@@ -76,6 +79,8 @@ def get_customer(id: int = 0, name: str = "", phone_number: str = "",
             customer = customer.filter(Customers.telephone == telephone)
         if email:
             customer = customer.filter(Customers.email == email)
+        if company:
+            customer = customer.filter(Customers.company == company)
         
         customer = customer.first()
 
@@ -87,6 +92,7 @@ def get_customer(id: int = 0, name: str = "", phone_number: str = "",
             "id":customer.id,
             "full_name":customer.full_name,
             "company": customer.company,
+            "company_pan_no": customer.company_pan_no,
             "phone_number":customer.phone_number,
             "telephone": customer.telephone,
             "email":customer.email,
@@ -105,7 +111,8 @@ def add_customer(data:dict ={}, db: Session=get_db()):
         customer = Customers(full_name=data.get("full_name"), 
                         phone_number=data.get("phone_number") if data.get("phone_number") else None,
                         telephone=data.get("telephone") if data.get("telephone") else None,
-                        company=data.get("company"),
+                        company=data.get("company") if data.get("company") else None,
+                        company_pan_no=data.get("company_pan_no") if data.get("company_pan_no") else None,
                         email=data.get("email") if data.get("email") else None,
                         address=data.get("address"))
     
@@ -114,8 +121,9 @@ def add_customer(data:dict ={}, db: Session=get_db()):
         db.refresh(customer)
         db.close()
         return customer.id, "Customer added successfully!"
-    except IntegrityError:
+    except IntegrityError as f:
         db.close()
+        log.error(f"ERROR: while adding customer with data {data} -> {f}")
         return False, "Customer with same name/phone/telephone/email already exists."
     except Exception as e:
         db.close()
@@ -137,9 +145,10 @@ def update_customer(id: int, data: dict = {}, db: Session=get_db()):
         db.commit()
         db.close()
         return True, "Customer updated successfully!"
-    except IntegrityError:
+    except IntegrityError as f:
         db.close()
-        return False, "Customer already exists with provided name."
+        log.error(f"ERROR: while updating customer with id {id}-> {f}")
+        return False, f"Customer already exists with provided name."
     except Exception as e:
         db.close()
         log.error(f"ERROR: while updating customer with id {id}-> {e}")

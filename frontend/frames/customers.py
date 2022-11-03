@@ -24,13 +24,13 @@ def deleteCustomer(id, name):
         if not status:
             messagebox.showerror("Delete Customer", message)
         else:
-            messagebox.showinfo("Delete Customer",f"Customer deleted successfully! \n id: {message}")
+            messagebox.showinfo("Delete Customer",f"{message}")
             # refreshing products list
             refreshCustomersList()
             # reload the inventory table
             handleSearchCustomer(globals.CURRENT_SEARCH_QUERY.get("customers"))
             # refresh auto complete values in search entry
-            globals.queryEntry.config(completevalues=[record["full_name"] for record in globals.CUSTOMERS_LIST])
+            globals.queryEntry.config(completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
 
 
 def handleSearchCustomer(queryColumnDict, page=1, limit=11, sort_column="id", asc=True):
@@ -54,7 +54,7 @@ def createCustomersTop(parent):
     globals.queryEntry = AutocompleteEntry(globals.tableTop,
                 width=30, 
                 font=20, 
-                completevalues=[record["full_name"] for record in globals.CUSTOMERS_LIST])
+                completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
     globals.queryEntry.grid(row=0, column=0, ipady=5)
     globals.queryEntry.bind("<Return>", lambda x: handleSearchCustomer({"full_name":globals.queryEntry.get()}))
 
@@ -103,10 +103,11 @@ def createTableHeader(parent):
     Label(parent, text="ID", font=globals.appFontNormalBold).grid(row=0, column=0, sticky=W)
     Label(parent, text="Name", font=globals.appFontNormalBold).grid(row=0, column=1, sticky=W)
     Label(parent, text="Company", font=globals.appFontNormalBold).grid(row=0, column=2, sticky=W)
-    Label(parent, text="Phone Number", font=globals.appFontNormalBold).grid(row=0, column=3, sticky=W)
-    Label(parent, text="Telephone", font=globals.appFontNormalBold).grid(row=0, column=4, sticky=W)
-    Label(parent, text="Email", font=globals.appFontNormalBold).grid(row=0, column=5, sticky=W)
-    Label(parent, text="Address", font=globals.appFontNormalBold).grid(row=0, column=6, sticky=W)
+    Label(parent, text="PAN no", font=globals.appFontNormalBold).grid(row=0, column=3, sticky=W)
+    Label(parent, text="Phone Number", font=globals.appFontNormalBold).grid(row=0, column=4, sticky=W)
+    Label(parent, text="Telephone", font=globals.appFontNormalBold).grid(row=0, column=5, sticky=W)
+    Label(parent, text="Email", font=globals.appFontNormalBold).grid(row=0, column=6, sticky=W)
+    Label(parent, text="Address", font=globals.appFontNormalBold).grid(row=0, column=7, sticky=W)
     makeColumnResponsive(parent)
 
 
@@ -117,15 +118,16 @@ def createTableBody(parent, records):
     for index, record in enumerate(records):
         bg = "white" if (index+1)%2==0 else globals.appWhite
         Label(parent, text=record.get("id"), bg=bg).grid(row=index+1, column=0, pady=5, sticky=W),
-        Label(parent, text=record.get("full_name"), bg=bg).grid(row=index+1, column=1,pady=5, sticky=W)
+        Label(parent, text=record.get("full_name") if record.get("full_name") else "---", bg=bg).grid(row=index+1, column=1,pady=5, sticky=W)
         Label(parent, text=record.get("company") if record.get("company") else "---", bg=bg).grid(row=index+1, column=2, pady=5, sticky=W)
-        Label(parent, text=record.get("phone_number") if record.get("phone_number") else "---", bg=bg).grid(row=index+1, column=3, pady=5, sticky=W)
-        Label(parent, text=record.get("telephone") if record.get("telephone") else "---", bg=bg).grid(row=index+1, column=4, pady=5, sticky=W)
-        Label(parent, text=record.get("email") if record.get("email") else "---", bg=bg).grid(row=index+1, column=5, pady=5, sticky=W)
-        Label(parent, text=record.get("address") if record.get("address") else "---", bg=bg).grid(row=index+1, column=6, pady=5, sticky=W)
-        Button(parent, text="update", width=10, bg=globals.appBlue, command=lambda x=record: updateCustomers.createUpdateCustomerWindow(x)).grid(row=index+1, column=7, pady=5, sticky=W)
-        Button(parent, text="delete", width=10, bg="red", command=lambda id=record.get("id"), name=record.get("full_name"): deleteCustomer(id, name)).grid(row=index+1, column=8, pady=5, sticky=W)
-        Button(parent, text="View Sales", width=10, bg=globals.appBlue, command=lambda : messagebox.showinfo("Sales and Analytics", "Feature comming soon in next update!\n\nYou will be able to view the sales and analytics of specific customer with the help of this feature.\n\nThank you!")).grid(row=index+1, column=9, pady=5, sticky=W)
+        Label(parent, text=record.get("company_pan_no") if record.get("company_pan_no") else "---", bg=bg).grid(row=index+1, column=3, pady=5, sticky=W)
+        Label(parent, text=record.get("phone_number") if record.get("phone_number") else "---", bg=bg).grid(row=index+1, column=4, pady=5, sticky=W)
+        Label(parent, text=record.get("telephone") if record.get("telephone") else "---", bg=bg).grid(row=index+1, column=5, pady=5, sticky=W)
+        Label(parent, text=record.get("email") if record.get("email") else "---", bg=bg).grid(row=index+1, column=6, pady=5, sticky=W)
+        Label(parent, text=record.get("address") if record.get("address") else "---", bg=bg).grid(row=index+1, column=7, pady=5, sticky=W)
+        Button(parent, text="update", width=10, bg=globals.appBlue, command=lambda x=record: updateCustomers.createUpdateCustomerWindow(x)).grid(row=index+1, column=8, pady=5, sticky=W)
+        Button(parent, text="delete", width=10, bg="red", command=lambda id=record.get("id"), name=record.get("full_name"): deleteCustomer(id, name)).grid(row=index+1, column=9, pady=5, sticky=W)
+        Button(parent, text="View Sales", width=10, bg=globals.appBlue, command=lambda : messagebox.showinfo("Sales and Analytics", "Feature comming soon in next update!\n\nYou will be able to view the sales and analytics of specific customer with the help of this feature.\n\nThank you!")).grid(row=index+1, column=10, pady=5, sticky=W)
 
     makeColumnResponsive(parent)
 
@@ -154,7 +156,6 @@ def handlePagination(currentPage, totalPages, command):
     globals.paginationPageInfo.config(text=f"Page {globals.PAGINATION_PAGE} out of {totalPages}")
     
 
-
 def createTableFooter(parent, currentPage, totalPages):
     # print(currentPage, totalPages)
     globals.PAGINATION_PAGE = currentPage
@@ -163,22 +164,21 @@ def createTableFooter(parent, currentPage, totalPages):
                                         bg=globals.appGreen, 
                                         fg=globals.appWhite,
                                         command=lambda : handlePagination(currentPage, totalPages, "back"))
-    globals.paginationBackButton.grid(row=14, column=7, pady=10)
+    globals.paginationBackButton.grid(row=14, column=8, pady=10)
 
     globals.paginationPageInfo = Label(parent, text=f"Page {currentPage} out of {totalPages}")
-    globals.paginationPageInfo.grid(row=globals.PAGINATION_PAGE_LIMIT+3, column=8, pady=10)
+    globals.paginationPageInfo.grid(row=globals.PAGINATION_PAGE_LIMIT+3, column=9, pady=10)
     
     globals.paginationForwardButton = Button(parent, 
                                             text=">>", 
                                             bg=globals.appGreen, 
                                             fg=globals.appWhite, 
                                             command=lambda : handlePagination(currentPage, totalPages, "forward"))
-    globals.paginationForwardButton.grid(row=14, column=9, pady=10)
+    globals.paginationForwardButton.grid(row=14, column=10, pady=10)
 
     handlePaginationButtonState(currentPage, totalPages)
     
     
-
 def createCustomersTable(parent, data):
     globals.customersTable.destroy() if globals.customersTable else None
     globals.customersTable = Frame(parent)
@@ -195,6 +195,7 @@ def createCustomersFrame(parent):
     
     createCustomersTop(globals.customersFrame)
     handleSearchCustomer({})
+
 
 def openCustomers(parent):
     try:

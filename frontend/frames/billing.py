@@ -47,19 +47,19 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
     Label(parent, text=f"Name: {productDetails['product_name']}", font=globals.appFontNormalBold).grid(row=0, column=0, columnspan=2, padx=5, pady=(5,5), sticky=W)
     Label(parent, text=f"Max Available: {productDetails['stock']}", font=globals.appFontNormalBold).grid(row=0, column=2, columnspan=2, padx=5, pady=(5,5), sticky=W)
 
-    Label(parent, text="Rate").grid(row=1, column=0, padx=5, pady=(5, 20), sticky=W)
+    Label(parent, text="Rate").grid(row=1, column=0, padx=5, pady=(5, 10), sticky=W)
     rateEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-    rateEntry.grid(row=1, column=1, padx=5, pady=(5, 20), sticky=W)
+    rateEntry.grid(row=1, column=1, padx=5, pady=(5, 10), sticky=W)
     rateEntry.insert(0, productDetails["marked_price"] if not toUpdate else productDetails["rate"])
 
-    Label(parent, text="Quantity").grid(row=1, column=2, padx=5, pady=(5, 20), sticky=W)
+    Label(parent, text="Quantity").grid(row=1, column=2, padx=5, pady=(5, 10), sticky=W)
     quantityEntry = Spinbox(parent, 
                             bd=globals.defaultEntryBorderWidth, 
                             font=globals.appFontNormal, 
                             from_=1, 
                             to=int(productDetails["stock"]),
                             width=5)
-    quantityEntry.grid(row=1, column=3, padx=5, pady=(5, 20), sticky=W)
+    quantityEntry.grid(row=1, column=3, padx=5, pady=(5, 10), sticky=W)
     quantityEntry.delete(0, END)
     quantityEntry.insert(0, 1 if not toUpdate else int(productDetails["quantity"]))
 
@@ -132,7 +132,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
         fg=globals.appWhite,
         width=10,
         command=validateProductDetails)
-    ctaBtn.grid(row=1, column=4, pady=(5, 20), padx=5)
+    ctaBtn.grid(row=1, column=4, pady=(5, 10), padx=5)
 
     makeColumnResponsive(parent)
 
@@ -145,36 +145,59 @@ def loadCustomerDetails(parent, customerDetails):
         for child in parent.winfo_children():
             child.destroy()
 
-        Label(parent, text="Name").grid(row=1, column=0, padx=5, pady=20)
-        nameEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        nameEntry.grid(row=1, column=1, padx=5, pady=20)
-        nameEntry.insert(0, customerDetails["full_name"] if customerDetails.get("full_name") else "")
-        nameEntry.config(state=DISABLED)
+        if customerDetails.get("full_name"):
+            Label(parent, text="Name").grid(row=1, column=0, padx=5, pady=10)
+            nameEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+            nameEntry.grid(row=1, column=1, padx=5, pady=10)
+            nameEntry.insert(0, customerDetails["full_name"] if customerDetails.get("full_name") else "")
+            nameEntry.config(state=DISABLED)
 
-        Label(parent, text="Company").grid(row=1, column=2, padx=5, pady=20)
-        companyEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        companyEntry.grid(row=1, column=3, padx=5, pady=20)
-        companyEntry.insert(0, customerDetails["company"] if customerDetails.get("company") else "")
-        companyEntry.config(state=DISABLED)
+            Label(parent, text="Address").grid(row=1, column=2, padx=5, pady=10)
+            addressEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+            addressEntry.grid(row=1, column=3, padx=5, pady=10)
+            addressEntry.insert(0, customerDetails["address"] if customerDetails.get("address") else "")
+            addressEntry.config(state=DISABLED)
+
+        if customerDetails.get("company"):
+            Label(parent, text="Company").grid(row=1, column=0, padx=5, pady=10)
+            companyEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+            companyEntry.grid(row=1, column=1, padx=5, pady=10)
+            companyEntry.insert(0, customerDetails["company"] if customerDetails.get("company") else "")
+            companyEntry.config(state=DISABLED)
+
+            Label(parent, text="Company Pan No").grid(row=1, column=2, padx=5, pady=10)
+            companyPanEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+            companyPanEntry.grid(row=1, column=3, padx=5, pady=10)
+            companyPanEntry.insert(0, customerDetails["company_pan_no"] if customerDetails.get("company_pan_no") else "")
+            companyPanEntry.config(state=DISABLED)
         
-        Label(parent, text="Phone").grid(row=2, column=0, padx=5, pady=20)
+        Label(parent, text="Phone").grid(row=2, column=0, padx=5, pady=10)
         phEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        phEntry.grid(row=2, column=1, padx=5, pady=20)
+        phEntry.grid(row=2, column=1, padx=5, pady=10)
         phEntry.insert(0, customerDetails["phone_number"] if customerDetails.get("phone_number") else "")
         phEntry.config(state=DISABLED)
 
-        Label(parent, text="Telephone").grid(row=2, column=2, padx=5, pady=20)
+        Label(parent, text="Telephone").grid(row=2, column=2, padx=5, pady=10)
         telEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        telEntry.grid(row=2, column=3, padx=5, pady=20)
+        telEntry.grid(row=2, column=3, padx=5, pady=10)
         telEntry.insert(0, customerDetails["telephone"] if customerDetails.get("telephone") else "")
         telEntry.config(state=DISABLED)
+
+        if customerDetails.get("company"):
+            Label(parent, text="Address").grid(row=3, column=0, padx=5, pady=10)
+            addressEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+            addressEntry.grid(row=3, column=1, padx=5, pady=10)
+            addressEntry.insert(0, customerDetails["address"] if customerDetails.get("address") else "")
+            addressEntry.config(state=DISABLED)
 
         def addToBill():
             customerData = {"customer_id": customerDetails["id"],
                                                 "full_name": customerDetails["full_name"],
                                                 "phone_number": customerDetails["phone_number"] if customerDetails["phone_number"] else "",
                                                 "telephone": customerDetails["telephone"] if customerDetails["telephone"] else "",
-                                                "company":customerDetails["company"] if customerDetails["company"] else ""}
+                                                "address": customerDetails["address"] if customerDetails["address"] else "",
+                                                "company":customerDetails["company"] if customerDetails["company"] else "",
+                                                "company_pan_no":customerDetails["company_pan_no"] if customerDetails["company_pan_no"] else ""}
             
             globals.BILL_DETAILS["customer"] = customerData
             createBillDetailsTable(globals.billDetailsFrame)
@@ -184,7 +207,7 @@ def loadCustomerDetails(parent, customerDetails):
             bg=globals.appGreen,
             fg=globals.appWhite,
             width=10,
-            command=addToBill).grid(row=2, column=4, rowspan=2, padx=5, pady=20)
+            command=addToBill).grid(row=2, column=4, rowspan=2, padx=5, pady=10)
 
         makeColumnResponsive(parent)
     except Exception as e:
@@ -277,14 +300,36 @@ def createBillDetailsTableFooter(parent):
 
 def createBillDetailsTableTop(parent):
     name = globals.BILL_DETAILS.get("customer").get("full_name")
-    phone_number = globals.BILL_DETAILS.get("customer").get("phone_number")
     company = globals.BILL_DETAILS.get("customer").get("company")
+    company_pan_no = globals.BILL_DETAILS.get("customer").get("company_pan_no")
+    phone_num = globals.BILL_DETAILS.get("customer").get("phone_number")
+    telephone = globals.BILL_DETAILS.get("customer").get("telephone")
+    address = globals.BILL_DETAILS.get("customer").get("address")
+    contacts = []
+    if phone_num: contacts.append(phone_num) 
+    if telephone: contacts.append(telephone)
+
     Label(parent, text="Customer:", font=globals.appFontSmallBold).grid(row=0, column=0, pady=(10, 5), sticky=W)
-    Label(parent, text=name if name else "**********").grid(row=0, column=1, pady=(10, 5), sticky=W)
-    Label(parent, text="Phone:", font=globals.appFontSmallBold).grid(row=0, column=2, pady=(10, 5), sticky=W)
-    Label(parent, text=phone_number if phone_number else "**********").grid(row=0, column=3, pady=(10, 5), sticky=W)
-    Label(parent, text="Company:", font=globals.appFontSmallBold).grid(row=1, column=0, pady=(5, 10), sticky=W)
-    Label(parent, text=company if company else "**********").grid(row=1, column=1, pady=(5, 10), sticky=W)
+    if name:
+        Label(parent, text=name).grid(row=0, column=1, pady=(10, 5), sticky=W)
+    elif company:
+        Label(parent, text=company).grid(row=0, column=1, pady=(10, 5), sticky=W)
+    else:
+        Label(parent, text="********").grid(row=0, column=1, pady=(10, 5), sticky=W)
+    
+    if company:
+        Label(parent, text="PAN no:", font=globals.appFontSmallBold).grid(row=0, column=2, pady=(10, 5), sticky=W)
+        Label(parent, text=company_pan_no if company_pan_no else "**********").grid(row=0, column=3, pady=(10, 5), sticky=W)
+    elif name:
+        Label(parent, text="Address:", font=globals.appFontSmallBold).grid(row=0, column=2, pady=(10, 5), sticky=W)
+        Label(parent, text=address if address else "**********").grid(row=0, column=3, pady=(10, 5), sticky=W)
+    
+    Label(parent, text="Contacts:", font=globals.appFontSmallBold).grid(row=1, column=0, pady=(5, 10), sticky=W)
+    Label(parent, text=f"{', '.join(contacts)}" if contacts else "********").grid(row=1, column=1, pady=(10, 5), sticky=W)
+
+    if company:
+        Label(parent, text="Address:", font=globals.appFontSmallBold).grid(row=1, column=2, pady=(10, 5), sticky=W)
+        Label(parent, text=address if address else "**********").grid(row=1, column=3, pady=(10, 5), sticky=W)
     
     makeColumnResponsive(parent)
 
@@ -353,7 +398,7 @@ def createCustomerDetailsArea(parent):
     Label(customerDetailsFrame, text="Search Customer", font=globals.appFontNormalBold).grid(row=0, column=0, padx=5, pady=(5,10))
     globals.billingCustomerNameEntry = AutocompleteEntry(customerDetailsFrame,
                                     font=globals.appFontNormal, 
-                                    completevalues=[record["full_name"] for record in globals.CUSTOMERS_LIST])
+                                    completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
     globals.billingCustomerNameEntry.grid(row=0, column=1, padx=5, pady=(5,10))
     globals.billingCustomerNameEntry.bind("<Return>", lambda x: proceedToLoadCustomerDetails(globals.billingCustomerNameEntry.get()))
 

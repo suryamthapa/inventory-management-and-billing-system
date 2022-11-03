@@ -5,6 +5,23 @@ from reportlab.lib import colors
 from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, \
      NextPageTemplate, Paragraph, Table, TableStyle, Spacer
 
+
+def num2words(num):
+    under_20 = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
+    tens = ["Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
+    above_100 = {100:"Hundred", 1000:"Thousand", 100000:"Lakh", 10000000:"Crore", 1000000000:"Arab"}
+
+    if num<20:
+        return under_20[int(num)]
+    
+    if num<100:
+        return tens[int(num/10)-2] + ("" if num%10==0 else " " + under_20[int(num%10)])
+    
+    pivot = max([key for key in above_100.keys() if key <= num])
+
+    return num2words(int(num/pivot)) + " " + above_100[pivot] + ("" if num%pivot==0 else " " + num2words(num%pivot))
+
+
 class CustomerBill(BaseDocTemplate):
     def __init__(self, filename, company_info, bill_details, 
                  show_discount=False, show_vat=False, show_tax=False, show_payment=False, **kwargs):
@@ -144,7 +161,7 @@ class CustomerBill(BaseDocTemplate):
                         f"Customer Name :   {self.bill_details['customer']['full_name']}                     Contact:    {', '.join(customer_contacts)}")
         customer_company = self.bill_details['customer'].get('company') if self.bill_details['customer'].get('company') else "--------"
         canvas.drawString(self.leftMargin, doc.height - 0.6 * inch, 
-                        f"Company            :   {customer_company}")
+                        f"Company            :   {customer_company}                     PAN no:    {self.bill_details['customer']['company_pan_no']}")
         
         # footer
         canvas.setFont("Helvetica", 9)
