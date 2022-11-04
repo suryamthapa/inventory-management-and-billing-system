@@ -21,6 +21,7 @@ LISENCE_INFO = getLisenceInfo()
 
 # Settings
 CURRENCY_LIST = ["NPR", "INR", "USD"]
+UNITS_LIST = ["PCS", "KGS", "GRAMS", "METER"]
 
 # global variables
 PREVIOUS_TIME = ''

@@ -1,4 +1,4 @@
-"""Frame for inventory """ 
+"""Frame for customers""" 
 # built-in module imports
 import logging
 from tkinter import messagebox
@@ -57,7 +57,7 @@ def createCustomersTop(parent):
                 completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
     globals.queryEntry.grid(row=0, column=0, ipady=5)
     globals.queryEntry.bind("<Return>", lambda x: handleSearchCustomer({"full_name":globals.queryEntry.get()}))
-
+    
     def proceedToSearch():
         if globals.queryEntry.get():
             handleSearchCustomer({"full_name":globals.queryEntry.get()})

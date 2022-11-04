@@ -1,11 +1,16 @@
 # Window to add products in inventory.
 
 import threading
+import logging
 from tkinter import *
 from tkinter import messagebox
+from ttkwidgets.autocomplete import AutocompleteEntry
 import frontend.config as globals
 import frontend.frames.inventory as inventory
 from frontend.utils.products import saveProduct, refreshProductsList
+
+
+log = logging.getLogger("frontend")
 
 
 def createAddProductWindow():
@@ -26,13 +31,16 @@ def createAddProductWindow():
         Label(addProductFrame, text="Cost Price").grid(row=1, column=0, padx=5, pady=5)
         costPriceEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
         costPriceEntry.grid(row=1, column=1, padx=5, pady=5)
+
         Label(addProductFrame, text="Marked Price").grid(row=1, column=2, padx=5, pady=5)
         markedPriceEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
         markedPriceEntry.grid(row=1, column=3, padx=5, pady=5)
 
         Label(addProductFrame, text="Unit").grid(row=2, column=0, padx=5, pady=5)
-        unitEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+        unitEntry = AutocompleteEntry(addProductFrame, font=globals.appFontNormal,
+                completevalues=set([record["unit"] if record["unit"] else "" for record in globals.PRODUCTS_LIST]+globals.UNITS_LIST))
         unitEntry.grid(row=2, column=1, padx=5, pady=5)
+
         Label(addProductFrame, text="Stock").grid(row=2, column=2, padx=5, pady=5)
         stockEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
         stockEntry.grid(row=2, column=3, padx=5, pady=5)
@@ -70,7 +78,7 @@ def createAddProductWindow():
             data = {"product_name": productNameEntry.get(),
                     "cost_price":costPriceEntry.get(),
                     "marked_price":markedPriceEntry.get(),
-                    "unit":unitEntry.get(),
+                    "unit":unitEntry.get().upper() if unitEntry.get() else unitEntry.get(),
                     "stock":stockEntry.get()}
             status = saveProduct(data)
 

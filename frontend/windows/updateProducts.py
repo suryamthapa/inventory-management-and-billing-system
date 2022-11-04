@@ -3,6 +3,7 @@
 import logging
 from tkinter import *
 from tkinter import messagebox
+from ttkwidgets.autocomplete import AutocompleteEntry
 # frontend imports
 import frontend.config as globals
 import frontend.frames.inventory as inventory
@@ -39,15 +40,18 @@ def createUpdateProductWindow(productInfo):
         costPriceEntry = Entry(updateProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
         costPriceEntry.grid(row=1, column=1, padx=5, pady=5)
         costPriceEntry.insert(0, cost_price)
+
         Label(updateProductFrame, text="Marked Price").grid(row=1, column=2, padx=5, pady=5)
         markedPriceEntry = Entry(updateProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
         markedPriceEntry.grid(row=1, column=3, padx=5, pady=5)
         markedPriceEntry.insert(0, marked_price)
 
         Label(updateProductFrame, text="Unit").grid(row=2, column=0, padx=5, pady=5)
-        unitEntry = Entry(updateProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+        unitEntry = AutocompleteEntry(updateProductFrame, font=globals.appFontNormal,
+                completevalues=set([record["unit"] if record["unit"] else "" for record in globals.PRODUCTS_LIST]+globals.UNITS_LIST))
         unitEntry.grid(row=2, column=1, padx=5, pady=5)
         unitEntry.insert(0, unit)
+
         Label(updateProductFrame, text="Stock").grid(row=2, column=2, padx=5, pady=5)
         stockEntry = Entry(updateProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
         stockEntry.grid(row=2, column=3, padx=5, pady=5)
@@ -58,7 +62,7 @@ def createUpdateProductWindow(productInfo):
                 "product_name":productNameEntry.get(),
                 "cost_price":costPriceEntry.get(),
                 "marked_price":markedPriceEntry.get(),
-                "unit":unitEntry.get(),
+                "unit":unitEntry.get().upper() if unitEntry.get() else unitEntry.get(),
                 "stock":stockEntry.get()
             }
             updateProduct(id, details)

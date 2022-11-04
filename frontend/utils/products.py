@@ -16,7 +16,7 @@ def updateProduct(id, data):
         messagebox.showerror("Update Product", message)
         return False
     else:
-        messagebox.showinfo("Update Product",f"Product updated successfully! \n id: {message}")
+        messagebox.showinfo("Update Product",f"{message}")
         return True
 
 
