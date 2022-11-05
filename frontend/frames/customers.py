@@ -152,13 +152,13 @@ def createTableBody(parent, records):
     for index, record in enumerate(records):
         bg = "white" if (index+1)%2==0 else globals.appWhite
         Label(parent, text=record.get("id"), bg=bg).grid(row=index+1, column=0, pady=5, sticky=W),
-        Label(parent, text=record.get("full_name") if record.get("full_name") else "---", bg=bg).grid(row=index+1, column=1,pady=5, sticky=W)
-        Label(parent, text=record.get("company") if record.get("company") else "---", bg=bg).grid(row=index+1, column=2, pady=5, sticky=W)
-        Label(parent, text=record.get("company_pan_no") if record.get("company_pan_no") else "---", bg=bg).grid(row=index+1, column=3, pady=5, sticky=W)
-        Label(parent, text=record.get("phone_number") if record.get("phone_number") else "---", bg=bg).grid(row=index+1, column=4, pady=5, sticky=W)
-        Label(parent, text=record.get("telephone") if record.get("telephone") else "---", bg=bg).grid(row=index+1, column=5, pady=5, sticky=W)
-        Label(parent, text=record.get("email") if record.get("email") else "---", bg=bg).grid(row=index+1, column=6, pady=5, sticky=W)
-        Label(parent, text=record.get("address") if record.get("address") else "---", bg=bg).grid(row=index+1, column=7, pady=5, sticky=W)
+        Label(parent, text=record.get("full_name") if record.get("full_name") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=1,pady=5, sticky=W)
+        Label(parent, text=record.get("company") if record.get("company") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=2, pady=5, sticky=W)
+        Label(parent, text=record.get("company_pan_no") if record.get("company_pan_no") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=3, pady=5, sticky=W)
+        Label(parent, text=record.get("phone_number") if record.get("phone_number") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=4, pady=5, sticky=W)
+        Label(parent, text=record.get("telephone") if record.get("telephone") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=5, pady=5, sticky=W)
+        Label(parent, text=record.get("email") if record.get("email") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=6, pady=5, sticky=W)
+        Label(parent, text=record.get("address") if record.get("address") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=7, pady=5, sticky=W)
         Button(parent, text="update", width=10, bg=globals.appBlue, command=lambda x=record: updateCustomers.createUpdateCustomerWindow(x)).grid(row=index+1, column=8, pady=5, sticky=W)
         Button(parent, text="delete", width=10, bg="red", command=lambda id=record.get("id"), name=record.get("full_name"): deleteCustomer(id, name)).grid(row=index+1, column=9, pady=5, sticky=W)
         Button(parent, text="View Sales", width=10, bg=globals.appBlue, command=lambda : messagebox.showinfo("Sales and Analytics", "Feature comming soon in next update!\n\nYou will be able to view the sales and analytics of specific customer with the help of this feature.\n\nThank you!")).grid(row=index+1, column=10, pady=5, sticky=W)

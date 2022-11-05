@@ -143,12 +143,12 @@ def createTableBody(parent, records):
         return True
     for index, record in enumerate(records):
         bg = "white" if (index+1)%2==0 else globals.appWhite
-        Label(parent, text=record.get("id"), bg=bg).grid(row=index+1, column=0, pady=5, sticky=W)
-        Label(parent, text=record.get("product_name"), bg=bg).grid(row=index+1, column=1,pady=5, sticky=W)
-        Label(parent, text=record.get("stock"), bg=bg).grid(row=index+1, column=2, pady=5, sticky=W)
-        Label(parent, text=record.get("unit"), bg=bg).grid(row=index+1, column=3, pady=5, sticky=W)
-        Label(parent, text=record.get("cost_price"), bg=bg).grid(row=index+1, column=4, pady=5, sticky=W)
-        Label(parent, text=record.get("marked_price"), bg=bg).grid(row=index+1, column=5, pady=5, sticky=W)
+        Label(parent, text=record.get("id"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=0, pady=5, sticky=W)
+        Label(parent, text=record.get("product_name"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=1,pady=5, sticky=W)
+        Label(parent, text=record.get("stock"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=2, pady=5, sticky=W)
+        Label(parent, text=record.get("unit"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=3, pady=5, sticky=W)
+        Label(parent, text=record.get("cost_price"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=4, pady=5, sticky=W)
+        Label(parent, text=record.get("marked_price"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=5, pady=5, sticky=W)
         Button(parent, text="update", width=10, bg="#47B5FF", command=lambda x=record: updateProducts.createUpdateProductWindow(x)).grid(row=index+1, column=6, pady=5)
         Button(parent, text="delete", width=10, bg="red", command=lambda id=record.get("id"), name=record.get("product_name"): deleteProduct(id, name)).grid(row=index+1, column=7, pady=5)
 
