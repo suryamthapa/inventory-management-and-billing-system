@@ -11,10 +11,14 @@ log = logging.getLogger("frontend")
 
 
 def createSettingsFrame(parent):
+    print(globals.CURRENT_SETTINGS)
     askForPayment = int(globals.CURRENT_SETTINGS.get("ask_for_payment")) if globals.CURRENT_SETTINGS.get("ask_for_payment") else 0
     askForDiscount = int(globals.CURRENT_SETTINGS.get("ask_for_discount")) if globals.CURRENT_SETTINGS.get("ask_for_discount") else 0
     askForVat = int(globals.CURRENT_SETTINGS.get("ask_for_vat")) if globals.CURRENT_SETTINGS.get("ask_for_vat") else 0
     askForTax = int(globals.CURRENT_SETTINGS.get("ask_for_tax")) if globals.CURRENT_SETTINGS.get("ask_for_tax") else 0
+    defaultVat = int(globals.CURRENT_SETTINGS.get("default_vat")) if globals.CURRENT_SETTINGS.get("default_vat") else 0
+    defaultTax = int(globals.CURRENT_SETTINGS.get("default_tax")) if globals.CURRENT_SETTINGS.get("default_tax") else 0
+    defaultDiscount = int(globals.CURRENT_SETTINGS.get("default_discount")) if globals.CURRENT_SETTINGS.get("default_discount") else 0
 
     globals.settingsFrame = Frame(parent, borderwidth=1)
     globals.settingsFrame.pack(fill="both", expand=True, padx=10)
@@ -32,13 +36,28 @@ def createSettingsFrame(parent):
     askForTaxVar = IntVar()
     askForTaxVar.set(askForTax)
     Checkbutton(billSettingsFrame, text = "Ask for payment", variable = askForPaymentVar,
-                    onvalue = 1, offvalue = 0, width = 20).grid(row=0, column=0, pady=2, sticky=W)
+                    onvalue = 1, offvalue = 0, width = 20).grid(row=0, column=0, columnspan=2, pady=2, sticky=W)
     Checkbutton(billSettingsFrame, text = "Ask for Discount", variable = askForDiscountVar, 
-                    onvalue = 1, offvalue = 0, width = 20).grid(row=1, column=0, pady=2, sticky=W)
+                    onvalue = 1, offvalue = 0, width = 20).grid(row=1, column=0, columnspan=2, pady=2, sticky=W)
     Checkbutton(billSettingsFrame, text = "Ask for VAT", variable = askForVatVar, 
-                    onvalue = 1, offvalue = 0, width = 20).grid(row=2, column=0, pady=2, sticky=W)
+                    onvalue = 1, offvalue = 0, width = 20).grid(row=2, column=0, columnspan=2, pady=2, sticky=W)
     Checkbutton(billSettingsFrame, text = "Ask for Tax", variable = askForTaxVar, 
-                    onvalue = 1, offvalue = 0, width = 20).grid(row=3, column=0, pady=2, sticky=W)
+                    onvalue = 1, offvalue = 0, width = 20).grid(row=3, column=0, columnspan=2, pady=2, sticky=W)
+
+    Label(billSettingsFrame, text="Default VAT(%)").grid(row=4, column=0, pady=2, padx=3, sticky=W)
+    defaultVatEntry = Entry(billSettingsFrame)
+    defaultVatEntry.grid(row=4, column=1, pady=2, padx=3, sticky=W)
+    defaultVatEntry.insert(0, defaultVat)
+
+    Label(billSettingsFrame, text="Default discount(%)").grid(row=5, column=0, pady=2, padx=3, sticky=W)
+    defaultDiscountEntry = Entry(billSettingsFrame)
+    defaultDiscountEntry.grid(row=5, column=1, pady=2, sticky=W)
+    defaultDiscountEntry.insert(0, defaultDiscount)
+
+    Label(billSettingsFrame, text="Default tax(%)").grid(row=6, column=0, pady=2, padx=3, sticky=W)
+    defaultTaxEntry = Entry(billSettingsFrame)
+    defaultTaxEntry.grid(row=6, column=1, pady=2, sticky=W)
+    defaultTaxEntry.insert(0, defaultTax)
 
     # system settings
     systemSettingsFrame = LabelFrame(globals.settingsFrame, text="System")
@@ -46,7 +65,6 @@ def createSettingsFrame(parent):
 
     def saveSettings():
         settings = {}
-        print(askForPayment, askForPaymentVar.get())
         if askForPaymentVar.get()!=askForPayment:
             settings["ask_for_payment"] = askForPaymentVar.get()
         if askForDiscountVar.get()!=askForDiscount:
@@ -55,6 +73,12 @@ def createSettingsFrame(parent):
             settings["ask_for_vat"] = askForVatVar.get()
         if askForTaxVar.get()!=askForTax:
             settings["ask_for_tax"] = askForTaxVar.get()
+        if defaultVatEntry.get()!=defaultVat:
+            settings["default_vat"] = defaultVatEntry.get()
+        if defaultDiscountEntry.get()!=defaultDiscount:
+            settings["default_discount"] = defaultDiscountEntry.get()
+        if defaultTaxEntry.get()!=defaultTax:
+            settings["default_tax"] = defaultTaxEntry.get()
         
         if not settings:
             messagebox.showinfo("Settings", "No setting has been changed.")

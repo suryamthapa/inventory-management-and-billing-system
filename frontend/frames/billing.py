@@ -259,6 +259,13 @@ def deleteProductFromCart(id):
 
 
 def createBillDetailsTableFooter(parent):
+    askForDiscount = int(globals.CURRENT_SETTINGS.get("ask_for_discount")) if globals.CURRENT_SETTINGS.get("ask_for_discount") else 0
+    askForVat = int(globals.CURRENT_SETTINGS.get("ask_for_vat")) if globals.CURRENT_SETTINGS.get("ask_for_vat") else 0
+    askForTax = int(globals.CURRENT_SETTINGS.get("ask_for_tax")) if globals.CURRENT_SETTINGS.get("ask_for_tax") else 0
+    defaultVat = int(globals.CURRENT_SETTINGS.get("default_vat")) if globals.CURRENT_SETTINGS.get("default_vat") else 0
+    defaultDiscount = int(globals.CURRENT_SETTINGS.get("default_discount")) if globals.CURRENT_SETTINGS.get("default_discount") else 0
+    defaultTax = int(globals.CURRENT_SETTINGS.get("default_tax")) if globals.CURRENT_SETTINGS.get("default_tax") else 0
+
     baseIndex = len(globals.BILL_DETAILS.get("products")) + 4
     totalAmount = float(sum([float(record["rate"])*float(record["quantity"]) for record in globals.BILL_DETAILS.get("products").values()]))
     # creating final entry
@@ -266,34 +273,40 @@ def createBillDetailsTableFooter(parent):
 
     discountAmount = globals.BILL_DETAILS.get("extra").get("discount_amount")
     discountAmount = float(discountAmount) if discountAmount else 0
-    discountPercentage = globals.BILL_DETAILS.get("extra").get("discount_percentage")
+    discountPercentage = globals.BILL_DETAILS.get("extra").get("discount_percentage") if askForDiscount else defaultDiscount
     discountPercentage = float(discountPercentage) if discountPercentage else 0
-     
     if not discountAmount:
-        discountAmount = float(math.ceil(totalAmount * (discountPercentage/100)))
+        discountAmount = float(totalAmount * (discountPercentage/100))
     discountedAmount = float(totalAmount - discountAmount)
     # creating final entry
     globals.BILL_DETAILS.get("final")["discount"] = discountAmount
 
-    vat = globals.BILL_DETAILS.get("extra").get("vat")
-    vat = float(vat) if vat else float(0)
-    if vat:
-        vat = float(math.ceil(discountedAmount * (vat/100)))
+    vatPercentage = globals.BILL_DETAILS.get("extra").get("vat") if askForVat else defaultVat
+    vatPercentage = float(vatPercentage) if vatPercentage else float(0)
+    vatAmount = float(0)
+    if vatPercentage:
+        vatAmount = float(discountedAmount * (vatPercentage/100))
     # creating final entry
-    globals.BILL_DETAILS.get("final")["vat"] = vat
+    globals.BILL_DETAILS.get("final")["vat"] = vatAmount
 
-    totalPayable = float(discountedAmount + vat)
+    totalPayable = float(discountedAmount + vatAmount)
     # creating final entry
     globals.BILL_DETAILS.get("final")["total"] = totalPayable
 
-    Label(parent, text="Total Amount:", font=globals.appFontSmallBold).grid(row=baseIndex,column=0, pady=(20, 0), sticky=W)
+    Label(parent, text="Total:", font=globals.appFontSmallBold).grid(row=baseIndex,column=0, pady=(20, 0), sticky=W)
     Label(parent, text="Rs. {:,.2f}".format(totalAmount)).grid(row=baseIndex, column=1, pady=(20, 0), sticky=W)
-    Label(parent, text="Discount:", font=globals.appFontSmallBold).grid(row=baseIndex+1, column=0, sticky=W)
-    Label(parent, text="Rs. {:,.2f}".format(discountAmount)).grid(row=baseIndex+1, column=1, sticky=W)
-    Label(parent, text="VAT:", font=globals.appFontSmallBold).grid(row=baseIndex+2, column=0, sticky=W)
-    Label(parent, text="Rs. {:,.2f}".format(vat)).grid(row=baseIndex+2, column=1, sticky=W)
-    Label(parent, text="Total Payable Amount:", font=globals.appFontSmallBold).grid(row=baseIndex+3, column=0, sticky=W)
-    Label(parent, text="Rs. {:,.2f}".format(totalPayable)).grid(row=baseIndex+3, column=1, sticky=W)
+    
+    if globals.BILL_DETAILS.get("extra").get("discount_percentage") or defaultDiscount:
+        Label(parent, text=f"Discount({defaultDiscount}%):" if defaultDiscount else f"Discount({globals.BILL_DETAILS.get('extra').get('discount_percentage')}%):", font=globals.appFontSmallBold).grid(row=baseIndex+1, column=0, sticky=W)
+        Label(parent, text="Rs. {:,.2f}".format(discountAmount)).grid(row=baseIndex+1, column=1, sticky=W)
+    
+    if globals.BILL_DETAILS.get("extra").get("vat") or defaultVat:
+        Label(parent, text=f"VAT({defaultVat}%):" if defaultVat else f"VAT({globals.BILL_DETAILS.get('extra').get('vat')}%):", font=globals.appFontSmallBold).grid(row=baseIndex+2, column=0, sticky=W)
+        Label(parent, text="Rs. {:,.2f}".format(vatAmount)).grid(row=baseIndex+2, column=1, sticky=W)
+    
+    if discountAmount or vatAmount or vatPercentage or defaultDiscount or defaultVat:
+        Label(parent, text="Grand Total:", font=globals.appFontSmallBold).grid(row=baseIndex+3, column=0, sticky=W)
+        Label(parent, text="Rs. {:,.2f}".format(totalPayable)).grid(row=baseIndex+3, column=1, sticky=W)
 
     makeColumnResponsive(parent)
 
