@@ -311,25 +311,25 @@ def createBillDetailsTableTop(parent):
 
     Label(parent, text="Customer:", font=globals.appFontSmallBold).grid(row=0, column=0, pady=(10, 5), sticky=W)
     if name:
-        Label(parent, text=name).grid(row=0, column=1, pady=(10, 5), sticky=W)
+        Label(parent, text=name, wraplength=160, justify="left").grid(row=0, column=1, pady=(10, 5), sticky=W)
     elif company:
-        Label(parent, text=company).grid(row=0, column=1, pady=(10, 5), sticky=W)
+        Label(parent, text=company, wraplength=160, justify="left").grid(row=0, column=1, pady=(10, 5), sticky=W)
     else:
-        Label(parent, text="********").grid(row=0, column=1, pady=(10, 5), sticky=W)
+        Label(parent, text="********", wraplength=160, justify="left").grid(row=0, column=1, pady=(10, 5), sticky=W)
     
     if company:
-        Label(parent, text="PAN no:", font=globals.appFontSmallBold).grid(row=0, column=2, pady=(10, 5), sticky=W)
-        Label(parent, text=company_pan_no if company_pan_no else "**********").grid(row=0, column=3, pady=(10, 5), sticky=W)
+        Label(parent, text="PAN no:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=0, column=2, pady=(10, 5), sticky=W)
+        Label(parent, text=company_pan_no if company_pan_no else "**********", wraplength=160, justify="left").grid(row=0, column=3, pady=(10, 5), sticky=W)
     elif name:
-        Label(parent, text="Address:", font=globals.appFontSmallBold).grid(row=0, column=2, pady=(10, 5), sticky=W)
-        Label(parent, text=address if address else "**********").grid(row=0, column=3, pady=(10, 5), sticky=W)
+        Label(parent, text="Address:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=0, column=2, pady=(10, 5), sticky=W)
+        Label(parent, text=address if address else "**********", wraplength=160, justify="left").grid(row=0, column=3, pady=(10, 5), sticky=W)
     
-    Label(parent, text="Contacts:", font=globals.appFontSmallBold).grid(row=1, column=0, pady=(5, 10), sticky=W)
-    Label(parent, text=f"{', '.join(contacts)}" if contacts else "********").grid(row=1, column=1, pady=(10, 5), sticky=W)
+    Label(parent, text="Contacts:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=1, column=0, pady=(5, 10), sticky=W)
+    Label(parent, text=f"{', '.join(contacts)}" if contacts else "********", wraplength=160, justify="left").grid(row=1, column=1, pady=(10, 5), sticky=W)
 
     if company:
-        Label(parent, text="Address:", font=globals.appFontSmallBold).grid(row=1, column=2, pady=(10, 5), sticky=W)
-        Label(parent, text=address if address else "**********").grid(row=1, column=3, pady=(10, 5), sticky=W)
+        Label(parent, text="Address:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=1, column=2, pady=(10, 5), sticky=W)
+        Label(parent, text=address if address else "**********", wraplength=160, justify="left").grid(row=1, column=3, pady=(10, 5), sticky=W)
     
     makeColumnResponsive(parent)
 
