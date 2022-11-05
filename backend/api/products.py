@@ -25,7 +25,7 @@ def get_products(queryDict: dict = {}, asc = True, sort_column: str = "id",
                 return False,  {"message": f"Column '{key}' does not exist in Products table.",
                             "data": []}
 
-        toEval = ", ".join(f"Products.{key} == '{value}'" for key, value in queryDict.items()) if queryDict else None
+        toEval = ", ".join(f"Products.{key}.ilike('%{value}%')" for key, value in queryDict.items()) if queryDict else None
         query = db.query(Products).filter(eval(toEval)) if toEval else db.query(Products)
         
         total_products = query.count()
@@ -51,7 +51,7 @@ def get_products(queryDict: dict = {}, asc = True, sort_column: str = "id",
             "page_size": len(products)
         }
         db.close()
-        log.info("FETCHED: All products.")
+        log.info(f"FETCHED: Products with filter -> {queryDict}")
         return True, payload
     except Exception as e:
         db.close()

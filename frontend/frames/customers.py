@@ -34,6 +34,7 @@ def deleteCustomer(id, name):
 
 
 def handleSearchCustomer(queryColumnDict, page=1, limit=11, sort_column="id", asc=True):
+    globals.CURRENT_SEARCH_QUERY["customers"] = {}
     for column, query in queryColumnDict.items():
         globals.CURRENT_SEARCH_QUERY["customers"][column] = query
     status, data = get_customers(globals.CURRENT_SEARCH_QUERY["customers"], page=page, limit=limit, sort_column=sort_column, asc=asc)
@@ -51,25 +52,58 @@ def createCustomersTop(parent):
     globals.tableTop = Frame(parent)
     globals.tableTop.pack(fill="x", pady=20, padx=10)
 
+    Label(globals.tableTop, text="Search customer by").grid(row=0, column=0, sticky="w")
+
     globals.queryEntry = AutocompleteEntry(globals.tableTop,
                 width=30, 
-                font=20, 
-                completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
-    globals.queryEntry.grid(row=0, column=0, ipady=5)
-    globals.queryEntry.bind("<Return>", lambda x: handleSearchCustomer({"full_name":globals.queryEntry.get()}))
+                font=20,
+                completevalues=[])
+    globals.queryEntry.grid(row=0, column=2, ipady=5, sticky="w")
+    globals.queryEntry.bind("<Return>", lambda x: proceedToSearch())
+
+    def setCompleteValues():
+        filterOptionsMap = {
+            "Individual Name": "full_name",
+            "Company Name": "company",
+            "Phone Number": "phone_number",
+            "Telephone": "telephone",
+            "Email": "email"
+        }
+        if filterOptionsMap.get(filterOption.get()):
+            column_name = filterOptionsMap.get(filterOption.get())
+            completevalues = [record[column_name] if record[column_name] else "" for record in globals.CUSTOMERS_LIST]
+            globals.queryEntry.config(completevalues=completevalues)
     
+    filterOption = StringVar()
+    filterOption.set("Select a filter")
+    filters = ["Individual Name", "Company Name", "Phone Number", "Telephone", "Email"]
+
+    filter = OptionMenu(globals.tableTop, filterOption, *filters, command=lambda x: setCompleteValues())
+    filter.grid(row=0, column=1, padx=(2, 5), sticky="w")
+
     def proceedToSearch():
+        filterOptionsMap = {
+            "Individual Name": "full_name",
+            "Company Name": "company",
+            "Phone Number": "phone_number",
+            "Telephone": "telephone",
+            "Email": "email"
+        }
         if globals.queryEntry.get():
-            handleSearchCustomer({"full_name":globals.queryEntry.get()})
+            if filterOptionsMap.get(filterOption.get()):
+                handleSearchCustomer({filterOptionsMap.get(filterOption.get()):globals.queryEntry.get()})
+            else:
+                messagebox.showwarning("Customers", "Please select a filter to search by.")
 
     searchButton = Button(globals.tableTop, 
                         text="Search", 
                         width=10, 
                         bg="#47B5FF",
                         command=proceedToSearch)
-    searchButton.grid(row=0, column=1, padx=5)
+    searchButton.grid(row=0, column=3, padx=5, sticky="w")
 
     def clearSearch():
+        filterOption.set("Select a filter")
         globals.queryEntry.delete(0, END)
         globals.queryEntry.insert(0, "")
         globals.CURRENT_SEARCH_QUERY["customers"] = {}
@@ -80,23 +114,23 @@ def createCustomersTop(parent):
                         width=10, 
                         bg="#47B5FF",
                         command=clearSearch)
-    clearButton.grid(row=0, column=2, padx=5, sticky="w")
+    clearButton.grid(row=0, column=4, padx=5, sticky="w")
 
     addItemButton = Button(globals.tableTop, 
                         text="Add New Customer", 
-                        width=20, 
+                        width=15, 
                         bg=globals.appBlue, 
                         command=lambda: addCustomers.createAddCustomerWindow())
-    addItemButton.grid(row=0, column=3, padx=5, sticky="e")
+    addItemButton.grid(row=0, column=5, padx=5, sticky="e")
     
     exportButton = Button(globals.tableTop, 
                         text="Export",
                         width=10, 
                         bg=globals.appBlue, 
                         command=lambda : messagebox.showinfo("Export Customers", "Feature comming soon in next update!\n\nYou will be able to export customers to an excel file with the help of this feature.\n\nThank you!"))
-    exportButton.grid(row=0, column=4, padx=5, sticky="e")
+    exportButton.grid(row=0, column=6, padx=5, sticky="e")
     
-    Grid.columnconfigure(globals.tableTop, 2, weight=1)
+    Grid.columnconfigure(globals.tableTop, 4, weight=1)
 
 
 def createTableHeader(parent):

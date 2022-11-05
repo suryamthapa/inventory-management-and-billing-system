@@ -25,7 +25,7 @@ def get_customers(queryDict: dict = {}, asc = True, sort_column: str = "id",
                 return False,  {"message": f"Column '{key}' does not exist in Customers table.",
                             "data": []}
                             
-        toEval = ", ".join(f"Customers.{key} == '{value}'" for key, value in queryDict.items()) if queryDict else None
+        toEval = ", ".join(f"Customers.{key}.ilike('%{value}%')" for key, value in queryDict.items()) if queryDict else None
         query = db.query(Customers).filter(eval(toEval)) if toEval else db.query(Customers)
         
         total_products = query.count()
@@ -53,7 +53,7 @@ def get_customers(queryDict: dict = {}, asc = True, sort_column: str = "id",
             "page_size": len(customers)
         }
         db.close()
-        log.info("FETCHED: All products.")
+        log.info(f"FETCHED: Customers with filter -> {queryDict}")
         return True, payload
     except Exception as e:
         db.close()
