@@ -32,7 +32,6 @@ def createInventoryInfo(parent):
     # headers
     Label(outOfStockFrame, text="ID").grid(row=0, column=0)
     Label(outOfStockFrame, text="Product Name").grid(row=0, column=1)
-    # Label(outOfStockFrame, text="Days ago", font=globals.appFontNormalBold).grid(row=0, column=2)
     makeColumnResponsive(outOfStockFrame)
 
     records = [item for item in globals.PRODUCTS_LIST if item["stock"]==0]
@@ -95,7 +94,7 @@ def createHomeFrame(parent):
                         text="About app",
                         bg=globals.appBlue,
                         fg=globals.appDarkGreen,
-                        command=lambda: messagebox.showinfo("About us", "Created with love by DataKhoj!"))
+                        command=lambda: messagebox.showinfo("About app", "Inventory Management and Billing System\n\nVersion: 1.0\n\nDeveloper Info:\nCompany: Datakhoj Private Limited\nPhone: (+977) 9862585910\nEmail: datakhoj.ai@gmail.com\n\nThank you!"))
     aboutButton.pack(side="right", ipadx=20, pady=20, padx=10)
 
     licenseButton = Button(globals.homeFrame, 
