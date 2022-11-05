@@ -34,6 +34,7 @@ def deleteProduct(id, name):
 
 
 def handleSearchProduct(queryColumnDict, page=1, limit=11, sort_column="id", asc=True):
+    globals.CURRENT_SEARCH_QUERY["customers"] = {}
     for column, query in queryColumnDict.items():
         globals.CURRENT_SEARCH_QUERY["products"][column] = query
     status, data = get_products(globals.CURRENT_SEARCH_QUERY["products"], page=page, limit=limit, sort_column=sort_column, asc=asc)
@@ -51,25 +52,50 @@ def createtableTop(parent):
     globals.tableTop = Frame(parent)
     globals.tableTop.pack(fill="x", pady=20, padx=10)
 
+    Label(globals.tableTop, text="Search product by").grid(row=0, column=0, sticky="w")
+
     globals.queryEntry = AutocompleteEntry(globals.tableTop,
                 width=30, 
                 font=20, 
-                completevalues=[record["product_name"] for record in globals.PRODUCTS_LIST])
-    globals.queryEntry.grid(row=0, column=0, ipady=5)
-    globals.queryEntry.bind("<Return>", lambda x: handleSearchProduct({"product_name":globals.queryEntry.get()}))
+                completevalues=[])
+    globals.queryEntry.grid(row=0, column=2, ipady=5)
+    globals.queryEntry.bind("<Return>", lambda x: proceedToSearch())
+
+    def setCompleteValues():
+        filterOptionsMap = {
+            "Product name": "product_name"
+        }
+        if filterOptionsMap.get(filterOption.get()):
+            column_name = filterOptionsMap.get(filterOption.get())
+            completevalues = [record[column_name] if record[column_name] else "" for record in globals.PRODUCTS_LIST]
+            globals.queryEntry.config(completevalues=completevalues)
+    
+    filterOption = StringVar()
+    filterOption.set("Select a filter")
+    filters = ["Product name"]
+
+    filter = OptionMenu(globals.tableTop, filterOption, *filters, command=lambda x: setCompleteValues())
+    filter.grid(row=0, column=1, padx=(2, 5), sticky="w")
 
     def proceedToSearch():
+        filterOptionsMap = {
+            "Product name": "product_name"
+        }
         if globals.queryEntry.get():
-            handleSearchProduct({"product_name":globals.queryEntry.get()})
+            if filterOptionsMap.get(filterOption.get()):
+                handleSearchProduct({filterOptionsMap.get(filterOption.get()):globals.queryEntry.get()})
+            else:
+                messagebox.showwarning("Inventory", "Please select a filter to search by.")
 
     searchButton = Button(globals.tableTop, 
                         text="Search", 
                         width=10, 
                         bg="#47B5FF",
                         command=proceedToSearch)
-    searchButton.grid(row=0, column=1, padx=5)
+    searchButton.grid(row=0, column=3, padx=5)
 
     def clearSearch():
+        filterOption.set("Select a filter")
         globals.queryEntry.delete(0, END)
         globals.queryEntry.insert(0, "")
         globals.CURRENT_SEARCH_QUERY["products"] = {}
@@ -80,23 +106,23 @@ def createtableTop(parent):
                         width=10, 
                         bg="#47B5FF",
                         command=clearSearch)
-    clearButton.grid(row=0, column=2, padx=5, sticky="w")
+    clearButton.grid(row=0, column=4, padx=5, sticky="w")
 
     addItemButton = Button(globals.tableTop, 
                         text="Add New Product", 
                         width=20, 
                         bg=globals.appBlue, 
                         command=lambda: addProducts.createAddProductWindow())
-    addItemButton.grid(row=0, column=3, padx=5, sticky="e")
+    addItemButton.grid(row=0, column=5, padx=5, sticky="e")
 
     exportButton = Button(globals.tableTop, 
                         text="Export",
                         width=10, 
                         bg=globals.appBlue, 
                         command=lambda : messagebox.showinfo("Export Customers", "Feature comming soon in next update!\n\nYou will be able to export products to an excel file with the help of this feature.\n\nThank you!"))
-    exportButton.grid(row=0, column=4, padx=5, sticky="e")
+    exportButton.grid(row=0, column=6, padx=5, sticky="e")
     
-    Grid.columnconfigure(globals.tableTop, 2, weight=1)
+    Grid.columnconfigure(globals.tableTop, 4, weight=1)
 
 
 def createTableHeader(parent):
