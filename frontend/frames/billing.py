@@ -395,21 +395,51 @@ def createCustomerDetailsArea(parent):
     customerDetailsFrame = Frame(parent)
     customerDetailsFrame.pack(fill="x", pady=20)
 
-    Label(customerDetailsFrame, text="Search Customer", font=globals.appFontNormalBold).grid(row=0, column=0, padx=5, pady=(5,10))
+    Label(customerDetailsFrame, text="Search Customer by", font=("TKDefault", 12)).grid(row=0, column=0, padx=(5, 1), pady=(5,10), sticky="w")
     globals.billingCustomerNameEntry = AutocompleteEntry(customerDetailsFrame,
                                     font=globals.appFontNormal, 
-                                    completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
-    globals.billingCustomerNameEntry.grid(row=0, column=1, padx=5, pady=(5,10))
-    globals.billingCustomerNameEntry.bind("<Return>", lambda x: proceedToLoadCustomerDetails(globals.billingCustomerNameEntry.get()))
+                                    completevalues=[record["company"] if record["company"] else "" for record in globals.CUSTOMERS_LIST])
+    globals.billingCustomerNameEntry.grid(row=0, column=2, padx=(2, 5), pady=(5,10), sticky="w")
+    globals.billingCustomerNameEntry.bind("<Return>", lambda x: proceedToLoadCustomerDetails())
+
+    def setCompleteValues():
+        filterOptionsMap = {
+            "Individual Name": "full_name",
+            "Company Name": "company",
+            "Phone Number": "phone_number",
+            "Telephone": "telephone",
+            "Email": "email"
+        }
+        if filterOptionsMap.get(filterOption.get()):
+            column_name = filterOptionsMap.get(filterOption.get())
+            completevalues = [record[column_name] if record[column_name] else "" for record in globals.CUSTOMERS_LIST]
+            globals.billingCustomerNameEntry.config(completevalues=completevalues)
+    
+    filterOption = StringVar()
+    filterOption.set("Company Name")
+    filters = ["Individual Name", "Company Name", "Phone Number", "Telephone", "Email"]
+    filter = OptionMenu(customerDetailsFrame, filterOption, *filters, command=lambda x: setCompleteValues())
+    filter.grid(row=0, column=1, padx=(1, 2), sticky="w", pady=(5,10))
 
     globals.namePhFrame = LabelFrame(customerDetailsFrame, text="Customer Details")
-    globals.namePhFrame.grid(row=1, column=0, columnspan=4, sticky="nswe", pady=10)
+    globals.namePhFrame.grid(row=1, column=0, columnspan=5, sticky="nswe", pady=10)
 
     Label(globals.namePhFrame, text="Please search and load customer details.").pack()
 
-    def proceedToLoadCustomerDetails(name):
-        if name:
-            status, customerDetails = get_customer(name=name)
+    def proceedToLoadCustomerDetails():
+        filterOptionsMap = {
+            "Individual Name": "full_name",
+            "Company Name": "company",
+            "Phone Number": "phone_number",
+            "Telephone": "telephone",
+            "Email": "email"
+        }
+        if globals.billingCustomerNameEntry.get():
+            status = False
+            if filterOptionsMap.get(filterOption.get()):
+                toEval = f"get_customer({filterOptionsMap.get(filterOption.get())}='{globals.billingCustomerNameEntry.get()}')"
+                status, customerDetails = eval(toEval)
+            
             if status:
                 loadCustomerDetails(globals.namePhFrame, customerDetails)
             else:
@@ -430,15 +460,15 @@ def createCustomerDetailsArea(parent):
                         bg=globals.appBlue,
                         fg=globals.appDarkGreen,
                         width=10,
-                        command=lambda: proceedToLoadCustomerDetails(globals.billingCustomerNameEntry.get()))
-    loadNamePhButton.grid(row=0, column=2, pady=(5,10))
+                        command=lambda: proceedToLoadCustomerDetails())
+    loadNamePhButton.grid(row=0, column=3, pady=(5,10), sticky="e")
 
     Button(customerDetailsFrame,
         text="Clear",
         bg=globals.appBlue,
         fg=globals.appDarkGreen,
         width=10,
-        command=clearCustomerDetails).grid(row=0, column=3, pady=(5,10))
+        command=clearCustomerDetails).grid(row=0, column=4, pady=(5,10), sticky="e")
     
     makeColumnResponsive(customerDetailsFrame)
 
@@ -447,7 +477,7 @@ def createProductDetailsArea(parent):
     productDetailsFrame = Frame(parent)
     productDetailsFrame.pack(fill="x", pady=20)
 
-    Label(productDetailsFrame, text="Search Product", font=globals.appFontNormalBold).grid(row=0, column=0, padx=5, pady=5)
+    Label(productDetailsFrame, text="Search Product by name", font=("TKDefault", 12)).grid(row=0, column=0, padx=5, pady=5)
     globals.billingProductNameEntry = AutocompleteEntry(productDetailsFrame,
                                     font=globals.appFontNormal, 
                                     completevalues=[record["product_name"] for record in globals.PRODUCTS_LIST])

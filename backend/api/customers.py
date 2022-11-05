@@ -61,26 +61,25 @@ def get_customers(queryDict: dict = {}, asc = True, sort_column: str = "id",
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
-def get_customer(id: int = 0, name: str = "", company: str = "", phone_number: str = "",
+def get_customer(id: int = 0, full_name: str = "", company: str = "", phone_number: str = "",
                 email: str = "", telephone: str = "", db: Session = get_db()):
     try:
-        if not id and not name and not phone_number and not email and not telephone:
+        if not id and not full_name and not company and not phone_number and not email and not telephone:
             db.close()
             return False, f"Please provide one of the following.\nid/name/email/phone_number/telephone/company"
-
         customer = db.query(Customers)
         if id:
             customer = customer.filter(Customers.id == id)
-        if name:
-            customer = customer.filter(Customers.full_name == name)
+        if full_name:
+            customer = customer.filter(Customers.full_name == full_name)
+        if company:
+            customer = customer.filter(Customers.company == company)
         if phone_number:
             customer = customer.filter(Customers.phone_number == phone_number)
         if telephone:
             customer = customer.filter(Customers.telephone == telephone)
         if email:
             customer = customer.filter(Customers.email == email)
-        if company:
-            customer = customer.filter(Customers.company == company)
         
         customer = customer.first()
 
