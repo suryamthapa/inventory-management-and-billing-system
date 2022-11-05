@@ -84,25 +84,35 @@ def make_payment(amount):
         threading.Thread(target=preview_pdf_in_browser, args=(filename,)).start()
     else:
         messagebox.showerror("Billing System", "Error occured while generating bill.")
-    billingFrame.clearBillingFrame(force=True)
+    # billingFrame.clearBillingFrame(force=True)
     return True
 
 
 def generate_and_save_bill():
-    filename = f"{Settings.BILL_DETAILS['customer'].get('full_name')}_{Settings.BILL_DETAILS['final'].get('bill_number')}_{Settings.BILL_DETAILS['final']['date'].replace('/','_')}.pdf"
+    askForPayment = int(Settings.CURRENT_SETTINGS.get("ask_for_payment")) if Settings.CURRENT_SETTINGS.get("ask_for_payment") else 0
+    askForDiscount = int(Settings.CURRENT_SETTINGS.get("ask_for_discount")) if Settings.CURRENT_SETTINGS.get("ask_for_discount") else 0
+    askForVat = int(Settings.CURRENT_SETTINGS.get("ask_for_vat")) if Settings.CURRENT_SETTINGS.get("ask_for_vat") else 0
+    askForTax = int(Settings.CURRENT_SETTINGS.get("ask_for_tax")) if Settings.CURRENT_SETTINGS.get("ask_for_tax") else 0
+    defaultVat = int(Settings.CURRENT_SETTINGS.get("default_vat")) if Settings.CURRENT_SETTINGS.get("default_vat") else 0
+    defaultDiscount = int(Settings.CURRENT_SETTINGS.get("default_discount")) if Settings.CURRENT_SETTINGS.get("default_discount") else 0
+    defaultTax = int(Settings.CURRENT_SETTINGS.get("default_tax")) if Settings.CURRENT_SETTINGS.get("default_tax") else 0
+
+    if defaultVat and not askForVat:
+        Settings.BILL_DETAILS["extra"]["vat"] = defaultVat
+    if defaultDiscount and not askForDiscount:
+        Settings.BILL_DETAILS["extra"]["discount_percentage"] = defaultDiscount
+    if defaultTax and not askForTax:
+        Settings.BILL_DETAILS["extra"]["tax"] = defaultTax
     
-    show_payment = bool(int(Settings.CURRENT_SETTINGS.get("ask_for_payment"))) if Settings.CURRENT_SETTINGS.get("ask_for_payment") else False
-    show_discount = bool(int(Settings.CURRENT_SETTINGS.get("ask_for_discount"))) if Settings.CURRENT_SETTINGS.get("ask_for_discount") else False
-    show_vat = bool(int(Settings.CURRENT_SETTINGS.get("ask_for_vat"))) if Settings.CURRENT_SETTINGS.get("ask_for_vat") else False
-    show_tax = bool(int(Settings.CURRENT_SETTINGS.get("ask_for_tax"))) if Settings.CURRENT_SETTINGS.get("ask_for_tax") else False
-    
+    customer_name = Settings.BILL_DETAILS['customer'].get('full_name') if Settings.BILL_DETAILS['customer'].get('full_name') else Settings.BILL_DETAILS['customer'].get('company')
+    filename = f"{customer_name}_{Settings.BILL_DETAILS['final'].get('bill_number')}_{Settings.BILL_DETAILS['final']['date'].replace('/','_')}.pdf"
     try:
         CustomerBill(f"./bills/{filename}",
                     company_info=Settings.CURRENT_SETTINGS["company_profile"], bill_details=Settings.BILL_DETAILS, 
-                    title=f"{Settings.BILL_DETAILS['customer'].get('full_name')} {Settings.BILL_DETAILS['final']['date']}",
+                    title=f"{customer_name} {Settings.BILL_DETAILS['final']['date']}",
                     author="Inventoray Management and Billing System, By Datakhoj",
-                    subject=f"Bill To {Settings.BILL_DETAILS['customer']['full_name']}",
-                    show_payment=show_payment, show_discount=show_discount, show_vat=show_vat, show_tax=show_tax)
+                    subject=f"Bill To {customer_name}",
+                    show_payment=bool(askForPayment), show_discount=bool(askForDiscount) or bool(defaultDiscount), show_vat=bool(askForVat) or bool(defaultVat), show_tax=bool(askForTax) or bool(defaultTax))
         log.info(f"Bill generated and saved as: {filename}")
         return True, filename
     except Exception as e:

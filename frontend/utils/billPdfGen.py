@@ -35,8 +35,8 @@ class CustomerBill(BaseDocTemplate):
         styles = getSampleStyleSheet()
 
         # Setting up the frames, frames are use for dynamic content not fixed page elements
-        first_page_table_frame = Frame(self.leftMargin, 1.6*self.bottomMargin, self.width, self.height - 2.4 * inch, id='small_table')
-        later_pages_table_frame = Frame(self.leftMargin, 1.6*self.bottomMargin, self.width, self.height - 2.4 * inch, id='large_table')
+        first_page_table_frame = Frame(self.leftMargin, 2*self.bottomMargin, self.width, self.height - 3.4 * inch, id='small_table')
+        later_pages_table_frame = Frame(self.leftMargin, 2*self.bottomMargin, self.width, self.height - 3.4 * inch, id='large_table')
 
         # Creating the page templates
         first_page = PageTemplate(id='FirstPage', frames=[first_page_table_frame], onPage=self.on_first_page)
@@ -48,38 +48,25 @@ class CustomerBill(BaseDocTemplate):
         story = [NextPageTemplate(['*', 'LaterPages'])]
 
         data = self.get_data_for_table()
-        table_style = []
-        for i in range(1, len(data)):
-            if i % 2 == 0:
-                table_style.append(('BACKGROUND',(0,i),(-1,i),colors.whitesmoke))
-            else:
-                table_style.append(('BACKGROUND',(0,i),(-1,i),colors.white))
-
-        tableMainStyle = TableStyle([
-                                ("BOX",(0,0),(4,0),0.1,colors.black),
-                                ("BOX",(0,0),(-1,-1),0.1,colors.black),
-                                ("BACKGROUND",(0,0),(4,0),colors.grey),
-                                ("TEXTCOLOR",(0,0),(4,0),colors.white),
-                                ("FONT",(0,0),(4,0),"Helvetica-Bold",11),
-                            ] + table_style)
-
-        story.append(Table(data, repeatRows=1, colWidths=[0.5*inch, inch*3.1, 0.8*inch, 0.9*inch, inch],
-                           style=tableMainStyle, splitByRow=1))
         
+        # final data
         final_data = []
         total_amount = self.bill_details["final"].get("total") if self.bill_details["final"].get("total") else 0
         if show_discount or show_vat or show_tax:
             subtotal = self.bill_details["final"].get("subtotal") if self.bill_details["final"].get("subtotal") else 0
             final_data.append(["Subtotal", "{:,.2f}".format(float(subtotal))])
             if show_discount:
+                discount_label = "Discount"
+                if self.bill_details["extra"].get("discount_percentage"):
+                    discount_label = f'Discount({self.bill_details["extra"].get("discount_percentage")}%)'
                 discount = self.bill_details["final"].get("discount") if self.bill_details["final"].get("discount") else 0
-                final_data.append(["Discount", "{:,.2f}".format(float(discount))])
+                final_data.append([discount_label, "{:,.2f}".format(float(discount))])
             if show_vat:
                 vat = self.bill_details["final"].get("vat") if self.bill_details["final"].get("vat") else 0
-                final_data.append(["Vat", "{:,.2f}".format(float(vat))])
+                final_data.append([f'Vat({self.bill_details["extra"].get("vat")}%)', "{:,.2f}".format(float(vat))])
             if show_tax:
                 tax = self.bill_details["final"].get("tax") if self.bill_details["final"].get("tax") else 0
-                final_data.append(["Tax", "{:,.2f}".format(float(tax))])
+                final_data.append([f'Tax({self.bill_details["extra"].get("tax")}%)', "{:,.2f}".format(float(tax))])
 
         
         totalStyle = ParagraphStyle("totalStyle", fontName="Helvetica-Bold", fontSize=11)
@@ -89,30 +76,72 @@ class CustomerBill(BaseDocTemplate):
             paid_amount = self.bill_details["final"].get("paid_amount") if self.bill_details["final"].get("paid_amount") else 0
             final_data.append([Paragraph("PAID", totalStyle), "{:,.2f}".format(float(paid_amount))])
             final_data.append([Paragraph("DUE", totalStyle), "{:,.2f}".format(float(total_amount)-float(paid_amount))])
+            num = "{:,.2f}".format(float(total_amount)-float(paid_amount))
+        else:
+            num = "{:.2f}".format(float(total_amount))
+        # in words
+        decimal_part = num.split(".")[1] if len(num.split("."))==2 else 0
+        num = num.split(".")[0]  if len(num.split("."))==2 else num
+        total_in_words = num2words(int(num)) + " and " + num2words(int(decimal_part)) + " Paisa Only"
         
-        table_sub_style = []
+        table_sub_style = [
+                        ("FONT",(0,0),(-1,-1),"Helvetica",11),
+                        ("NOSPLIT",(0,0),(-1,-1))]
         if show_discount or show_vat or show_tax:
             table_sub_style.append(("LINEABOVE", (0,-1), (1,-1), 2, colors.black))
-        tableSubStyle = TableStyle([
-                                ("FONT",(0,0),(-1,-1),"Helvetica",11),
-                                ("NOSPLIT",(0,0),(-1,-1))] + table_sub_style)
         
-        story.append(Spacer(20, 20))
-        story.append(Paragraph("NOTE: All prices are in Nepali Rupees(Rs)."))
-        story.append(Table(final_data, repeatRows=1, colWidths=[0.8*inch, inch], 
-            style=tableSubStyle, hAlign="RIGHT"))
+        tableSubStyle = TableStyle(table_sub_style)
+
+        final_data_table = Table(final_data, repeatRows=1,
+            style=tableSubStyle)
+
+        table_style = []
+        for i in range(1, len(data)):
+            if i % 2 == 0:
+                table_style.append(('BACKGROUND',(0,i),(-1,i),colors.whitesmoke))
+            else:
+                table_style.append(('BACKGROUND',(0,i),(-1,i),colors.white))
+
+        data += [[Paragraph(f"{'Total' if not show_payment else 'Due'} in words: NRS {total_in_words}", ParagraphStyle("boldStyle", fontName="Helvetica-Bold", fontSize=10)), 
+                            " ", " ", final_data_table, " ", " "]]
         
+        tableMainStyle = TableStyle([
+                                ("BOX",(0,0),(5,0),0.1,colors.black),
+                                ("BOX",(0,0),(-1,-2),0.1,colors.black),
+                                ("BOX",(0,-1),(-1,-1),0.1,colors.black),
+                                ("BACKGROUND",(0,0),(5,0),colors.grey),
+                                ("TEXTCOLOR",(0,0),(5,0),colors.white),
+                                ("FONT",(0,0),(5,0),"Helvetica-Bold",11),
+                                ("SPAN",(0, -1),(2,-1)),
+                                ("SPAN",(3, -1),(5,-1)),
+                            ] + table_style)
+
+        story.append(Table(data, repeatRows=1, colWidths=[0.5*inch, inch*2.6, 0.8*inch, 0.7*inch, 0.7*inch, inch],
+                           style=tableMainStyle, splitByRow=1))
+        
+        story.append(Spacer(10, 10))
+        
+        notes_data = [
+            (Paragraph("NOTES:"),),
+            (Paragraph(" - All prices are in Nepali Rupees(Rs)."),),
+            (Paragraph(" - Goods once sold will not be taken back."),)
+        ]
+        notes_table = Table(notes_data, repeatRows=1, hAlign="LEFT", vAlign="TOP")
+        story.append(notes_table)
+
         self.build(story)
 
-
     def get_data_for_table(self):
-        headings = ["S No.", "Particulars","Quantity", "Rate", "Amount"]
+        headings = ["S No.", "Particulars","Quantity", "Unit", "Rate", "Amount"]
         rows = []
         for index, details in enumerate(self.bill_details.get("products").values()):
-            rows.append([str(index+1), str(details["product_name"]), str(details["quantity"]), "{:,.2f}".format(float(details["rate"])), "{:,.2f}".format(float(details["rate"])*float(details["quantity"]))])
-        
+            rows.append([str(index+1), 
+                        str(details["product_name"]), 
+                        str(details["quantity"]),
+                        str(details["unit"]), 
+                        "{:,.2f}".format(float(details["rate"])), 
+                        "{:,.2f}".format(float(details["rate"])*float(details["quantity"]))])
         return [headings] + rows
-
 
     def on_first_page(self, canvas, doc):
         canvas.saveState()
@@ -125,6 +154,7 @@ class CustomerBill(BaseDocTemplate):
         # company name
         canvas.setFont("Helvetica-Bold", 18)
         canvas.drawString(self.leftMargin, doc.page_height - 1 * self.topMargin, f"{self.company_info.get('company_name')}")
+        
         # additinonal info
         canvas.setFont("Helvetica", 12)
         canvas.drawString(self.leftMargin, doc.page_height - 1.3 * self.topMargin, f"PAN no: {self.company_info.get('pan_no')}")
@@ -135,8 +165,8 @@ class CustomerBill(BaseDocTemplate):
         contacts = []
         if phone_num: contacts.append(phone_num) 
         if telephone: contacts.append(telephone) 
-        
         canvas.drawString(self.leftMargin, doc.page_height - 1.7 * self.topMargin, f"{', '.join(contacts)}")
+        
         # date and bill number
         bill_number = self.bill_details['final'].get('bill_number')
         if not bill_number:
@@ -150,6 +180,12 @@ class CustomerBill(BaseDocTemplate):
         canvas.drawString(doc.leftMargin, doc.height - 0.2*inch, "BILL TO")
         canvas.setFont("Helvetica", 12)
 
+        #customer name 
+        customer_name = self.bill_details['customer']['full_name'] if self.bill_details['customer']['full_name'] else self.bill_details['customer']['company']
+        canvas.drawString(self.leftMargin, doc.height - 0.4 * inch, 
+                        f"Customer  :   {customer_name}")
+
+        # customer contacts
         customer_phone_num = self.bill_details['customer']['phone_number']
         customer_telephone = self.bill_details['customer']['telephone']
         customer_contacts = []
@@ -157,13 +193,28 @@ class CustomerBill(BaseDocTemplate):
         if customer_telephone: customer_contacts.append(customer_telephone)
         if not (customer_phone_num or customer_telephone): customer_contacts.append("---------")
 
-        canvas.drawString(self.leftMargin, doc.height - 0.4 * inch, 
-                        f"Customer Name :   {self.bill_details['customer']['full_name']}                     Contact:    {', '.join(customer_contacts)}")
-        customer_company = self.bill_details['customer'].get('company') if self.bill_details['customer'].get('company') else "--------"
-        canvas.drawString(self.leftMargin, doc.height - 0.6 * inch, 
-                        f"Company            :   {customer_company}                     PAN no:    {self.bill_details['customer']['company_pan_no']}")
+        if self.bill_details['customer']['company']:
+            canvas.drawString(self.leftMargin, doc.height - 0.6 * inch, 
+                            f"PAN no     :    {self.bill_details['customer']['company_pan_no']}")
+            canvas.drawString(self.leftMargin, doc.height - 0.8 * inch, f"Contact     :    {', '.join(customer_contacts)}")
+            canvas.drawString(self.leftMargin, doc.height - 1.0 * inch, 
+                            f"Address    :    {self.bill_details['customer']['address']}")
+            canvas.drawCentredString(0.5 * (doc.page_width), doc.height - 1.3 * inch, "Mode of Payment: Cash / Credit / Cheque / Other")
+        else:
+            canvas.drawString(self.leftMargin, doc.height - 0.6 * inch, f"Contact       :    {', '.join(customer_contacts)}")
+            canvas.drawString(self.leftMargin, doc.height - 0.8 * inch, 
+                            f"Address    :    {self.bill_details['customer']['address']}")
+            canvas.drawCentredString(0.5 * (doc.page_width), doc.height - 1.1 * inch, "Mode of Payment: Cash / Credit / Cheque / Other")
         
         # footer
+        # signatures
+        canvas.drawString(self.leftMargin, 1.95*self.bottomMargin, "------------------------------")
+        canvas.drawString(self.leftMargin, 1.8*self.bottomMargin, "        Prepared By")
+        canvas.drawCentredString(0.5 * (doc.page_width), 1.95*self.bottomMargin, "-------------------------")
+        canvas.drawCentredString(0.5 * (doc.page_width), 1.8*self.bottomMargin, "Received By")
+        canvas.drawRightString(doc.page_width - self.rightMargin, 1.95*self.bottomMargin, "------------------------------")
+        canvas.drawRightString(doc.page_width - self.rightMargin, 1.8*self.bottomMargin, "Authorised Signature ")
+        # extra info
         canvas.setFont("Helvetica", 9)
         canvas.drawCentredString(0.5 * (doc.page_width), 1.5*self.bottomMargin, f"If you have any questions about this bill, please contact.")
         canvas.setFont("Helvetica-Bold", 9)

@@ -120,6 +120,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
             return True
         globals.BILL_DETAILS["products"][productDetails["id"]] = {"product_name": productDetails["product_name"],
                                                                 "stock":productDetails["stock"],
+                                                                "unit":productDetails["unit"],
                                                                 "quantity":productDetails["quantity"],
                                                                 "marked_price":productDetails["marked_price"],
                                                                 "rate":productDetails["rate"]}
@@ -506,7 +507,19 @@ def createProductDetailsArea(parent):
         if name:
             status, productDetails = get_product(name=name)
             if status:
-                loadProductDetails(globals.rateQtyFrame, productDetails)
+                if int(productDetails["stock"])==0:
+                    for child in globals.rateQtyFrame.winfo_children():
+                        child.destroy()
+                    Label(globals.rateQtyFrame, text="Product out of Stock.").pack(pady=5)
+                    Button(globals.rateQtyFrame,
+                        text="Add Stock",
+                        bg=globals.appBlue,
+                        fg=globals.appDarkGreen,
+                        width=20,
+                        command=lambda: createUpdateProductWindow(productDetails)).pack(pady=5)
+                    return True
+                else:
+                    loadProductDetails(globals.rateQtyFrame, productDetails)
             else:
                 for child in globals.rateQtyFrame.winfo_children():
                     child.destroy()
@@ -518,17 +531,7 @@ def createProductDetailsArea(parent):
                     width=20,
                     command=lambda: createAddProductWindow()).pack(pady=5)
                 return True
-            if int(productDetails["stock"])==0:
-                for child in globals.rateQtyFrame.winfo_children():
-                    child.destroy()
-                Label(globals.rateQtyFrame, text="Product out of Stock.").pack(pady=5)
-                Button(globals.rateQtyFrame,
-                    text="Add Stock",
-                    bg=globals.appBlue,
-                    fg=globals.appDarkGreen,
-                    width=20,
-                    command=lambda: createUpdateProductWindow(productDetails)).pack(pady=5)
-                return True
+            
         else:
             globals.billingProductNameEntry.focus()
         return True

@@ -116,7 +116,7 @@ def createProfileFrame(parent):
     tollNameEntry.grid(row=2, column=3, padx=5, pady=5, sticky=W)
     tollNameEntry.insert(0, toll)
 
-    Label(addressInfoframe, text="Zip code").grid(row=3, column=0, padx=5, pady=5, sticky=W)
+    Label(addressInfoframe, text="Zip code(optional)").grid(row=3, column=0, padx=5, pady=5, sticky=W)
     zipCodeEntry = Entry(addressInfoframe, bd=Settings.defaultEntryBorderWidth, font=Settings.appFontNormal)
     zipCodeEntry.grid(row=3, column=1, padx=5, pady=5, sticky=W)
     zipCodeEntry.insert(0, zipCode)
@@ -124,11 +124,11 @@ def createProfileFrame(parent):
     ownersInfoframe = LabelFrame(otherInfoWrapper, text="Owner Info", borderwidth=1, pady=5)
     ownersInfoframe.pack(side="left", fill="x", padx=(10,0), expand=True)
 
-    Label(ownersInfoframe, text="Primary").grid(row=0, column=0, padx=5, pady=5, sticky=W)
+    Label(ownersInfoframe, text="Primary(optional)").grid(row=0, column=0, padx=5, pady=5, sticky=W)
     primaryOwnerNameEntry = Entry(ownersInfoframe, bd=Settings.defaultEntryBorderWidth, font=Settings.appFontNormal, width=30)
     primaryOwnerNameEntry.grid(row=0, column=1, pady=5, sticky=W)
     primaryOwnerNameEntry.insert(0, primaryOwner)
-    Label(ownersInfoframe, text="Secondary").grid(row=1, column=0, padx=5, pady=5, sticky=W)
+    Label(ownersInfoframe, text="Secondary(optional)").grid(row=1, column=0, padx=5, pady=5, sticky=W)
     secondaryOwnerNameEntry = Entry(ownersInfoframe, bd=Settings.defaultEntryBorderWidth, font=Settings.appFontNormal, width=30)
     secondaryOwnerNameEntry.grid(row=1, column=1, pady=5, sticky=W)
     secondaryOwnerNameEntry.insert(0, secondaryOwner)

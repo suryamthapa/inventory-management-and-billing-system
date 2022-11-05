@@ -6,5 +6,6 @@ venv/
 logs/
 bills/
 test.py
+trackProgress.txt
 *.db
 *.doc

@@ -11,7 +11,6 @@ log = logging.getLogger("frontend")
 
 
 def createSettingsFrame(parent):
-    print(globals.CURRENT_SETTINGS)
     askForPayment = int(globals.CURRENT_SETTINGS.get("ask_for_payment")) if globals.CURRENT_SETTINGS.get("ask_for_payment") else 0
     askForDiscount = int(globals.CURRENT_SETTINGS.get("ask_for_discount")) if globals.CURRENT_SETTINGS.get("ask_for_discount") else 0
     askForVat = int(globals.CURRENT_SETTINGS.get("ask_for_vat")) if globals.CURRENT_SETTINGS.get("ask_for_vat") else 0
@@ -79,6 +78,13 @@ def createSettingsFrame(parent):
             settings["default_discount"] = defaultDiscountEntry.get()
         if defaultTaxEntry.get()!=defaultTax:
             settings["default_tax"] = defaultTaxEntry.get()
+
+        if settings.get("ask_for_discount"):
+            settings["default_discount"] = 0
+        if settings.get("ask_for_vat"):
+            settings["default_vat"] = 0
+        if settings.get("ask_for_tax"):
+            settings["default_tax"] = 0
         
         if not settings:
             messagebox.showinfo("Settings", "No setting has been changed.")
