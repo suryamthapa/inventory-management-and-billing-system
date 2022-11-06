@@ -34,6 +34,7 @@ def clearCustomerDetails():
 def clearProductDetails():
     for child in globals.rateQtyFrame.winfo_children():
         child.destroy()
+    globals.rateQtyFrame.config(bg=globals.defaultBgColor)
     globals.billingProductNameEntry.delete(0, END)
     Label(globals.rateQtyFrame, text="Please load product details.").pack()
 
@@ -43,7 +44,8 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
     # before loading details of another product
     for child in parent.winfo_children():
         child.destroy()
-    parent.config(bg="white") if toUpdate else None
+
+    parent.config(bg=globals.appWhite if toUpdate else globals.defaultBgColor)
     Label(parent, text=f"Name: {productDetails['product_name']}", font=globals.appFontNormalBold).grid(row=0, column=0, columnspan=2, padx=5, pady=(5,5), sticky=W)
     Label(parent, text=f"Max Available: {productDetails['stock']}", font=globals.appFontNormalBold).grid(row=0, column=2, columnspan=2, padx=5, pady=(5,5), sticky=W)
 
@@ -115,6 +117,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
         addProductToBill(productDetails)
 
     def addProductToBill(productDetails):
+        parent.config(bg=globals.defaultBgColor) if toUpdate else None
         if globals.BILL_DETAILS["products"].get(productDetails["id"]) and not toUpdate:
             messagebox.showinfo("Billing System", f"'{productDetails['product_name']}' is already added to the bill!\nIf you want to update, please click update button.")
             return True
@@ -246,6 +249,7 @@ def createBillDetailsTableBody(parent):
                 "id": id,
                 "product_name":details["product_name"],
                 "stock":globals.BILL_DETAILS.get("products")[id].get("stock"),
+                "unit":globals.BILL_DETAILS.get("products")[id].get("unit"),
                 "quantity":details["quantity"],
                 "marked_price":globals.BILL_DETAILS.get("products")[id].get("marked_price"),
                 "rate":details["rate"],

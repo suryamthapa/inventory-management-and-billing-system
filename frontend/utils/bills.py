@@ -8,8 +8,12 @@ if Settings.DATE_TIME_TYPE == "NEPALI":
     from nepali_datetime import date
 else:
     from datetime import date
+# frontend imports
+from frontend.utils.products import refreshProductsList
+from frontend.utils.sales import refreshTotalSales
 from frontend.utils.billPdfGen import CustomerBill
 import frontend.frames.billing as billingFrame
+# backend imports
 from backend.api.bills import add_bill
 from backend.api.sales import add_sales
 from backend.api.products import update_product
@@ -70,6 +74,8 @@ def make_payment(amount):
     if not status:
         messagebox.showerror("Billing System", message)
         return False
+    refreshTotalSales()
+    refreshProductsList()
     log.info(message)
 
     today = date.today()
@@ -84,7 +90,7 @@ def make_payment(amount):
         threading.Thread(target=preview_pdf_in_browser, args=(filename,)).start()
     else:
         messagebox.showerror("Billing System", "Error occured while generating bill.")
-    # billingFrame.clearBillingFrame(force=True)
+    billingFrame.clearBillingFrame(force=True)
     return True
 
 

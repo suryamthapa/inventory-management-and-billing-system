@@ -7,6 +7,7 @@ from ttkwidgets.autocomplete import AutocompleteEntry
 # frontend imports
 import frontend.config as globals
 import frontend.frames.inventory as inventory
+import frontend.windows.dashboard as dashboard
 from frontend.utils.products import updateProduct, refreshProductsList
 
 
@@ -77,6 +78,10 @@ def createUpdateProductWindow(productInfo):
             if globals.CURRENT_FRAME=="billingSystemFrame":
                 # refresh auto complete values in product search entry
                 globals.billingProductNameEntry.config(completevalues=[record["product_name"] for record in globals.PRODUCTS_LIST])
+            if globals.CURRENT_FRAME=="homeFrame":
+                # refresh home frame
+                dashboard.showFrame(globals.CURRENT_FRAME, refreshMode=True)
+
 
         Button(updateProductWindow,
             text="Cancel",

@@ -7,6 +7,7 @@ import tkinter
 from tkinter import *
 from tkinter import messagebox
 import frontend.config as globals
+from frontend.windows.updateProducts import createUpdateProductWindow
 from frontend.windows.lisence import createLicenseInformationWindow
 from frontend.utils.frontend import makeColumnResponsive
 from frontend.utils.app_configuration import start_trial, is_trial_complete, has_trial_started
@@ -30,17 +31,22 @@ def createInventoryInfo(parent):
     outOfStockFrame.pack(padx=10, pady=(20, 0), fill="x")
     
     # headers
-    Label(outOfStockFrame, text="ID").grid(row=0, column=0)
-    Label(outOfStockFrame, text="Product Name").grid(row=0, column=1)
+    Label(outOfStockFrame, text="ID").grid(row=0, column=0, pady=5, padx=5, sticky=W)
+    Label(outOfStockFrame, text="Product Name").grid(row=0, column=1, pady=5, padx=5, sticky=W)
     makeColumnResponsive(outOfStockFrame)
 
     records = [item for item in globals.PRODUCTS_LIST if item["stock"]==0]
     if len(records)!=0:
         for index, record in enumerate(records):
             bg = "white" if (index+1)%2==0 else globals.appWhite
-            Label(outOfStockFrame, text=record["id"], bg=bg).grid(row=index+1, column=0, pady=5)
-            Label(outOfStockFrame, text=record["product_name"], bg=bg).grid(row=index+1, column=1, pady=5)
-            # Label(outOfStockFrame, text=record["out_of_stock_on"], bg=bg).grid(row=index+1, column=2, pady=5)
+            Label(outOfStockFrame, text=record["id"], bg=bg).grid(row=index+1, column=0, pady=5, padx=5, sticky=W)
+            Label(outOfStockFrame, text=record["product_name"], bg=bg).grid(row=index+1, column=1, pady=5, padx=5, sticky=W)
+            Button(outOfStockFrame,
+                        text="Add Stock",
+                        bg=globals.appBlue,
+                        fg=globals.appDarkGreen,
+                        width=10,
+                        command=lambda productDetails=record: createUpdateProductWindow(productDetails)).grid(row=index+1, column=2, pady=5, padx=5, sticky=W)
     else:
         Label(outOfStockFrame, text="No product out of stock!", fg=globals.appDarkGreen).grid(row=1, columnspan=3, pady=5, sticky="nswe")
     
@@ -56,17 +62,17 @@ def createSalesInfo(parent):
     detailsFrame.pack(padx=10, pady=(20, 0), fill="x")
 
     # headers
-    Label(detailsFrame, text="ID").grid(row=0, column=0)
-    Label(detailsFrame, text="Product Name").grid(row=0, column=1)
-    Label(detailsFrame, text="qty").grid(row=0, column=2)
+    Label(detailsFrame, text="Product Name").grid(row=0, column=0, pady=5, padx=5, sticky=W)
+    Label(detailsFrame, text="qty").grid(row=0, column=1, pady=5, padx=5, sticky=W)
+    Label(detailsFrame, text="unit").grid(row=0, column=2, pady=5, padx=5, sticky=W)
     makeColumnResponsive(detailsFrame)
 
     if len(globals.TOTAL_SALES)!=0:
-        for index, record in enumerate(globals.TOTAL_SALES[:10]):
+        for index, record in enumerate(globals.TOTAL_SALES.items()):
             bg = "white" if (index+1)%2==0 else globals.appWhite
-            Label(detailsFrame, text=record["id"], bg=bg).grid(row=index+1, column=0, pady=5)
-            Label(detailsFrame, text=record["product_name"], bg=bg).grid(row=index+1, column=1, pady=5)
-            Label(detailsFrame, text=record["quantity"], bg=bg).grid(row=index+1, column=2, pady=5)
+            Label(detailsFrame, text=record[0], bg=bg).grid(row=index+1, column=0, pady=5, padx=5, sticky=W)
+            Label(detailsFrame, text=record[1]["quantity"], bg=bg).grid(row=index+1, column=1, pady=5, padx=5, sticky=W)
+            Label(detailsFrame, text=record[1]["unit"], bg=bg).grid(row=index+1, column=2, pady=5, padx=5, sticky=W)
     else:
         Label(detailsFrame, text="No products sold!", fg=globals.appDarkGreen).grid(row=1, columnspan=3, pady=5, sticky="nswe")
     
@@ -74,6 +80,8 @@ def createSalesInfo(parent):
 def createHomeFrame(parent):
     globals.homeFrame = Frame(parent, borderwidth=1)
     globals.homeFrame.pack(fill="both", expand=True, padx=10)
+
+    globals.defaultBgColor = globals.homeFrame.cget("bg")
 
     newFont = globals.appFontBigBold
     newFont.configure(size=15)

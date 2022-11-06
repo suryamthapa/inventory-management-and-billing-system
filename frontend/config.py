@@ -49,7 +49,7 @@ BILL_DETAILS = {
     "final":{}
 }
 
-TOTAL_SALES = []
+TOTAL_SALES = {}
 refreshTotalSales()
 
 # global buttons
@@ -117,6 +117,8 @@ app.title("Inventory Management and Billing System")
 app.state("zoomed")
 app.iconbitmap("./frontend/assets/images/favicon.ico")
 app.configure(bg=appWhite)
+
+defaultBgColor = None
 
 # fonts
 appFontSmall = Font(family="Helvetica", size=9, weight="normal", slant="roman", underline=0, overstrike=0)

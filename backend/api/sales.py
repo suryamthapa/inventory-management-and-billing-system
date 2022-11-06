@@ -54,19 +54,30 @@ def get_sales(queryDict: dict = {}, from_= None, to=None, asc = True, sort_colum
         query = db.query(Sales).filter(eval(toEval)) if toEval else db.query(Sales)
         
         total_sales = query.count()
-        skip = ((page-1)*limit)
-        totalPages = math.ceil(total_sales/limit)
+        if limit:
+            skip = ((page-1)*limit)
+            totalPages = math.ceil(total_sales/limit)
+        else:
+            skip = 0
+            totalPages = 1
         
         sort_query = eval(f"Sales.{sort_column}") if asc else eval(f"Sales.{sort_column}.desc()")
-        sales = query.order_by(sort_query).offset(skip).limit(limit).all()
+        query = query.order_by(sort_query)
         
-        sales = query.filter(and_(func.date(Sales.created_at) >= from_), func.date(Sales.created_at) <= to).all()
+        if from_ and to:
+            query = query.filter(and_(func.date(Sales.created_at) >= from_), func.date(Sales.created_at) <= to)
+        
+        if limit:
+            sales = query.offset(skip).limit(limit).all()
+        else:
+            sales = query.all()
 
         def rowToDict(sales):
             product = db.query(Products).filter(Products.id==sales.product_id).first()
             return {"id": sales.id,
                     "bill_id":sales.bill_id,
                     "product_name":product.product_name if product else "Deleted Product.",
+                    "unit":product.unit if product else "---",
                     "quantity": sales.quantity,
                     "selling_price":sales.selling_price,
                     "discount_amount":sales.discount_amount,
