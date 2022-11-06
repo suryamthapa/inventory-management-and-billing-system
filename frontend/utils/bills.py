@@ -138,7 +138,7 @@ def preprocess_bill_details():
     if not Settings.BILL_DETAILS.get("products"):
         messagebox.showinfo("Billing System", "Please add products to bill.")
         return False
-    companyProfileMustHaves = ("company_name", "pan_no", "country","province","district","municipality","ward","toll","zip_code")
+    companyProfileMustHaves = ("company_name", "pan_no", "country","province","district","municipality","ward","toll")
     for info in companyProfileMustHaves:
         if not Settings.CURRENT_SETTINGS["company_profile"].get(info):
             messagebox.showwarning("Missing profile details", f"Please completely fill the details in company profile.\nMissing: {info}")
