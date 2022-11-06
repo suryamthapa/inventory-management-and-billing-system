@@ -12,7 +12,7 @@ else:
 def exitParent(parent):
     response = messagebox.askyesnocancel("Exit the app", "Are you sure?")
     if response==1:
-        parent.quit()
+        parent.destroy()
 
 def makeResponsive(parent):
     n_columns, n_rows = parent.grid_size()
