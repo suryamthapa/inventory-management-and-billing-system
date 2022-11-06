@@ -29,26 +29,67 @@ def createInventoryInfo(parent):
 
     outOfStockFrame = LabelFrame(parent, text="Out of stock")
     outOfStockFrame.pack(padx=10, pady=(20, 0), fill="x")
+
+    canvas = Canvas(outOfStockFrame, bg="blue")
+
+    outOfStockInfoHeaderBody = Frame(canvas)
+    outOfStockInfoHeaderBody.pack(fill="x", padx=5, pady=5)
+
+    canvasScrollVertical = Scrollbar(outOfStockFrame, orient="vertical", command=canvas.yview)
+    canvas.configure(yscrollcommand=canvasScrollVertical.set)
+    canvasScrollHorizontal = Scrollbar(outOfStockFrame, orient="horizontal", command=canvas.xview)
+    canvas.configure(xscrollcommand=canvasScrollHorizontal.set)
+
+    canvasScrollVertical.pack(side="right", fill="y")
+    canvasScrollHorizontal.pack(side="bottom", fill="x")
+    canvas.pack(side="left", fill="both", expand=True, padx=5, pady=5)
+    canvasframe = canvas.create_window(0,0, window=outOfStockInfoHeaderBody, anchor='nw')
+
+    def frameWidth(event):
+        if event.width > outOfStockInfoHeaderBody.winfo_width():
+            canvas.itemconfig(canvasframe, width=event.width-4)
+        if event.height > outOfStockInfoHeaderBody.winfo_height():
+            canvas.itemconfig(canvasframe, height=event.height-4)
+
+    def OnFrameConfigure(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
     
+    canvas.bind('<Configure>', lambda e: frameWidth(e))
+    outOfStockInfoHeaderBody.bind('<Configure>', lambda e: OnFrameConfigure(e))
+
+    def _bound_to_mousewheel(event):
+       canvas.bind_all("<MouseWheel>",_on_mousewheel)
+
+    def _unbound_to_mousewheel(event):
+       canvas.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(event):
+       canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+    outOfStockInfoHeaderBody.bind('<Enter>',_bound_to_mousewheel)
+    outOfStockInfoHeaderBody.bind('<Leave>',_unbound_to_mousewheel)
+
     # headers
-    Label(outOfStockFrame, text="ID").grid(row=0, column=0, pady=5, padx=5, sticky=W)
-    Label(outOfStockFrame, text="Product Name").grid(row=0, column=1, pady=5, padx=5, sticky=W)
-    makeColumnResponsive(outOfStockFrame)
+    Label(outOfStockInfoHeaderBody, text="ID").grid(row=0, column=0, pady=5, padx=5, sticky=W)
+    Label(outOfStockInfoHeaderBody, text="Product Name").grid(row=0, column=1, pady=5, padx=5, sticky=W)
+    makeColumnResponsive(outOfStockInfoHeaderBody)
 
     records = [item for item in globals.PRODUCTS_LIST if item["stock"]==0]
     if len(records)!=0:
         for index, record in enumerate(records):
             bg = "white" if (index+1)%2==0 else globals.appWhite
-            Label(outOfStockFrame, text=record["id"], bg=bg).grid(row=index+1, column=0, pady=5, padx=5, sticky=W)
-            Label(outOfStockFrame, text=record["product_name"], bg=bg).grid(row=index+1, column=1, pady=5, padx=5, sticky=W)
-            Button(outOfStockFrame,
+            Label(outOfStockInfoHeaderBody, text=record["id"], bg=bg).grid(row=index+1, column=0, pady=5, padx=5, sticky=W)
+            Label(outOfStockInfoHeaderBody, text=record["product_name"], bg=bg).grid(row=index+1, column=1, pady=5, padx=5, sticky=W)
+            Button(outOfStockInfoHeaderBody,
                         text="Add Stock",
                         bg=globals.appBlue,
                         fg=globals.appDarkGreen,
                         width=10,
                         command=lambda productDetails=record: createUpdateProductWindow(productDetails)).grid(row=index+1, column=2, pady=5, padx=5, sticky=W)
     else:
-        Label(outOfStockFrame, text="No product out of stock!", fg=globals.appDarkGreen).grid(row=1, columnspan=3, pady=5, sticky="nswe")
+        Label(outOfStockInfoHeaderBody, text="No product out of stock!", fg=globals.appDarkGreen).grid(row=1, columnspan=3, pady=5, sticky="nswe")
+    
+    makeColumnResponsive(outOfStockInfoHeaderBody)
     
 
 def createSalesInfo(parent):
@@ -60,21 +101,60 @@ def createSalesInfo(parent):
 
     detailsFrame = LabelFrame(parent, text="Details")
     detailsFrame.pack(padx=10, pady=(20, 0), fill="x")
+    
+    canvas = Canvas(detailsFrame, bg="blue")
+
+    salesInfoHeaderBody = Frame(canvas)
+    salesInfoHeaderBody.pack(fill="x", padx=5, pady=5)
+
+    def frameWidth(event):
+        if event.width > salesInfoHeaderBody.winfo_width():
+            canvas.itemconfig(canvasframe, width=event.width-4)
+        if event.height > salesInfoHeaderBody.winfo_height():
+            canvas.itemconfig(canvasframe, height=event.height-4)
+
+    def OnFrameConfigure(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+    
+    canvas.bind('<Configure>', lambda e: frameWidth(e))
+    salesInfoHeaderBody.bind('<Configure>', lambda e: OnFrameConfigure(e))
+
+    canvasScrollVertical = Scrollbar(detailsFrame, orient="vertical", command=canvas.yview)
+    canvas.configure(yscrollcommand=canvasScrollVertical.set)
+    canvasScrollHorizontal = Scrollbar(detailsFrame, orient="horizontal", command=canvas.xview)
+    canvas.configure(xscrollcommand=canvasScrollHorizontal.set)
+
+    canvasScrollVertical.pack(side="right", fill="y")
+    canvasScrollHorizontal.pack(side="bottom", fill="x")
+    canvas.pack(side="left", fill="both", expand=True, padx=5, pady=5)
+    canvasframe = canvas.create_window(0,0, window=salesInfoHeaderBody, anchor='nw')
+
+    def _bound_to_mousewheel(event):
+       canvas.bind_all("<MouseWheel>",_on_mousewheel)
+
+    def _unbound_to_mousewheel(event):
+       canvas.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(event):
+       canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+    salesInfoHeaderBody.bind('<Enter>',_bound_to_mousewheel)
+    salesInfoHeaderBody.bind('<Leave>',_unbound_to_mousewheel)
 
     # headers
-    Label(detailsFrame, text="Product Name").grid(row=0, column=0, pady=5, padx=5, sticky=W)
-    Label(detailsFrame, text="qty").grid(row=0, column=1, pady=5, padx=5, sticky=W)
-    Label(detailsFrame, text="unit").grid(row=0, column=2, pady=5, padx=5, sticky=W)
-    makeColumnResponsive(detailsFrame)
+    Label(salesInfoHeaderBody, text="Product Name").grid(row=0, column=0, pady=5, padx=5, sticky=W)
+    Label(salesInfoHeaderBody, text="QTY").grid(row=0, column=1, pady=5, padx=5, sticky=W)
+    Label(salesInfoHeaderBody, text="Unit").grid(row=0, column=2, pady=5, padx=5, sticky=W)
+    makeColumnResponsive(salesInfoHeaderBody)
 
     if len(globals.TOTAL_SALES)!=0:
         for index, record in enumerate(globals.TOTAL_SALES.items()):
             bg = "white" if (index+1)%2==0 else globals.appWhite
-            Label(detailsFrame, text=record[0], bg=bg).grid(row=index+1, column=0, pady=5, padx=5, sticky=W)
-            Label(detailsFrame, text=record[1]["quantity"], bg=bg).grid(row=index+1, column=1, pady=5, padx=5, sticky=W)
-            Label(detailsFrame, text=record[1]["unit"], bg=bg).grid(row=index+1, column=2, pady=5, padx=5, sticky=W)
+            Label(salesInfoHeaderBody, text=record[0], bg=bg).grid(row=index+1, column=0, pady=5, padx=5, sticky=W)
+            Label(salesInfoHeaderBody, text=record[1]["quantity"], bg=bg).grid(row=index+1, column=1, pady=5, padx=5, sticky=W)
+            Label(salesInfoHeaderBody, text=record[1]["unit"], bg=bg).grid(row=index+1, column=2, pady=5, padx=5, sticky=W)
     else:
-        Label(detailsFrame, text="No products sold!", fg=globals.appDarkGreen).grid(row=1, columnspan=3, pady=5, sticky="nswe")
+        Label(salesInfoHeaderBody, text="No products sold!", fg=globals.appDarkGreen).grid(row=1, columnspan=3, pady=5, sticky="nswe")
     
 
 def createHomeFrame(parent):
