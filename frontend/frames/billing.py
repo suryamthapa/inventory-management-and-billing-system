@@ -118,6 +118,10 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
         if globals.BILL_DETAILS["products"].get(productDetails["id"]) and not toUpdate:
             messagebox.showinfo("Billing System", f"'{productDetails['product_name']}' is already added to the bill!\nIf you want to update, please click update button.")
             return True
+        if len(globals.BILL_DETAILS["products"].keys())>15:
+            messagebox.showinfo("Billing System", f"You can add upto 15 products only at once.\n\nPlease generate this bill and create another bill for remaining products.\n\nThank you!")
+            return True
+
         globals.BILL_DETAILS["products"][productDetails["id"]] = {"product_name": productDetails["product_name"],
                                                                 "stock":productDetails["stock"],
                                                                 "unit":productDetails["unit"],
