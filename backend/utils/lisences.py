@@ -17,6 +17,6 @@ def verify_lisence_key(key):
             score += ord(char)
     print("score: ", score)
     # check for rules
-    if score > 2984 and score < 3034 and check_digit_count==4:
+    if score > 1984 and score < 2034 and check_digit_count==4:
         return True
     return False
