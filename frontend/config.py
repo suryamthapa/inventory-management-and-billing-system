@@ -12,7 +12,7 @@ from frontend.utils.sales import refreshTotalSales
 
 log = logging.getLogger("frontend")
 
-DATE_TIME_TYPE = "ENGLISH"
+DATE_TIME_TYPE = "NEPALI"
 
 # constants
 CURRENT_WORKING_DIRECTORY = os.getcwd()
