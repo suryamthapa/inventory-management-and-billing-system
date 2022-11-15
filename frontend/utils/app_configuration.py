@@ -25,8 +25,8 @@ def is_trial_complete(forceComplete=False):
                 
             current_time = datetime.datetime.now()
             trial_begin_on = message["trial_begin_on"]
-            
-            if (trial_begin_on - current_time).seconds > 7*86400:
+
+            if (current_time - trial_begin_on).seconds > 7*86400:
                 data = {"trial_completed": True}
                 status, message = add_update_app_configuration(data)
                 if status:

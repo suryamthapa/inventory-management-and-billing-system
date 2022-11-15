@@ -11,4 +11,5 @@ class Settings:
     SALES_TABLE_NAME = "sales"
     LOG_PATH = "./logs/backend.log"
     PAGE_LIMIT = 11
+    DATE_TIME_TYPE = "NEPALI"
 

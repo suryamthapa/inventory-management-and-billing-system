@@ -35,7 +35,7 @@ def makeRowResponsive(parent):
 
 def getCurrentTime():
     # get the current local time from the PC
-    t = time.strftime('%H:%M:%S')
+    t = time.strftime('%I:%M:%S %p')
     # get todays date
     today = date.today()
     today = today.strftime("%B %d, %Y")
@@ -45,7 +45,7 @@ def getCurrentTime():
 def showCurrentTime(label):
     global PREVIOUS_TIME
     # get the current local time from the PC
-    CURRENT_TIME = time.strftime('%H:%M:%S')
+    CURRENT_TIME = time.strftime('%I:%M:%S %p')
     # get todays date
     today = date.today()
     TODAY = today.strftime("%B %d, %Y")

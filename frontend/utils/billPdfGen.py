@@ -54,7 +54,7 @@ class CustomerBill(BaseDocTemplate):
         total_amount = self.bill_details["final"].get("total") if self.bill_details["final"].get("total") else 0
         if show_discount or show_vat or show_tax:
             subtotal = self.bill_details["final"].get("subtotal") if self.bill_details["final"].get("subtotal") else 0
-            final_data.append(["Subtotal", "{:,.2f}".format(float(subtotal))])
+            final_data.append(["Basic Amount", "{:,.2f}".format(float(subtotal))])
             if show_discount:
                 discount_label = "Discount"
                 if self.bill_details["extra"].get("discount_percentage"):
@@ -69,8 +69,8 @@ class CustomerBill(BaseDocTemplate):
                 final_data.append([f'Tax({self.bill_details["extra"].get("tax")}%)', "{:,.2f}".format(float(tax))])
 
         
-        totalStyle = ParagraphStyle("totalStyle", fontName="Helvetica-Bold", fontSize=11)
-        final_data += [[Paragraph("TOTAL", totalStyle), "{:,.2f}".format(float(total_amount))]]
+        totalStyle = ParagraphStyle("totalStyle", fontName="Helvetica-Bold", fontSize=10)
+        final_data += [[Paragraph("GRAND TOTAL", totalStyle), "{:,.2f}".format(float(total_amount))]]
         
         if show_payment:
             paid_amount = self.bill_details["final"].get("paid_amount") if self.bill_details["final"].get("paid_amount") else 0
@@ -158,37 +158,39 @@ class CustomerBill(BaseDocTemplate):
     def add_default_info(self, canvas, doc):
         canvas.saveState()
         # company name
-        canvas.setFont("Helvetica-Bold", 18)
-        canvas.drawString(self.leftMargin, doc.page_height - 1 * self.topMargin, f"{self.company_info.get('company_name')}")
+        canvas.setFont("Helvetica-Bold", 12)
+        canvas.drawString(self.leftMargin, doc.page_height - 0.9 * self.topMargin, f"INVOICE")
+        canvas.setFont("Helvetica-Bold", 16)
+        canvas.drawString(self.leftMargin, doc.page_height - 1.2 * self.topMargin, f"{self.company_info.get('company_name')}")
         
         # additinonal info
         canvas.setFont("Helvetica", 12)
-        canvas.drawString(self.leftMargin, doc.page_height - 1.3 * self.topMargin, f"PAN no: {self.company_info.get('pan_no')}")
-        canvas.drawString(self.leftMargin, doc.page_height - 1.5 * self.topMargin, f"{self.company_info.get('municipality')} {self.company_info.get('ward')}, {self.company_info.get('district')}, {self.company_info.get('province')}, {self.company_info.get('country')}")
+        canvas.drawString(self.leftMargin, doc.page_height - 1.4 * self.topMargin, f"PAN no: {self.company_info.get('pan_no')}")
+        canvas.drawString(self.leftMargin, doc.page_height - 1.6 * self.topMargin, f"{self.company_info.get('municipality')} {self.company_info.get('ward')}, {self.company_info.get('district')}, {self.company_info.get('province')}, {self.company_info.get('country')}")
 
         phone_num = self.company_info.get('phone_number')
         telephone = self.company_info.get('telephone')
         contacts = []
         if phone_num: contacts.append(phone_num) 
         if telephone: contacts.append(telephone) 
-        canvas.drawString(self.leftMargin, doc.page_height - 1.7 * self.topMargin, f"{', '.join(contacts)}")
+        canvas.drawString(self.leftMargin, doc.page_height - 1.8 * self.topMargin, f"{', '.join(contacts)}")
         
         # date and bill number
         bill_number = self.bill_details['final'].get('bill_number')
         if not bill_number:
             raise Exception("Missing bill number.")
         date_of_bill = self.bill_details['final'].get('date') if self.bill_details['final'].get('date') else "--------"
-        canvas.drawString(doc.page_width - 2.6*self.rightMargin, doc.page_height - 1.3 * self.topMargin, f"Date       : {date_of_bill}")
-        canvas.drawString(doc.page_width - 2.6*self.rightMargin, doc.page_height - 1.5 * self.topMargin, f"Bill no     : {bill_number}")
+        canvas.drawString(doc.page_width - 2.6*self.rightMargin, doc.page_height - 1.4 * self.topMargin, f"Date          : {date_of_bill}")
+        canvas.drawString(doc.page_width - 2.6*self.rightMargin, doc.page_height - 1.6 * self.topMargin, f"Invoice no  : {bill_number}")
         
         # customer details
         canvas.setFont("Helvetica-Bold", 12)
-        canvas.drawString(doc.leftMargin, doc.height - 0.2*inch, "BILL TO")
+        canvas.drawString(doc.leftMargin, doc.height - 0.3*inch, "BILL TO")
         canvas.setFont("Helvetica", 12)
 
         #customer name 
         customer_name = self.bill_details['customer']['full_name'] if self.bill_details['customer']['full_name'] else self.bill_details['customer']['company']
-        canvas.drawString(self.leftMargin, doc.height - 0.4 * inch, 
+        canvas.drawString(self.leftMargin, doc.height - 0.5 * inch, 
                         f"Customer  :   {customer_name}")
 
         # customer contacts
@@ -200,17 +202,17 @@ class CustomerBill(BaseDocTemplate):
         if not (customer_phone_num or customer_telephone): customer_contacts.append("---------")
 
         if self.bill_details['customer']['company']:
-            canvas.drawString(self.leftMargin, doc.height - 0.6 * inch, 
+            canvas.drawString(self.leftMargin, doc.height - 0.7 * inch, 
                             f"PAN no     :    {self.bill_details['customer']['company_pan_no']}")
-            canvas.drawString(self.leftMargin, doc.height - 0.8 * inch, f"Contact     :    {', '.join(customer_contacts)}")
-            canvas.drawString(self.leftMargin, doc.height - 1.0 * inch, 
+            canvas.drawString(self.leftMargin, doc.height - 0.9 * inch, f"Contact     :    {', '.join(customer_contacts)}")
+            canvas.drawString(self.leftMargin, doc.height - 1.1 * inch, 
+                            f"Address    :    {self.bill_details['customer']['address']}")
+            canvas.drawCentredString(0.5 * (doc.page_width), doc.height - 1.45 * inch, "Mode of Payment: Cash / Credit / Cheque / Other")
+        else:
+            canvas.drawString(self.leftMargin, doc.height - 0.7 * inch, f"Contact     :    {', '.join(customer_contacts)}")
+            canvas.drawString(self.leftMargin, doc.height - 0.9 * inch, 
                             f"Address    :    {self.bill_details['customer']['address']}")
             canvas.drawCentredString(0.5 * (doc.page_width), doc.height - 1.35 * inch, "Mode of Payment: Cash / Credit / Cheque / Other")
-        else:
-            canvas.drawString(self.leftMargin, doc.height - 0.6 * inch, f"Contact     :    {', '.join(customer_contacts)}")
-            canvas.drawString(self.leftMargin, doc.height - 0.8 * inch, 
-                            f"Address    :    {self.bill_details['customer']['address']}")
-            canvas.drawCentredString(0.5 * (doc.page_width), doc.height - 1.25 * inch, "Mode of Payment: Cash / Credit / Cheque / Other")
         
         # footer
         # signatures
