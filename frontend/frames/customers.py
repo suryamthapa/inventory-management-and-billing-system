@@ -61,14 +61,16 @@ def createCustomersTop(parent):
     globals.queryEntry.grid(row=0, column=2, ipady=5, sticky="w")
     globals.queryEntry.bind("<Return>", lambda x: proceedToSearch())
 
-    def setCompleteValues():
-        filterOptionsMap = {
+    filterOptionsMap = {
             "Individual Name": "full_name",
             "Company Name": "company",
+            "Company PAN no": "company_pan_no",
             "Phone Number": "phone_number",
             "Telephone": "telephone",
             "Email": "email"
         }
+
+    def setCompleteValues():
         if filterOptionsMap.get(filterOption.get()):
             column_name = filterOptionsMap.get(filterOption.get())
             completevalues = [record[column_name] if record[column_name] else "" for record in globals.CUSTOMERS_LIST]
@@ -76,19 +78,13 @@ def createCustomersTop(parent):
     
     filterOption = StringVar()
     filterOption.set("Select a filter")
-    filters = ["Individual Name", "Company Name", "Phone Number", "Telephone", "Email"]
+    filters = list(filterOptionsMap.keys())
 
     filter = OptionMenu(globals.tableTop, filterOption, *filters, command=lambda x: setCompleteValues())
     filter.grid(row=0, column=1, padx=(2, 5), sticky="w")
 
     def proceedToSearch():
-        filterOptionsMap = {
-            "Individual Name": "full_name",
-            "Company Name": "company",
-            "Phone Number": "phone_number",
-            "Telephone": "telephone",
-            "Email": "email"
-        }
+        
         if globals.queryEntry.get():
             if filterOptionsMap.get(filterOption.get()):
                 handleSearchCustomer({filterOptionsMap.get(filterOption.get()):globals.queryEntry.get()})
