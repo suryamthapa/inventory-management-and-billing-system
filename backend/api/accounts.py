@@ -2,6 +2,7 @@ import math
 import logging
 from sqlalchemy.orm import Session
 from sqlalchemy.inspection import inspect
+from sqlalchemy import and_, func
 from sqlalchemy.exc import IntegrityError
 from backend.database.deps import get_db
 from backend.models.accounts import Accounts
@@ -13,7 +14,7 @@ from backend.models import AccountType
 log = logging.getLogger("backend")
 
 
-def get_accounts(queryDict: dict = {}, asc = True, sort_column: str = "id", 
+def get_accounts(queryDict: dict = {}, from_= None, to=None, asc = True, sort_column: str = "id", 
                 page=1, limit=11, db: Session = get_db()):
     try:
         table_columns = [column.name for column in inspect(Accounts).c]
@@ -28,36 +29,55 @@ def get_accounts(queryDict: dict = {}, asc = True, sort_column: str = "id",
                 return False,  {"message": f"Column '{key}' does not exist in Accounts table.",
                             "data": []}
 
-        toEval = ", ".join(f"Accounts.{key} == '{value}'" for key, value in queryDict.items()) if queryDict else None
+        toEval = ", ".join(f"Accounts.{key} == int('{value}')" for key, value in queryDict.items()) if queryDict else None
         query = db.query(Accounts).filter(eval(toEval)) if toEval else db.query(Accounts)
         
         total_products = query.count()
-        skip = ((page-1)*limit)
-        totalPages = math.ceil(total_products/limit)
+        if limit:
+            skip = ((page-1)*limit)
+            totalPages = math.ceil(total_products/limit)
+        else:
+            skip = 0
+            totalPages = 1
         
         sort_query = eval(f"Accounts.{sort_column}") if asc else eval(f"Accounts.{sort_column}.desc()")
-        accounts = query.order_by(sort_query).offset(skip).limit(limit).all()
+        query = query.order_by(sort_query)
+
+        if from_ and to:
+            query = query.filter(and_(func.date(Accounts.created_at) >= from_), func.date(Accounts.created_at) <= to)
+
+        if not limit:
+            accounts = query.all()
+        else:
+            accounts = query.offset(skip).limit(limit).all()
         
         def rowToDict(account):
-            customer = db.query(Customers).filter(Customers.id==account.customer_id).first()
-            if customer:
-                customer_name = customer.full_name if customer.full_name else customer.company
-                customer_id = customer.id
-                company_pan_no = customer.company_pan_no
+            if not queryDict.get("customer_id"):
+                customer = db.query(Customers).filter(Customers.id==account.customer_id).first()
+                if customer:
+                    customer_name = customer.full_name if customer.full_name else customer.company
+                    customer_id = customer.id
+                    company_pan_no = customer.company_pan_no
+                else:
+                    customer_name = "Deleted Customer"
+                    customer_id = "N/A"
+                    company_pan_no = "N/A"
+                return {"id":account.id,
+                        "date":account.created_at,
+                        "customer_id":customer_id,
+                        "customer_name":customer_name,
+                        "customer_company_pan_no":company_pan_no,
+                        "bill_id":account.bill_id,
+                        "type": "credit" if account.type==AccountType.credit else "debit",
+                        "description":account.description,
+                        "amount": account.amount}
             else:
-                customer_name = "Deleted Customer"
-                customer_id = "N/A"
-                company_pan_no = "N/A"
-            return {"id":account.id,
-                    "date":account.created_at,
-                    "customer_id":customer_id,
-                    "customer_name":customer_name,
-                    "customer_company_pan_no":company_pan_no,
-                    "bill_id":account.bill_id,
-                    "type": "CR" if account.type==AccountType.credit else "DR",
-                    "description":account.description,
-                    "amount": account.amount}
-
+                return {"id":account.id,
+                        "date":account.created_at,
+                        "bill_id":account.bill_id,
+                        "type": "credit" if account.type==AccountType.credit else "debit",
+                        "description":account.description,
+                        "amount": account.amount}
         payload = {
             "message": "Success",
             "data": list(map(rowToDict, accounts)),

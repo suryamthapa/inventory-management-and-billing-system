@@ -432,14 +432,15 @@ def createCustomerDetailsArea(parent):
     globals.billingCustomerNameEntry.grid(row=0, column=2, padx=(2, 5), pady=(5,10), sticky="w")
     globals.billingCustomerNameEntry.bind("<Return>", lambda x: proceedToLoadCustomerDetails())
 
-    def setCompleteValues():
-        filterOptionsMap = {
+    filterOptionsMap = {
             "Individual Name": "full_name",
             "Company Name": "company",
             "Phone Number": "phone_number",
             "Telephone": "telephone",
             "Email": "email"
         }
+
+    def setCompleteValues():
         if filterOptionsMap.get(filterOption.get()):
             column_name = filterOptionsMap.get(filterOption.get())
             completevalues = [record[column_name] if record[column_name] else "" for record in globals.CUSTOMERS_LIST]
@@ -447,7 +448,7 @@ def createCustomerDetailsArea(parent):
     
     filterOption = StringVar()
     filterOption.set("Company Name")
-    filters = ["Individual Name", "Company Name", "Phone Number", "Telephone", "Email"]
+    filters = list(filterOptionsMap.keys())
     filter = OptionMenu(customerDetailsFrame, filterOption, *filters, command=lambda x: setCompleteValues())
     filter.grid(row=0, column=1, padx=(1, 2), sticky="w", pady=(5,10))
 
@@ -457,13 +458,6 @@ def createCustomerDetailsArea(parent):
     Label(globals.namePhFrame, text="Please search and load customer details.").pack()
 
     def proceedToLoadCustomerDetails():
-        filterOptionsMap = {
-            "Individual Name": "full_name",
-            "Company Name": "company",
-            "Phone Number": "phone_number",
-            "Telephone": "telephone",
-            "Email": "email"
-        }
         if globals.billingCustomerNameEntry.get():
             status = False
             if filterOptionsMap.get(filterOption.get()):

@@ -49,6 +49,17 @@ BILL_DETAILS = {
     "extra":{},
     "final":{}
 }
+CURRENT_LEDGER_ACCOUNT = {
+    "customer":{},
+    "account":{},
+    "from":"",
+    "to":"",
+    "summary":{
+            "dr_amount":0.00,
+            "cr_amount":0.00,
+            "account_balance":0.00
+        }
+}
 
 TOTAL_SALES = {}
 refreshTotalSales()
@@ -102,8 +113,22 @@ rateQtyFrame = None
 customersFrame = None
 customersTable = None
 
+customersFilterOptionsMap = {
+            "Individual Name": "full_name",
+            "Company Name": "company",
+            "Company PAN no": "company_pan_no",
+            "Phone Number": "phone_number",
+            "Telephone": "telephone",
+            "Email": "email"
+        }
+
 accountsFrame = None
 accountsTable = None
+ledgerDetailsMainFrame = None
+ledgerDetailsArea = None
+ledgerDetailsFrame = None
+accountCustomerDetailsFrame=None
+ledgerDetailsTable = None
 
 salesAndAnalyticsFrame = None
 
