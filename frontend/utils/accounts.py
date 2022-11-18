@@ -29,28 +29,32 @@ def get_account_balance(data, customer_id):
     return account_balance
 
 def get_formatted_accounts(asc = True, sort_column: str = "id", page=1, limit=11):
-    status, data = get_accounts(Settings.CURRENT_SEARCH_QUERY["accounts"], page=page, limit=limit, sort_column=sort_column, asc=asc)
-    # print("accounts: ", data)
+    status, accounts_data = get_accounts({}, page=page, limit=limit, sort_column=sort_column, asc=asc)
     if not status:
-        messagebox.showerror("Inabi System", data["message"])
+        messagebox.showerror("Inabi System", accounts_data["message"])
         return False
     
-    payload = data.copy()
+    status, customers_data = get_customers(Settings.CURRENT_SEARCH_QUERY["accounts"], page=page, limit=limit, sort_column=sort_column, asc=asc)
+    if not status:
+        messagebox.showerror("Inabi System", customers_data["message"])
+        return False
+    
+    payload = customers_data.copy()
     payload["data"] = []
     formatted_customer_ids = []
 
-    for record in data["data"]:
-        if record["customer_id"] not in formatted_customer_ids:
+    for record in customers_data["data"]:
+        if record["id"] not in formatted_customer_ids:
             formatted_account = {
-                "customer_id":record["customer_id"],
-                "customer_name":record["customer_name"],
-                "customer_company_pan_no":record["customer_company_pan_no"],
+                "customer_id":record["id"],
+                "customer_name":record["full_name"] if record.get("full_name") else record["company"],
+                "customer_company_pan_no":record["company_pan_no"],
                 "account_balance":""
             }
-            account_balance = get_account_balance(data["data"], record["customer_id"])
+            account_balance = get_account_balance(accounts_data["data"], record["id"])
             formatted_account["account_balance"] = account_balance
             payload["data"].append(formatted_account)
-            formatted_customer_ids.append(record["customer_id"])
+            formatted_customer_ids.append(record["id"])
 
     # print(payload)
     return payload

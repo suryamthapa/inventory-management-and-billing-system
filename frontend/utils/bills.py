@@ -70,7 +70,6 @@ def update_customer_account(bill_number):
             "type":AccountType.debit,
             "description":f"Sales Bill #{Settings.BILL_DETAILS['final']['bill_number']}",
             "amount":Settings.BILL_DETAILS.get("final")["total"]}
-    print("data to be added to accounts: ",data)
     status, message = add_account(data)
     if not status:
         log.error(f"{status} {message}")

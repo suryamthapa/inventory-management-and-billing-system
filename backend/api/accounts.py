@@ -66,7 +66,7 @@ def get_accounts(queryDict: dict = {}, asc = True, sort_column: str = "id",
             "page_size": len(accounts)
         }
         db.close()
-        log.info("FETCHED: All accounts.")
+        log.info(f"FETCHED: Accounts with filter -> {queryDict}")
         return True, payload
     except Exception as e:
         db.close()
@@ -109,7 +109,6 @@ def get_account(id: int = 0, db: Session = get_db()):
 
 def add_account(data:dict = {}, db: Session=get_db()):
     try:
-        print("data in db api: ", data)
         account = Accounts(customer_id=data.get("customer_id"), 
                     bill_id=data.get("bill_id"),
                     type=data.get("type"),
