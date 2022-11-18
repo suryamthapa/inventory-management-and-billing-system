@@ -20,6 +20,7 @@ from frontend.frames.profile import openProfile
 from frontend.frames.settings import openSettings
 import frontend.frames.billing as billingSystem
 from frontend.frames.customers import openCustomers
+from frontend.frames.accounts import openAccounts
 from frontend.windows.lisence import createLicenseInformationWindow
 # backend imports
 from backend.models import LisenceStatus
@@ -39,6 +40,7 @@ def showFrame(frameName, refreshMode=False):
     Settings.inventoryButton.configure(bg=Settings.appDarkGreen)
     Settings.billingSystemButton.configure(bg=Settings.appDarkGreen)
     Settings.customersButton.configure(bg=Settings.appDarkGreen)
+    Settings.accountsButton.configure(bg=Settings.appDarkGreen)
 
     if not alreadyOpen:
         try:
@@ -64,6 +66,9 @@ def showFrame(frameName, refreshMode=False):
             elif frameName=="customersFrame":
                 Settings.customersButton.configure(bg=Settings.appGreen)
                 openCustomers(Settings.mainFrame)
+            elif frameName=="accountsFrame":
+                Settings.accountsButton.configure(bg=Settings.appGreen)
+                openAccounts(Settings.mainFrame)
             log.info(f"OPENED: {frameName}")
         except Exception as e:
             log.error(f"{frameName} --> {e}")
@@ -123,13 +128,21 @@ def createSidebar(container):
         command=lambda : showFrame("customersFrame"))
     Settings.customersButton.grid(row=3, column=0, pady=optionsPadY)
 
+    Settings.accountsButton = Button(options, 
+        text="Accounts", 
+        width=optionsWidth, 
+        bg=Settings.appDarkGreen, 
+        fg=optionsColor,
+        command=lambda : showFrame("accountsFrame"))
+    Settings.accountsButton.grid(row=4, column=0, pady=optionsPadY)
+
     Settings.billingSystemButton = Button(options, 
         text="Billing System", 
         width=optionsWidth, 
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("billingSystemFrame"))
-    Settings.billingSystemButton.grid(row=4, column=0, pady=optionsPadY)
+    Settings.billingSystemButton.grid(row=5, column=0, pady=optionsPadY)
 
     Settings.salesAndAnalyticsButton = Button(options, 
         text="Sales and Analytics", 
@@ -137,7 +150,7 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : messagebox.showinfo("Sales and Analytics", "Feature comming soon in next update!\n\nYou will be able to view the sales and analytics of your company with the help of this feature.\n\nThank you!"))
-    Settings.salesAndAnalyticsButton.grid(row=5, column=0, pady=optionsPadY)
+    Settings.salesAndAnalyticsButton.grid(row=6, column=0, pady=optionsPadY)
 
     Settings.settingsButton = Button(options, 
         text="Settings", 
@@ -145,14 +158,14 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("settingsFrame"))
-    Settings.settingsButton.grid(row=6, column=0, pady=optionsPadY)
+    Settings.settingsButton.grid(row=7, column=0, pady=optionsPadY)
 
     Settings.exitButton = Button(options, 
         text="Exit", width=optionsWidth,
         bg=Settings.appDarkGreen,
         fg=optionsColor,
         command=lambda: exitParent(Settings.app))
-    Settings.exitButton.grid(row=7, column=0, pady=optionsPadY)
+    Settings.exitButton.grid(row=8, column=0, pady=optionsPadY)
 
     # Making the options frame expand to the height of screen
     Grid.rowconfigure(Settings.sidebar, 1, weight=1)

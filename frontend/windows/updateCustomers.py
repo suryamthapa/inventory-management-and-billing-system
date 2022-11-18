@@ -16,7 +16,7 @@ def createUpdateCustomerWindow(customerInfo):
     try:
         updateCustomerWindow = Toplevel()
         updateCustomerWindow.grab_set()
-        updateCustomerWindow.title("Update product")
+        updateCustomerWindow.title("Update customer")
         updateCustomerWindow.resizable(0,0)
         updateCustomerWindow.iconbitmap("./frontend/assets/images/favicon.ico")
 

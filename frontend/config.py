@@ -39,8 +39,9 @@ refreshProductsList()
 PAGINATION_PAGE = 1
 PAGINATION_PAGE_LIMIT = 11
 CURRENT_SEARCH_QUERY = {
-    "customers":{}, 
-    "products":{}
+    "customers":{},
+    "products":{},
+    "accounts":{}
 }
 BILL_DETAILS = {
     "customer":{},
@@ -57,6 +58,7 @@ homeButton = None
 profileButton = None
 inventoryButton = None
 customersButton = None
+accountsButton = None
 settingsButton = None
 billingSystemButton = None
 salesAndAnalyticsButton = None
@@ -99,6 +101,9 @@ rateQtyFrame = None
 
 customersFrame = None
 customersTable = None
+
+accountsFrame = None
+accountsTable = None
 
 salesAndAnalyticsFrame = None
 

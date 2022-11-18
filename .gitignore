@@ -6,6 +6,9 @@ venv/
 logs/
 bills/
 test.py
+test.ipynb
+references.py
+alembicScripts.py
 trackProgress.txt
 *.db
 *.doc

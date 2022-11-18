@@ -66,6 +66,7 @@ def handle_buttons_on_activation(frames, deactivation=False):
         "profileFrame": "profileButton",
         "billingSystemFrame": "billingSystemButton",
         "customersFrame": "customersButton",
+        "accountsFrame": "accountsButton",
         "homeFrame":"homeButton",
         "salesAndAnalyticsFrame":"salesAndAnalyticsButton"
     }

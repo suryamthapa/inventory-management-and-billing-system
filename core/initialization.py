@@ -4,12 +4,11 @@ from backend.api.about_app import add_update_app_configuration
 
 def database_initialization():
     try:
-        # ensure database, if does not exists, migrate with alembic
-        if not os.path.exists("imabs.db"):
-            from alembic.config import Config
-            from alembic import command
-            alembic_cfg = Config("./alembic.ini")
-            command.upgrade(alembic_cfg, "head")
+        # upgrade database to latest
+        from alembic.config import Config
+        from alembic import command
+        alembic_cfg = Config("./alembic.ini")
+        command.upgrade(alembic_cfg, "head")
         return True, "INITIALIZED: database upgraded"
     except Exception as e:
         return False, f"Could not initialize database.\n\n{e}"

@@ -14,9 +14,11 @@ from frontend.utils.sales import refreshTotalSales
 from frontend.utils.billPdfGen import CustomerBill
 import frontend.frames.billing as billingFrame
 # backend imports
+from backend.models import AccountType
 from backend.api.bills import add_bill
 from backend.api.sales import add_sales
 from backend.api.products import update_product
+from backend.api.accounts import add_account
 
 
 log = logging.getLogger("frontend")
@@ -24,11 +26,11 @@ log = logging.getLogger("frontend")
 
 def get_bill_number():
     data = {"customer_id":Settings.BILL_DETAILS["customer"].get("customer_id"), 
-            "paid_amount":Settings.BILL_DETAILS["customer"].get("paid_amount"),
-            "discount_amount":Settings.BILL_DETAILS["customer"].get("discount_amount"),
-            "discount_percentage":Settings.BILL_DETAILS["customer"].get("discount_percentage"),
-            "vat":Settings.BILL_DETAILS["customer"].get("vat"),
-            "tax":Settings.BILL_DETAILS["customer"].get("tax")}
+            "paid_amount":Settings.BILL_DETAILS["final"].get("paid_amount"),
+            "discount_amount":Settings.BILL_DETAILS["final"].get("discount_amount"),
+            "discount_percentage":Settings.BILL_DETAILS["final"].get("discount_percentage"),
+            "vat":Settings.BILL_DETAILS["final"].get("vat"),
+            "tax":Settings.BILL_DETAILS["final"].get("tax")}
 
     bill_number, message = add_bill(data)
     if not bill_number:
@@ -62,14 +64,38 @@ def entry_sales_and_reduce_stock(bill_id):
     return True, f"COMPLETE: Sales detail for bill id {bill_id} added to database."
 
 
+def update_customer_account(bill_number):
+    data = {"customer_id":Settings.BILL_DETAILS['customer'].get('customer_id'), 
+            "bill_id":bill_number,
+            "type":AccountType.debit,
+            "description":f"Sales Bill #{Settings.BILL_DETAILS['final']['bill_number']}",
+            "amount":Settings.BILL_DETAILS.get("final")["total"]}
+    print("data to be added to accounts: ",data)
+    status, message = add_account(data)
+    if not status:
+        log.error(f"{status} {message}")
+        return False, message
+    else:
+        log.info(f"UPDATED customer account with id {status}-> {data}")
+        return True, message
+
 def make_payment(amount):
+    # creating bill record and getting bill number
     bill_number, message = get_bill_number()
     
     if not bill_number:
         log.error(message)
         return False
-
     log.info(f"for customer id: {Settings.BILL_DETAILS['customer'].get('customer_id')} -> {message}")
+
+    # updating bill details
+    today = date.today()
+    today = today.strftime("%Y/%m/%d")
+    Settings.BILL_DETAILS["final"]["bill_number"] = bill_number + 42341
+    Settings.BILL_DETAILS["final"]["date"] = today
+    Settings.BILL_DETAILS["final"]["paid_amount"] = float(amount)
+    
+    # updating sales and reducing stock in database
     status, message = entry_sales_and_reduce_stock(bill_number)
     if not status:
         messagebox.showerror("Billing System", message)
@@ -78,15 +104,18 @@ def make_payment(amount):
     refreshProductsList()
     log.info(message)
 
-    today = date.today()
-    today = today.strftime("%Y/%m/%d")
-    Settings.BILL_DETAILS["final"]["bill_number"] = bill_number + 42341
-    Settings.BILL_DETAILS["final"]["date"] = today
-    Settings.BILL_DETAILS["final"]["paid_amount"] = float(amount)
+    # updating to ledger
+    status, message = update_customer_account(bill_number)
+    if not status:
+        messagebox.showerror("Billing System", message)
+        return False
+    log.info(message)
 
+    messagebox.showinfo("Billing System", f"Pdf file of invoice will open in the browser.\n\nInvoice no: #{Settings.BILL_DETAILS['final']['bill_number']}")
+
+    # generating bill and saving to bills folder
     status, filename = generate_and_save_bill()
     if status:
-        messagebox.showinfo("Billing System", "Pdf file of the bill will open in the browser.")
         threading.Thread(target=preview_pdf_in_browser, args=(filename,)).start()
     else:
         messagebox.showerror("Billing System", "Error occured while generating bill.")

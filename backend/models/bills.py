@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, ForeignKey, Sequence
 from sqlalchemy.orm import relationship
 from backend.database.setup import Base
 from backend.models.sales import Sales
+from backend.models.accounts import Accounts
 
 class Bills(Base):
     __tablename__ = 'bills'
@@ -15,3 +16,4 @@ class Bills(Base):
     tax = Column(Integer)
 
     sales = relationship("Sales")
+    accounts = relationship("Accounts")

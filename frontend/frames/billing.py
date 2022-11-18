@@ -24,6 +24,14 @@ from backend.api.customers import get_customer
 log = logging.getLogger("frontend")
 
 
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+
+
 def clearCustomerDetails():
         for child in globals.namePhFrame.winfo_children():
             child.destroy()
@@ -76,7 +84,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
             quantityEntry.focus()
             return False
 
-        if not rate.isdigit():
+        if not isfloat(rate):
             messagebox.showwarning("Invalid", "Rate must be a number.")
             rateEntry.focus()
             return False
@@ -85,7 +93,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
             quantityEntry.focus()
             return False
 
-        rateChanged = (int(rate)!=int(productDetails["marked_price"])) if not toUpdate else (int(rate)!=int(productDetails.get("rate")))
+        rateChanged = (float(rate)!=float(productDetails["marked_price"])) if not toUpdate else (float(rate)!=float(productDetails.get("rate")))
         stockChanged = int(quantity)>int(productDetails["stock"])
 
         if rateChanged:
