@@ -244,6 +244,7 @@ def openDashboard(container):
                     if status:
                         log.info("STARTING: Trial for 7 days")
                         messagebox.showinfo("Inabi System", "Congrats!\n\nYour free trial for 7 days has been started!")
+                        showFrame(Settings.CURRENT_FRAME, refreshMode=True)
                     else:
                         messagebox.showerror("Inabi System", f"Something went wrong!\n\n{message}.")
     except Exception as e:
