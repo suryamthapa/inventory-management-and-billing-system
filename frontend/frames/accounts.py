@@ -15,6 +15,7 @@ import frontend.windows.addCustomers as addCustomers
 from frontend.utils.tkNepaliCalendar import DateEntry
 # backend imports
 from backend.api.customers import get_customer
+from backend.api.accounts import delete_account
 
 
 log = logging.getLogger("frontend")
@@ -88,11 +89,23 @@ def createLedgerDetailsTableBody(parent, data):
         def proceedToUpdate(record):
             print("To update: ", record)
 
-        def deleteRecordFromAccount(id):
-            print("To delete: ", id)
+        def deleteRecordFromAccount(record):
+            response = messagebox.askyesnocancel("Delete the customer", f"Are you sure?\n\nTransaction Id: {record.get('id')}\nDate: {record.get('date')}\nType: {record.get('type')}\nAmount: {record.get('amount')}")
+            if response == 1:
+                status, message = delete_account(id=record.get("id"))
+                if not status:
+                    messagebox.showerror("Delete Customer", message)
+                else:
+                    messagebox.showinfo("Delete Customer",f"{message}")
+                    # reload the inventory table
+                    handleSearchAccount(column=globals.CURRENT_SEARCH_QUERY["account"]["column"], 
+                                        query=globals.CURRENT_SEARCH_QUERY["account"]["query"], 
+                                        from_=globals.CURRENT_LEDGER_ACCOUNT["from"], 
+                                        to=globals.CURRENT_LEDGER_ACCOUNT["to"])
+
 
         Button(parent, text="update", width=6, bg="#47B5FF", command=lambda record=record: proceedToUpdate(record)).grid(row=index+2, column=6, pady=5, padx=(0,2), sticky=W)
-        Button(parent, text="delete", width=6, bg="red", command=lambda id=record["id"]: deleteRecordFromAccount(id)).grid(row=index+2, column=7, pady=5, padx=(2,0), sticky=W)
+        Button(parent, text="delete", width=6, bg="red", command=lambda record=record: deleteRecordFromAccount(record)).grid(row=index+2, column=7, pady=5, padx=(2,0), sticky=W)
         
     makeColumnResponsive(parent)
 
@@ -443,7 +456,7 @@ def createAccountsFrame(parent):
     detailsArea = Frame(globals.accountsFrame)
     detailsArea.pack(fill="both", padx=5, pady=10, expand=True)
     
-    globals.accountCustomerDetailsFrame = LabelFrame(detailsArea, pady=5)
+    globals.accountCustomerDetailsFrame = Frame(detailsArea, pady=5)
     globals.accountCustomerDetailsFrame.pack(fill="x")
 
     globals.ledgerDetailsArea = Frame(detailsArea)
