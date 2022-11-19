@@ -199,7 +199,7 @@ def createHomeFrame(parent):
         else:
             status, message = start_trial()
             if status:
-                handle_buttons_on_activation(["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame"])
+                handle_buttons_on_activation()
                 messagebox.showinfo("Inabi System", "Congrats!\n\nYour free trial for 7 days has been started!")
                 dashboard.showFrame(globals.CURRENT_FRAME, refreshMode=True)
             else:

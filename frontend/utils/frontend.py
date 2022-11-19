@@ -59,7 +59,7 @@ def showCurrentTime(label):
     label.after(200, lambda: showCurrentTime(label))
 
 
-def handle_buttons_on_activation(frames, deactivation=False):
+def handle_buttons_on_activation(deactivation=False):
     buttonFrameMapping = {
         "inventoryFrame":"inventoryButton",
         "settingsFrame": "settingsButton",
@@ -71,7 +71,7 @@ def handle_buttons_on_activation(frames, deactivation=False):
         "salesAndAnalyticsFrame":"salesAndAnalyticsButton"
     }
     in_version_two = ["salesAndAnalyticsFrame"]
-    for frame in frames:
+    for frame in Settings.PREMIUM_FEATURES_FRAMES:
         if deactivation:
             eval(f"Settings.{buttonFrameMapping.get(frame)}").config(command=lambda: messagebox.showinfo("InaBi System", "This is the premium feature.\n\nTo use it: Please activate the app with a lisence key. Or please start the trial from home tab.\n\nThank you!"))
         else:

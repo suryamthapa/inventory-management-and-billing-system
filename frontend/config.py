@@ -13,7 +13,7 @@ from frontend.utils.sales import refreshTotalSales
 log = logging.getLogger("frontend")
 
 DATE_TIME_TYPE = "NEPALI"
-
+PREMIUM_FEATURES_FRAMES = ["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame", "accountsFrame"]
 # constants
 CURRENT_WORKING_DIRECTORY = os.getcwd()
 CURRENT_SETTINGS = getSettings()

@@ -215,11 +215,11 @@ def openDashboard(container):
                 log.info("Lisence is active")
             elif Settings.LISENCE_INFO.get("status") is None:
                 log.error("Exception may have occured while updating lisence key to expired.")
-                handle_buttons_on_activation(["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame"], deactivation=True)
+                handle_buttons_on_activation(deactivation=True)
                 messagebox.showerror("InaBi System", "Could not check lisence status.\n\nPlease contact the developer.\n\nThank you!")
             else:
                 log.info("Lisence is expired or not registered yet")
-                handle_buttons_on_activation(["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame"], deactivation=True)
+                handle_buttons_on_activation(deactivation=True)
                 log.info("Premium features disabled.")
                 msg_trial_completed = "Your trial for 7 days has already completed.\n\nTo keep using the app, you need to activate it.\n\nClick Yes to activate."
                 msg_lisence_expired = "Your lisence key has been expired.\n\nTo continue using the features, you will have to reactivate the app with a new lisence key.\n\nClick Yes to enter a new lisence key."
@@ -238,7 +238,7 @@ def openDashboard(container):
                 log.info("Trial has not started yet")
                 response = messagebox.askyesnocancel("InaBi System", "Welcome to Inventory Management and Billing System, by Datakhoj Private Limited.\n\nWe are offering you a free trial of 7 days so that you can use all of our premium features!\n\nClick Yes to proceed.")
                 if response!=1:
-                    handle_buttons_on_activation(["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame"], deactivation=True)
+                    handle_buttons_on_activation(deactivation=True)
                 else:
                     status, message = start_trial()
                     if status:
