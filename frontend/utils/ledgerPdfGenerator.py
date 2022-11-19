@@ -73,6 +73,10 @@ class CustomerLedger(BaseDocTemplate):
                 "{:,.2f}".format(float(dr_amount)), 
                 "{:,.2f}".format(float(cr_amount)), 
                 f"{account_balance}"]]
+        data += [["", "", "Ledger Total:", 
+                "{:,.2f}".format(float(dr_amount)), 
+                "{:,.2f}".format(float(cr_amount)), 
+                f"{account_balance}"]]
 
         tableMainStyle = TableStyle([
                                 ("BOX",(0,0),(5,0),0.1,colors.black),
@@ -84,7 +88,9 @@ class CustomerLedger(BaseDocTemplate):
                                 ("BACKGROUND",(0,0),(5,0),colors.whitesmoke),
                                 ("FONT",(0,0),(5,0),"Helvetica-Bold",10),
                                 ("FONT",(0,-1),(-1,-1),"Helvetica-Bold",10),
+                                ("FONT",(0,-2),(-1,-2),"Helvetica-Bold",10),
                                 ("ALIGN",(-4,-1),(-4,-1),"RIGHT"),
+                                ("ALIGN",(-4,-2),(-4,-2),"RIGHT"),
                                 ("NOSPLIT",(-1,-3),(-1,-1))
                             ] + table_style)
 

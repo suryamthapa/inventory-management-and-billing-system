@@ -55,7 +55,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
 
     parent.config(bg=globals.appWhite if toUpdate else globals.defaultBgColor)
     Label(parent, text=f"Name: {productDetails['product_name']}", font=globals.appFontNormalBold).grid(row=0, column=0, columnspan=2, padx=5, pady=(5,5), sticky=W)
-    Label(parent, text=f"Max Available: {productDetails['stock']}", font=globals.appFontNormalBold).grid(row=0, column=2, columnspan=2, padx=5, pady=(5,5), sticky=W)
+    Label(parent, text=f"In Stock: {productDetails['stock']}", font=globals.appFontNormalBold).grid(row=0, column=2, columnspan=2, padx=5, pady=(5,5), sticky=W)
 
     Label(parent, text="Rate").grid(row=1, column=0, padx=5, pady=(5, 10), sticky=W)
     rateEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
