@@ -1,8 +1,8 @@
-"""Added  accounts table
+"""Added accounts table
 
-Revision ID: 75b87715dc36
+Revision ID: caa8dad08b60
 Revises: 3fd3128bedbe
-Create Date: 2022-11-18 13:06:19.610892
+Create Date: 2022-11-19 11:13:08.017224
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '75b87715dc36'
+revision = 'caa8dad08b60'
 down_revision = '3fd3128bedbe'
 branch_labels = None
 depends_on = None
@@ -22,7 +22,8 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.Column('customer_id', sa.Integer(), nullable=True),
+    sa.Column('transaction_date', sa.DateTime(), nullable=False),
+    sa.Column('customer_id', sa.Integer(), nullable=False),
     sa.Column('bill_id', sa.Integer(), nullable=True),
     sa.Column('type', sa.Enum('debit', 'credit', name='accounttype'), nullable=False),
     sa.Column('description', sa.String(), nullable=False),

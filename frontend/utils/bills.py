@@ -1,6 +1,7 @@
 import os
 import tempfile
 import logging
+import datetime
 from tkinter import messagebox
 import threading
 import frontend.config as Settings
@@ -66,6 +67,7 @@ def entry_sales_and_reduce_stock(bill_id):
 
 def update_customer_account(bill_number):
     data = {"customer_id":Settings.BILL_DETAILS['customer'].get('customer_id'), 
+            "transaction_date":datetime.datetime.utcnow(),
             "bill_id":bill_number,
             "type":AccountType.debit,
             "description":f"Sales Bill #{Settings.BILL_DETAILS['final']['bill_number']}",

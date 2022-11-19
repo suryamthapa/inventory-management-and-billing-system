@@ -21,10 +21,10 @@ def updateCustomer(id, data):
 
 
 def saveCustomer(data):
-        status, message = add_customer(data)
-        if not status:
-            messagebox.showerror("Add Customer", message)
-            return False
-        else:
-            messagebox.showinfo("Add Customer",f"{message} \n id: {status}")
-            return True
+    status, message = add_customer(data)
+    if not status:
+        messagebox.showerror("Add Customer", message)
+        return False
+    else:
+        messagebox.showinfo("Add Customer",f"{message} \n id: {status}")
+        return True

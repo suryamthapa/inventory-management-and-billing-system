@@ -355,11 +355,11 @@ def createBillDetailsTableTop(parent):
         Label(parent, text=address if address else "**********", wraplength=160, justify="left").grid(row=0, column=3, pady=(10, 5), sticky=W)
     
     Label(parent, text="Contacts:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=1, column=0, pady=(5, 10), sticky=W)
-    Label(parent, text=f"{', '.join(contacts)}" if contacts else "********", wraplength=160, justify="left").grid(row=1, column=1, pady=(10, 5), sticky=W)
+    Label(parent, text=f"{', '.join(contacts)}" if contacts else "********", wraplength=160, justify="left").grid(row=1, column=1, pady=(5, 10), sticky=W)
 
     if company:
-        Label(parent, text="Address:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=1, column=2, pady=(10, 5), sticky=W)
-        Label(parent, text=address if address else "**********", wraplength=160, justify="left").grid(row=1, column=3, pady=(10, 5), sticky=W)
+        Label(parent, text="Address:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=1, column=2, pady=(5, 10), sticky=W)
+        Label(parent, text=address if address else "**********", wraplength=160, justify="left").grid(row=1, column=3, pady=(5, 10), sticky=W)
     
     makeColumnResponsive(parent)
 

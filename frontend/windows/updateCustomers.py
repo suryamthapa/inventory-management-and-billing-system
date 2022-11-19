@@ -128,18 +128,19 @@ def createUpdateCustomerWindow(customerInfo):
                     "email":emailEntry.get() if emailEntry.get() else None,
                     "address":addressEntry.get() if addressEntry.get() else None}
                     
-            updateCustomer(id, details)
+            status = updateCustomer(id, details)
             updateCustomerWindow.destroy()
-            # refreshing products list
-            refreshCustomersList()
-            if globals.CURRENT_FRAME=="customersFrame":
-                # refresh auto complete values in search entry
-                globals.queryEntry.config(completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
-                # reload the inventory table
-                customers.handleSearchCustomer(globals.CURRENT_SEARCH_QUERY.get("customers"))
-            if globals.CURRENT_FRAME=="billingSystemFrame":
-                # refresh auto complete values in product search entry
-                globals.billingProductNameEntry.config(completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
+            if status:
+                # refreshing products list
+                refreshCustomersList()
+                if globals.CURRENT_FRAME=="customersFrame":
+                    # refresh auto complete values in search entry
+                    globals.queryEntry.config(completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
+                    # reload the inventory table
+                    customers.handleSearchCustomer(globals.CURRENT_SEARCH_QUERY.get("customers"))
+                if globals.CURRENT_FRAME=="billingSystemFrame":
+                    # refresh auto complete values in product search entry
+                    globals.billingProductNameEntry.config(completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
 
         Button(updateCustomerWindow,
             text="Cancel",

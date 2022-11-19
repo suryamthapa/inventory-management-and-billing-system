@@ -10,7 +10,7 @@ import logging
 import frontend.config as Settings
 # backend imports
 from backend.models import AccountType
-from backend.api.accounts import get_accounts
+from backend.api.accounts import get_accounts, add_account, update_account
 from backend.api.customers import get_customers, get_customer
 
 
@@ -18,10 +18,10 @@ log = logging.getLogger("frontend")
 
 
 
-def get_formatted_account(customer_id, asc = True, sort_column: str = "created_at", page=1, limit=None, from_="",to=""):
+def get_formatted_account(customer_id, asc = True, sort_column: str = "transaction_date", page=1, limit=None, from_="",to=""):
     status, accounts_data = get_accounts({"customer_id":customer_id}, page=page, limit=limit, sort_column=sort_column, asc=asc)
     if not status:
-        messagebox.showerror("Inabi System", accounts_data["message"])
+        messagebox.showerror("Inabi System", accounts_data)
         return False
 
     if from_ and to:
@@ -34,15 +34,14 @@ def get_formatted_account(customer_id, asc = True, sort_column: str = "created_a
     payload = []
     start_from_found = False
     end_to_found = False
-
     for index, record in enumerate(accounts_data["data"]):
         nepali_timezone = timezone("Asia/Kathmandu")
         utc = pytz.utc
-        utc_dt = record["date"].replace(tzinfo=utc)
-        ne_dt = utc_dt.astimezone(nepali_timezone)
-        temp_utc_date = datetime.date(year=ne_dt.year, month=ne_dt.month, day=ne_dt.day)
+        utc_datetime = record["date"].replace(tzinfo=utc)
+        ne_datetime = utc_datetime.astimezone(nepali_timezone)
+        temp_utc_date = datetime.date(year=ne_datetime.year, month=ne_datetime.month, day=ne_datetime.day)
         final_nepali_date = nepali_datetime.date.from_datetime_date(temp_utc_date)
-        record["date"] = final_nepali_date.strftime("%d/%m/%Y")
+        record["date"] = final_nepali_date.strftime("%m/%d/%Y")
         
         if from_ and to:
             exact_from_day = final_nepali_date == from_date
@@ -82,9 +81,9 @@ def get_formatted_account(customer_id, asc = True, sort_column: str = "created_a
         else:
             account_balance = account_balance + record["amount"]
         if account_balance!=abs(account_balance):
-            record["account_balance"] = f"{'Rs. {:,.2f}'.format(abs(account_balance))} Dr"
+            record["account_balance"] = f"{'{:,.2f}'.format(abs(account_balance))} Dr"
         else:
-            record["account_balance"] = f"{'Rs. {:,.2f}'.format(abs(account_balance))} Cr"
+            record["account_balance"] = f"{'{:,.2f}'.format(abs(account_balance))} Cr"
         
         payload.append(record)
 
@@ -93,3 +92,20 @@ def get_formatted_account(customer_id, asc = True, sort_column: str = "created_a
     return payload
 
 
+def saveAccount(data):
+    status, message = add_account(data)
+    if not status:
+        messagebox.showerror("Add Customer", message)
+        return False
+    else:
+        messagebox.showinfo("Add Customer",f"{message} \n id: {status}")
+        return True
+
+def updateAccount(id, data):
+    status, message = update_account(id=id, data=data)
+    if not status:
+        messagebox.showerror("Update Customer", message)
+        return False
+    else:
+        messagebox.showinfo("Update Customer",message)
+        return True

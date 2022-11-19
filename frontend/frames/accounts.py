@@ -10,8 +10,8 @@ import frontend.config as globals
 from frontend.utils.accounts import get_formatted_account
 from frontend.utils.frontend import makeColumnResponsive
 from frontend.utils.customers import refreshCustomersList
-import frontend.windows.updateCustomers as updateCustomers
-import frontend.windows.addCustomers as addCustomers
+import frontend.windows.updateAccounts as updateAccounts
+import frontend.windows.addAccounts as addAccounts
 from frontend.utils.tkNepaliCalendar import DateEntry
 # backend imports
 from backend.api.customers import get_customer
@@ -65,7 +65,7 @@ def handleSearchAccount(column="", query="", from_="", to=""):
 
 def createLedgerDetailsTableHeader(parent):
     Label(parent, text="S No.", width=4, font=globals.appFontSmallBold).grid(row=1, column=0, sticky=W)
-    Label(parent, text="Date", font=globals.appFontSmallBold).grid(row=1, column=1, sticky=W)
+    Label(parent, text="Date(mm/dd/yyyy)", font=globals.appFontSmallBold).grid(row=1, column=1, sticky=W)
     Label(parent, text="Account Description", font=globals.appFontSmallBold).grid(row=1, column=2, sticky=W)
     Label(parent, text="Dr Amount", font=globals.appFontSmallBold).grid(row=1, column=3, sticky=W)
     Label(parent, text="Cr Amount", font=globals.appFontSmallBold).grid(row=1, column=4, sticky=W)
@@ -85,9 +85,6 @@ def createLedgerDetailsTableBody(parent, data):
         Label(parent, text="{:,.2f}".format(float(record.get("amount"))) if record.get("type") == "debit" else "---", bg=bg).grid(row=index+2, column=3, pady=5, sticky=W, padx=2)
         Label(parent, text="{:,.2f}".format(float(record.get("amount"))) if record.get("type") == "credit" else "---", bg=bg).grid(row=index+2, column=4, pady=5, sticky=W, padx=2)
         Label(parent, text=record.get("account_balance"), bg=bg).grid(row=index+2, column=5, pady=5, sticky=W, padx=2)
-        
-        def proceedToUpdate(record):
-            print("To update: ", record)
 
         def deleteRecordFromAccount(record):
             response = messagebox.askyesnocancel("Delete the customer", f"Are you sure?\n\nTransaction Id: {record.get('id')}\nDate: {record.get('date')}\nType: {record.get('type')}\nAmount: {record.get('amount')}")
@@ -104,7 +101,7 @@ def createLedgerDetailsTableBody(parent, data):
                                         to=globals.CURRENT_LEDGER_ACCOUNT["to"])
 
 
-        Button(parent, text="update", width=6, bg="#47B5FF", command=lambda record=record: proceedToUpdate(record)).grid(row=index+2, column=6, pady=5, padx=(0,2), sticky=W)
+        Button(parent, text="update", width=6, bg="#47B5FF", command=lambda record=record: updateAccounts.createUpdateAccountWindow(globals.CURRENT_LEDGER_ACCOUNT["customer"], record)).grid(row=index+2, column=6, pady=5, padx=(0,2), sticky=W)
         Button(parent, text="delete", width=6, bg="red", command=lambda record=record: deleteRecordFromAccount(record)).grid(row=index+2, column=7, pady=5, padx=(2,0), sticky=W)
         
     makeColumnResponsive(parent)
@@ -125,7 +122,7 @@ def createLedgerDetailsTableFooter(parent):
 
     Label(tableFooter, text="Rs. {:,.2f}".format(float(dr_amount)), justify="left").grid(row=1,column=1, pady=5, sticky=W, padx=10)
     Label(tableFooter, text="Rs. {:,.2f}".format(float(cr_amount)), justify="left").grid(row=1,column=2, pady=5, sticky=W, padx=10)
-    Label(tableFooter, text=account_balance, justify="left").grid(row=1,column=3, sticky=W, pady=5, padx=10)
+    Label(tableFooter, text=f"Rs. {account_balance}", justify="left").grid(row=1,column=3, sticky=W, pady=5, padx=10)
     
 
 def createLedgerDetailsTableTop(parent):
@@ -189,8 +186,6 @@ def createLedgerDetailsTableTop(parent):
         handleSearchAccount(column=globals.CURRENT_SEARCH_QUERY["account"]["column"], 
                             query=globals.CURRENT_SEARCH_QUERY["account"]["query"], from_=from_, to=to)
         
-
-
     searchButton = Button(tableTop, 
                         text="Load",
                         width=10, 
@@ -226,8 +221,8 @@ def createLedgerDetailsTableTop(parent):
     addItemButton = Button(tableTop, 
                         text="Add Transaction", 
                         width=15, 
-                        bg=globals.appBlue, 
-                        command=lambda: addCustomers.createAddCustomerWindow())
+                        bg=globals.appBlue,
+                        command=lambda: addAccounts.createAddAccountWindow(globals.CURRENT_LEDGER_ACCOUNT["customer"]))
     addItemButton.grid(row=0, column=6, padx=5, sticky="e")
     
     exportButton = Button(tableTop, 
@@ -408,7 +403,7 @@ def createAccountsTop(parent):
     searchButton.grid(row=0, column=3, padx=5, sticky="w")
 
     def clearSearch():
-        filterOption.set("Select a filter")
+        filterOption.set("Company Name")
         globals.queryEntry.delete(0, END)
         globals.queryEntry.insert(0, "")
         globals.CURRENT_LEDGER_ACCOUNT = {
@@ -454,10 +449,10 @@ def createAccountsFrame(parent):
     createAccountsTop(globals.accountsFrame)
 
     detailsArea = Frame(globals.accountsFrame)
-    detailsArea.pack(fill="both", padx=5, pady=10, expand=True)
+    detailsArea.pack(fill="both", padx=5, pady=5, expand=True)
     
-    globals.accountCustomerDetailsFrame = Frame(detailsArea, pady=5)
-    globals.accountCustomerDetailsFrame.pack(fill="x")
+    globals.accountCustomerDetailsFrame = Frame(detailsArea)
+    globals.accountCustomerDetailsFrame.pack(fill="x", padx=5)
 
     globals.ledgerDetailsArea = Frame(detailsArea)
     globals.ledgerDetailsArea.pack(side="right", fill="both", expand=True)

@@ -50,7 +50,6 @@ def get_accounts(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
             accounts = query.all()
         else:
             accounts = query.offset(skip).limit(limit).all()
-        
         def rowToDict(account):
             if not queryDict.get("customer_id"):
                 customer = db.query(Customers).filter(Customers.id==account.customer_id).first()
@@ -63,7 +62,7 @@ def get_accounts(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
                     customer_id = "N/A"
                     company_pan_no = "N/A"
                 return {"id":account.id,
-                        "date":account.created_at,
+                        "date":account.transaction_date,
                         "customer_id":customer_id,
                         "customer_name":customer_name,
                         "customer_company_pan_no":company_pan_no,
@@ -73,7 +72,7 @@ def get_accounts(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
                         "amount": account.amount}
             else:
                 return {"id":account.id,
-                        "date":account.created_at,
+                        "date":account.transaction_date,
                         "bill_id":account.bill_id,
                         "type": "credit" if account.type==AccountType.credit else "debit",
                         "description":account.description,
@@ -130,6 +129,7 @@ def get_account(id: int = 0, db: Session = get_db()):
 def add_account(data:dict = {}, db: Session=get_db()):
     try:
         account = Accounts(customer_id=data.get("customer_id"), 
+                    transaction_date=data.get("transaction_date"),
                     bill_id=data.get("bill_id"),
                     type=data.get("type"),
                     description=data.get("description"),
