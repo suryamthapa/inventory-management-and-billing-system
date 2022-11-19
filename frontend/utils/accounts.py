@@ -41,7 +41,7 @@ def get_formatted_account(customer_id, asc = True, sort_column: str = "transacti
         ne_datetime = utc_datetime.astimezone(nepali_timezone)
         temp_utc_date = datetime.date(year=ne_datetime.year, month=ne_datetime.month, day=ne_datetime.day)
         final_nepali_date = nepali_datetime.date.from_datetime_date(temp_utc_date)
-        record["date"] = final_nepali_date.strftime("%m/%d/%Y")
+        record["date"] = final_nepali_date.strftime("%d/%m/%Y")
         
         if from_ and to:
             exact_from_day = final_nepali_date == from_date

@@ -65,7 +65,7 @@ def handleSearchAccount(column="", query="", from_="", to=""):
 
 def createLedgerDetailsTableHeader(parent):
     Label(parent, text="S No.", width=4, font=globals.appFontSmallBold).grid(row=1, column=0, sticky=W)
-    Label(parent, text="Date(mm/dd/yyyy)", font=globals.appFontSmallBold).grid(row=1, column=1, sticky=W)
+    Label(parent, text="Date(dd/mm/yyyy)", font=globals.appFontSmallBold).grid(row=1, column=1, sticky=W)
     Label(parent, text="Account Description", font=globals.appFontSmallBold).grid(row=1, column=2, sticky=W)
     Label(parent, text="Dr Amount", font=globals.appFontSmallBold).grid(row=1, column=3, sticky=W)
     Label(parent, text="Cr Amount", font=globals.appFontSmallBold).grid(row=1, column=4, sticky=W)
@@ -290,7 +290,10 @@ def createLedgerDetailsTable(parent, data):
 
 
 def createLedgerDetailsArea(parent, data):
-    Label(parent, text="Ledger - Detailed", font=globals.appFontNormalBold).pack(fill="x", pady=(5, 15))
+    name = globals.CURRENT_LEDGER_ACCOUNT["customer"].get("full_name")
+    company = globals.CURRENT_LEDGER_ACCOUNT["customer"].get("company")
+
+    Label(parent, text=f"Detailed Ledger - A/C {name if name else company}", font=globals.appFontNormalBold, wraplength=500).pack(fill="x", pady=(5, 15))
     globals.ledgerDetailsTable = Frame(globals.ledgerDetailsArea)
     globals.ledgerDetailsTable.pack(fill="both")
 

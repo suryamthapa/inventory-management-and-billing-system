@@ -256,7 +256,7 @@ class Calendar(ttk.Frame):
  
         self._day_names = get_day_names('abbreviated')
         self._month_names = get_month_names('wide')
-        date_pattern = self._get_date_pattern(kw.pop("date_pattern", "MM/dd/yyyy"))
+        date_pattern = self._get_date_pattern(kw.pop("date_pattern", "dd/MM/yyyy"))
         # --- date
         today = self.date.today()
 
@@ -1108,7 +1108,7 @@ class Calendar(ttk.Frame):
 
     def format_date(self, date=None):
         """Convert date (datetime.date) to a string in the locale."""
-        return f"{date.month}/{date.day}/{date.year}"
+        return f"{date.day}/{date.month}/{date.year}"
 
     def parse_date(self, date):
         """Parse string date in the locale format and return the corresponding datetime.date."""

@@ -143,8 +143,8 @@ def createAddAccountWindow(customerInfo):
                 return False
             
             user_year = int(date_meta[2])
-            user_month = int(date_meta[0])
-            user_day = int(date_meta[1])
+            user_month = int(date_meta[1])
+            user_day = int(date_meta[0])
 
             utc_timezone = timezone("UTC")
 
