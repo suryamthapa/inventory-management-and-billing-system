@@ -56,6 +56,10 @@ def folders_files_initialization():
         if not os.path.exists("bills"):
             os.mkdir("bills")
 
+        # ensure bills folder
+        if not os.path.exists("ledgers"):
+            os.mkdir("ledgers")
+
         if not os.path.exists("migrations"):
             raise Exception("NOT FOUND: migrations folder") 
             

@@ -80,6 +80,7 @@ def update_customer_account(bill_number):
         log.info(f"UPDATED customer account with id {status}-> {data}")
         return True, message
 
+
 def make_payment(amount):
     # creating bill record and getting bill number
     bill_number, message = get_bill_number()
@@ -112,11 +113,10 @@ def make_payment(amount):
         return False
     log.info(message)
 
-    messagebox.showinfo("Billing System", f"Pdf file of invoice will open in the browser.\n\nInvoice no: #{Settings.BILL_DETAILS['final']['bill_number']}")
-
     # generating bill and saving to bills folder
     status, filename = generate_and_save_bill()
     if status:
+        messagebox.showinfo("Billing System", f"Pdf file of invoice will open in the browser.\n\nInvoice no: #{Settings.BILL_DETAILS['final']['bill_number']}\n\nFile name: {filename}")
         threading.Thread(target=preview_pdf_in_browser, args=(filename,)).start()
     else:
         messagebox.showerror("Billing System", "Error occured while generating bill.")

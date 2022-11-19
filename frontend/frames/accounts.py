@@ -1,15 +1,16 @@
 """Frame for customers""" 
 # built-in module imports
+import os
 import logging
+import threading
 import nepali_datetime
 from tkinter import messagebox
 from tkinter import *
 from ttkwidgets.autocomplete import AutocompleteEntry
 # frontend imports
 import frontend.config as globals
-from frontend.utils.accounts import get_formatted_account
+from frontend.utils.accounts import get_formatted_account, preprocess_ledger_details, export_ledger_to_pdf
 from frontend.utils.frontend import makeColumnResponsive
-from frontend.utils.customers import refreshCustomersList
 import frontend.windows.updateAccounts as updateAccounts
 import frontend.windows.addAccounts as addAccounts
 from frontend.utils.tkNepaliCalendar import DateEntry
@@ -225,11 +226,23 @@ def createLedgerDetailsTableTop(parent):
                         command=lambda: addAccounts.createAddAccountWindow(globals.CURRENT_LEDGER_ACCOUNT["customer"]))
     addItemButton.grid(row=0, column=6, padx=5, sticky="e")
     
+    def proceedToExportLedger():
+        status = preprocess_ledger_details()
+        if status:
+            # generating bill and saving to ledgers folder
+            status, filename = export_ledger_to_pdf()
+            if status:
+                messagebox.showinfo("InaBi System", f"Pdf file of ledger will open in the browser.\n\nFile name: {filename}")
+                threading.Thread(target=os.startfile, args=(os.path.join(os.getcwd(),"ledgers",filename),)).start()
+            else:
+                messagebox.showerror("InaBi System", "Error occured while generating ledger.\n\nPlease try again!\n\nThank you!")
+            return True
+
     exportButton = Button(tableTop, 
                         text="Export to PDF",
                         width=15, 
                         bg=globals.appBlue, 
-                        command=lambda : messagebox.showinfo("Export Customers", "Feature comming soon in next update!\n\nYou will be able to export customers to an excel file with the help of this feature.\n\nThank you!"))
+                        command=proceedToExportLedger)
     exportButton.grid(row=0, column=7, padx=5, sticky="e")
     
     Grid.columnconfigure(tableTop, 5, weight=1)

@@ -94,7 +94,7 @@ def createAddAccountWindow(customerInfo):
         descriptionEntry.grid(row=0, column=3, padx=5, pady=5, sticky=W)
 
         Label(addAccountFrame, text="Type").grid(row=1, column=0, padx=5, pady=5, sticky=W)
-        typesList = ["Debit", "Credit"]
+        typesList = ["debit", "credit"]
         typeOption = StringVar()
         typeOption.set(typesList[1])
         typeEntry = OptionMenu(addAccountFrame, typeOption, *typesList)
@@ -166,6 +166,8 @@ def createAddAccountWindow(customerInfo):
                     "description": descriptionVar.get(),
                     "amount": amountEntry.get()}
             status = saveAccount(data)
+            if quitWindow:
+                addAccountWindow.destroy()
 
             if status:
                 if globals.CURRENT_FRAME=="accountsFrame":
@@ -174,10 +176,6 @@ def createAddAccountWindow(customerInfo):
                                                     query=globals.CURRENT_SEARCH_QUERY["account"]["query"], 
                                                     from_=globals.CURRENT_LEDGER_ACCOUNT["from"], 
                                                     to=globals.CURRENT_LEDGER_ACCOUNT["to"])
-            
-            if quitWindow:
-                addAccountWindow.destroy()
-                return True
             return True
 
         Button(addAccountWindow,
