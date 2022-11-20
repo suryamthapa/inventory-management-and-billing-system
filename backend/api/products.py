@@ -29,11 +29,20 @@ def get_products(queryDict: dict = {}, asc = True, sort_column: str = "id",
         query = db.query(Products).filter(eval(toEval)) if toEval else db.query(Products)
         
         total_products = query.count()
-        skip = ((page-1)*limit)
-        totalPages = math.ceil(total_products/limit)
+        if limit:
+            skip = ((page-1)*limit)
+            totalPages = math.ceil(total_products/limit)
+        else:
+            skip = 0
+            totalPages = 1
         
         sort_query = eval(f"Products.{sort_column}") if asc else eval(f"Products.{sort_column}.desc()")
-        products = query.order_by(sort_query).offset(skip).limit(limit).all()
+        products = query.order_by(sort_query)
+
+        if not limit:
+            products = query.all()
+        else:
+            products = query.offset(skip).limit(limit).all()
         
         def rowToDict(product):
             return {"id": product.id,

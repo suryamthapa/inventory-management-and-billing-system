@@ -2,7 +2,6 @@ import sys
 try:
     from command_runner.elevate import elevate
 except Exception as e:
-    print(e)
     sys.exit()
 
 def main():
@@ -14,4 +13,4 @@ def main():
 
 if __name__=="__main__":
     # main()
-   elevate(main)
+    elevate(main)

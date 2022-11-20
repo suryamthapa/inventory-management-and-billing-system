@@ -441,15 +441,15 @@ def createCustomerDetailsArea(parent):
         }
 
     def setCompleteValues():
-        if filterOptionsMap.get(filterOption.get()):
-            column_name = filterOptionsMap.get(filterOption.get())
+        if filterOptionsMap.get(globals.billingCustomerfilterOption.get()):
+            column_name = filterOptionsMap.get(globals.billingCustomerfilterOption.get())
             completevalues = [record[column_name] if record[column_name] else "" for record in globals.CUSTOMERS_LIST]
             globals.billingCustomerNameEntry.config(completevalues=completevalues)
     
-    filterOption = StringVar()
-    filterOption.set("Company Name")
+    globals.billingCustomerfilterOption = StringVar()
+    globals.billingCustomerfilterOption.set("Company Name")
     filters = list(filterOptionsMap.keys())
-    filter = OptionMenu(customerDetailsFrame, filterOption, *filters, command=lambda x: setCompleteValues())
+    filter = OptionMenu(customerDetailsFrame, globals.billingCustomerfilterOption, *filters, command=lambda x: setCompleteValues())
     filter.grid(row=0, column=1, padx=(1, 2), sticky="w", pady=(5,10))
 
     globals.namePhFrame = LabelFrame(customerDetailsFrame, text="Customer Details")
@@ -460,8 +460,8 @@ def createCustomerDetailsArea(parent):
     def proceedToLoadCustomerDetails():
         if globals.billingCustomerNameEntry.get():
             status = False
-            if filterOptionsMap.get(filterOption.get()):
-                toEval = f"get_customer({filterOptionsMap.get(filterOption.get())}='{globals.billingCustomerNameEntry.get()}')"
+            if filterOptionsMap.get(globals.billingCustomerfilterOption.get()):
+                toEval = f"get_customer({filterOptionsMap.get(globals.billingCustomerfilterOption.get())}='{globals.billingCustomerNameEntry.get()}')"
                 status, customerDetails = eval(toEval)
             
             if status:

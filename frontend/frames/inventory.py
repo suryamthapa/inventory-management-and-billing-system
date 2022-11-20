@@ -34,17 +34,21 @@ def deleteProduct(id, name):
 
 
 def handleSearchProduct(queryColumnDict, page=1, limit=11, sort_column="id", asc=True):
-    globals.CURRENT_SEARCH_QUERY["customers"] = {}
-    for column, query in queryColumnDict.items():
-        globals.CURRENT_SEARCH_QUERY["products"][column] = query
-    status, data = get_products(globals.CURRENT_SEARCH_QUERY["products"], page=page, limit=limit, sort_column=sort_column, asc=asc)
-    
-    if status:
-        createInventoryTable(globals.inventoryFrame, data=data)
-    else:
-        Label(globals.inventoryFrame, text="Error occured while fetching products from database.").pack()
-        Label(globals.inventoryFrame, text="Please check logs or contact the developer.").pack()
-    return True
+    try:
+        globals.CURRENT_SEARCH_QUERY["products"] = {}
+        for column, query in queryColumnDict.items():
+            globals.CURRENT_SEARCH_QUERY["products"][column] = query
+        status, data = get_products(globals.CURRENT_SEARCH_QUERY["products"], page=page, limit=limit, sort_column=sort_column, asc=asc)
+        
+        if status:
+            createInventoryTable(globals.inventoryFrame, data=data)
+        else:
+            Label(globals.inventoryFrame, text="Error occured while fetching products from database.").pack()
+            Label(globals.inventoryFrame, text="Please check logs or contact the developer.").pack()
+        return True
+    except Exception as e:
+        log.error(f"ERROR: while handling Search Product -> {e}")
+        messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
 
 
 def createtableTop(parent):
@@ -65,25 +69,26 @@ def createtableTop(parent):
         filterOptionsMap = {
             "Product name": "product_name"
         }
-        if filterOptionsMap.get(filterOption.get()):
-            column_name = filterOptionsMap.get(filterOption.get())
+        if filterOptionsMap.get(globals.filterOption.get()):
+            column_name = filterOptionsMap.get(globals.filterOption.get())
             completevalues = [record[column_name] if record[column_name] else "" for record in globals.PRODUCTS_LIST]
             globals.queryEntry.config(completevalues=completevalues)
     
-    filterOption = StringVar()
-    filterOption.set("Select a filter")
+    globals.filterOption = StringVar()
+    globals.filterOption.set("Product name")
     filters = ["Product name"]
 
-    filter = OptionMenu(globals.tableTop, filterOption, *filters, command=lambda x: setCompleteValues())
+    filter = OptionMenu(globals.tableTop, globals.filterOption, *filters, command=lambda x: setCompleteValues())
     filter.grid(row=0, column=1, padx=(2, 5), sticky="w")
+    setCompleteValues()
 
     def proceedToSearch():
         filterOptionsMap = {
             "Product name": "product_name"
         }
         if globals.queryEntry.get():
-            if filterOptionsMap.get(filterOption.get()):
-                handleSearchProduct({filterOptionsMap.get(filterOption.get()):globals.queryEntry.get()})
+            if filterOptionsMap.get(globals.filterOption.get()):
+                handleSearchProduct({filterOptionsMap.get(globals.filterOption.get()):globals.queryEntry.get()})
             else:
                 messagebox.showwarning("Inventory", "Please select a filter to search by.")
 
@@ -95,7 +100,6 @@ def createtableTop(parent):
     searchButton.grid(row=0, column=3, padx=5)
 
     def clearSearch():
-        filterOption.set("Select a filter")
         globals.queryEntry.delete(0, END)
         globals.queryEntry.insert(0, "")
         globals.CURRENT_SEARCH_QUERY["products"] = {}
@@ -119,7 +123,7 @@ def createtableTop(parent):
                         text="Export",
                         width=10, 
                         bg=globals.appBlue, 
-                        command=lambda : messagebox.showinfo("Export Customers", "Feature comming soon in next update!\n\nYou will be able to export products to an excel file with the help of this feature.\n\nThank you!"))
+                        command=lambda : messagebox.showinfo("Export Products", "Feature comming soon in next update!\n\nYou will be able to export products to an excel file with the help of this feature.\n\nThank you!"))
     exportButton.grid(row=0, column=6, padx=5, sticky="e")
     
     Grid.columnconfigure(globals.tableTop, 4, weight=1)

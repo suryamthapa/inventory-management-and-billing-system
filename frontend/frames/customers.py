@@ -34,17 +34,21 @@ def deleteCustomer(id, name):
 
 
 def handleSearchCustomer(queryColumnDict, page=1, limit=11, sort_column="id", asc=True):
-    globals.CURRENT_SEARCH_QUERY["customers"] = {}
-    for column, query in queryColumnDict.items():
-        globals.CURRENT_SEARCH_QUERY["customers"][column] = query
-    status, data = get_customers(globals.CURRENT_SEARCH_QUERY["customers"], page=page, limit=limit, sort_column=sort_column, asc=asc)
-    
-    if status:
-        createCustomersTable(globals.customersFrame, data=data)
-    else:
-        Label(globals.customersFrame, text="Error occured while fetching products from database.").pack()
-        Label(globals.customersFrame, text="Please check logs or contact the developer.").pack()
-    return True
+    try:
+        globals.CURRENT_SEARCH_QUERY["customers"] = {}
+        for column, query in queryColumnDict.items():
+            globals.CURRENT_SEARCH_QUERY["customers"][column] = query
+        status, data = get_customers(globals.CURRENT_SEARCH_QUERY["customers"], page=page, limit=limit, sort_column=sort_column, asc=asc)
+        
+        if status:
+            createCustomersTable(globals.customersFrame, data=data)
+        else:
+            Label(globals.customersFrame, text="Error occured while fetching products from database.").pack()
+            Label(globals.customersFrame, text="Please check logs or contact the developer.").pack()
+        return True
+    except Exception as e:
+        log.error(f"ERROR: while handling Search customer -> {e}")
+        messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
 
 
 def createCustomersTop(parent):
@@ -71,23 +75,24 @@ def createCustomersTop(parent):
         }
 
     def setCompleteValues():
-        if filterOptionsMap.get(filterOption.get()):
-            column_name = filterOptionsMap.get(filterOption.get())
+        if filterOptionsMap.get(globals.filterOption.get()):
+            column_name = filterOptionsMap.get(globals.filterOption.get())
             completevalues = [record[column_name] if record[column_name] else "" for record in globals.CUSTOMERS_LIST]
             globals.queryEntry.config(completevalues=completevalues)
     
-    filterOption = StringVar()
-    filterOption.set("Select a filter")
+    globals.filterOption = StringVar()
+    globals.filterOption.set("Company Name")
     filters = list(filterOptionsMap.keys())
 
-    filter = OptionMenu(globals.tableTop, filterOption, *filters, command=lambda x: setCompleteValues())
+    filter = OptionMenu(globals.tableTop, globals.filterOption, *filters, command=lambda x: setCompleteValues())
     filter.grid(row=0, column=1, padx=(2, 5), sticky="w")
+    setCompleteValues()
 
     def proceedToSearch():
         
         if globals.queryEntry.get():
-            if filterOptionsMap.get(filterOption.get()):
-                handleSearchCustomer({filterOptionsMap.get(filterOption.get()):globals.queryEntry.get()})
+            if filterOptionsMap.get(globals.filterOption.get()):
+                handleSearchCustomer({filterOptionsMap.get(globals.filterOption.get()):globals.queryEntry.get()})
             else:
                 messagebox.showwarning("Customers", "Please select a filter to search by.")
 
@@ -99,7 +104,6 @@ def createCustomersTop(parent):
     searchButton.grid(row=0, column=3, padx=5, sticky="w")
 
     def clearSearch():
-        filterOption.set("Select a filter")
         globals.queryEntry.delete(0, END)
         globals.queryEntry.insert(0, "")
         globals.CURRENT_SEARCH_QUERY["customers"] = {}

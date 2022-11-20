@@ -121,6 +121,11 @@ customersFilterOptionsMap = {
             "Telephone": "telephone",
             "Email": "email"
         }
+productsFilterOptionsMap = {
+            "Product name": "product_name"
+        }
+filterOption = None
+billingCustomerfilterOption = None
 
 accountsFrame = None
 accountsTable = None

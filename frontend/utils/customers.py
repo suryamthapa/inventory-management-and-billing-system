@@ -5,7 +5,7 @@ from backend.api.customers import get_customers, update_customer, add_customer
 
 
 def refreshCustomersList():
-    status, data = get_customers()
+    status, data = get_customers(limit=None)
     if status:
         Settings.CUSTOMERS_LIST = data["data"]
 

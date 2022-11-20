@@ -23,45 +23,49 @@ log = logging.getLogger("frontend")
 
 
 def handleSearchAccount(column="", query="", from_="", to=""):
-    globals.CURRENT_SEARCH_QUERY["account"] = {
-        "column": column,
-        "query": query
-    }
-    data = {
-        "customer":{},
-        "account":{},
-        "from":from_,
-        "to":to,
-        "summary":{
-            "dr_amount":0.00,
-            "cr_amount":0.00,
-            "account_balance":0.00
+    try:
+        globals.CURRENT_SEARCH_QUERY["account"] = {
+            "column": column,
+            "query": query
         }
-    }
-    if not column or not query:
-        createDetailsArea(globals.accountsFrame, data=data)
-        return False, "Insufficient data"
+        data = {
+            "customer":{},
+            "account":{},
+            "from":from_,
+            "to":to,
+            "summary":{
+                "dr_amount":0.00,
+                "cr_amount":0.00,
+                "account_balance":0.00
+            }
+        }
+        if not column or not query:
+            createDetailsArea(globals.accountsFrame, data=data)
+            return False, "Insufficient data"
 
-    toEval = f"get_customer({column}='{query}')"
-    customerStatus, customerDetails = eval(toEval)
-    if not customerStatus:
-        createDetailsArea(globals.accountsFrame, data=data)
-        return False, "Customer not found."
-    
-    account_data = get_formatted_account(customer_id=customerDetails.get("id"), from_=from_, to=to)
-    if account_data:
-        data["account"] = account_data
-        for record in account_data:
-            if record["type"]=="debit":
-                data["summary"]["dr_amount"] += float(record["amount"])
-            if record["type"]=="credit":
-                data["summary"]["cr_amount"] += float(record["amount"])
-        data["summary"]["account_balance"] = account_data[-1]["account_balance"]
+        toEval = f"get_customer({column}='{query}')"
+        customerStatus, customerDetails = eval(toEval)
+        if not customerStatus:
+            createDetailsArea(globals.accountsFrame, data=data)
+            return False, "Customer not found."
+        
+        account_data = get_formatted_account(customer_id=customerDetails.get("id"), from_=from_, to=to)
+        if account_data:
+            data["account"] = account_data
+            for record in account_data:
+                if record["type"]=="debit":
+                    data["summary"]["dr_amount"] += float(record["amount"])
+                if record["type"]=="credit":
+                    data["summary"]["cr_amount"] += float(record["amount"])
+            data["summary"]["account_balance"] = account_data[-1]["account_balance"]
 
-    data["customer"] = customerDetails
-    globals.CURRENT_LEDGER_ACCOUNT = data
-    createDetailsArea(globals.accountsFrame, data=data)
-    return True
+        data["customer"] = customerDetails
+        globals.CURRENT_LEDGER_ACCOUNT = data
+        createDetailsArea(globals.accountsFrame, data=data)
+        return True
+    except Exception as e:
+        log.error(f"ERROR: while handling Search Account -> {e}")
+        messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
 
 
 def createLedgerDetailsTableHeader(parent):
@@ -148,12 +152,14 @@ def createLedgerDetailsTableTop(parent):
     def proceedToLoadDetails():
         from_ = fromDateEntry.get()
         to = toDateEntry.get()
+        log.info(from_, to)
         if not from_:
             fromDateEntry.focus()
             return False
         if not from_:
             toDateEntry.focus()
             return False
+
         
         from_date_meta = from_.split("/")
         to_date_meta = to.split("/")
@@ -195,7 +201,7 @@ def createLedgerDetailsTableTop(parent):
     searchButton.grid(row=0, column=4, padx=5, sticky="w")
 
     def clearDateFilter():
-        if not globals.CURRENT_LEDGER_ACCOUNT["to"] and globals.CURRENT_LEDGER_ACCOUNT["from"]:
+        if not globals.CURRENT_LEDGER_ACCOUNT["to"] and not globals.CURRENT_LEDGER_ACCOUNT["from"]:
             return False
 
         # clearing global entries

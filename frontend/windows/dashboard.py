@@ -2,18 +2,19 @@
 Window for dashboard where user will be able to do different things
 user will be able to access the dashboard only after entering valid liscence key in welcome screen
 """
+# in-built module imports
 import logging
+import sys
+import os
+import datetime
+from PIL import ImageTk
+from PIL import Image as PILImage
+from tkinter import *
+from tkinter import messagebox
 
 log = logging.getLogger("frontend")
 
 try:
-    # in-built module imports
-    import os
-    import datetime
-    from PIL import ImageTk
-    from PIL import Image as PILImage
-    from tkinter import *
-    from tkinter import messagebox
     # frontend imports
     import frontend.config as Settings
     from frontend.utils.frontend import exitParent, showCurrentTime, handle_buttons_on_activation
@@ -30,6 +31,8 @@ try:
     from backend.models import LisenceStatus
 except Exception as e:
     log.error(f"Error occured while importing modules from dashboard -> {e}")
+    messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
+    sys.exit("Import error")
 
 
 def showFrame(frameName, refreshMode=False):
@@ -217,6 +220,7 @@ def openDashboard(container):
             log.info("COMPLETE: Trial")
             if Settings.LISENCE_INFO.get("status") == LisenceStatus.active:
                 log.info("Lisence is active")
+                messagebox.showinfo("InaBi System", "Welcome to Inventory Management and Billing System, by Datakhoj Private Limited!")
             elif Settings.LISENCE_INFO.get("status") is None:
                 log.error("Exception may have occured while updating lisence key to expired.")
                 handle_buttons_on_activation(deactivation=True)

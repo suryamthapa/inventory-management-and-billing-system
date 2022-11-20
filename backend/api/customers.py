@@ -28,12 +28,21 @@ def get_customers(queryDict: dict = {}, asc = True, sort_column: str = "id",
         toEval = ", ".join(f"Customers.{key}.ilike('%{value}%')" for key, value in queryDict.items()) if queryDict else None
         query = db.query(Customers).filter(eval(toEval)) if toEval else db.query(Customers)
         
-        total_products = query.count()
-        skip = ((page-1)*limit)
-        totalPages = math.ceil(total_products/limit)
+        total_customers = query.count()
+        if limit:
+            skip = ((page-1)*limit)
+            totalPages = math.ceil(total_customers/limit)
+        else:
+            skip = 0
+            totalPages = 1
         
         sort_query = eval(f"Customers.{sort_column}") if asc else eval(f"Customers.{sort_column}.desc()")
-        customers = query.order_by(sort_query).offset(skip).limit(limit).all()
+        customers = query.order_by(sort_query)
+
+        if not limit:
+            customers = query.all()
+        else:
+            customers = query.offset(skip).limit(limit).all()
         
         def rowToDict(customer):
             return {"id": customer.id,

@@ -135,12 +135,14 @@ def createUpdateCustomerWindow(customerInfo):
                 refreshCustomersList()
                 if globals.CURRENT_FRAME=="customersFrame":
                     # refresh auto complete values in search entry
-                    globals.queryEntry.config(completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
+                    field = globals.customersFilterOptionsMap.get(globals.filterOption.get())
+                    globals.queryEntry.config(completevalues=[record[field] if record.get(field) else "" for record in globals.CUSTOMERS_LIST])
                     # reload the inventory table
                     customers.handleSearchCustomer(globals.CURRENT_SEARCH_QUERY.get("customers"))
                 if globals.CURRENT_FRAME=="billingSystemFrame":
-                    # refresh auto complete values in product search entry
-                    globals.billingProductNameEntry.config(completevalues=[record["full_name"] if record["full_name"] else "" for record in globals.CUSTOMERS_LIST])
+                    # refresh auto complete values in customers search entry in billing frame
+                    field = globals.customersFilterOptionsMap.get(globals.billingCustomerfilterOption.get())
+                    globals.billingProductNameEntry.config(completevalues=[record[field] if record.get(field) else "" for record in globals.CUSTOMERS_LIST])
 
         Button(updateCustomerWindow,
             text="Cancel",

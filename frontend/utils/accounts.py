@@ -7,6 +7,7 @@ import os
 from pytz import timezone
 import logging
 # frontend imports
+from frontend.utils.frontend import get_nepali_datetime_from_utc
 import frontend.utils.nepali_datetime as nepali_datetime
 import frontend.config as Settings
 from frontend.utils.ledgerPdfGenerator import CustomerLedger
@@ -36,13 +37,15 @@ def get_formatted_account(customer_id, asc = True, sort_column: str = "transacti
     start_from_found = False
     end_to_found = False
     for index, record in enumerate(accounts_data["data"]):
-        nepali_timezone = timezone("Asia/Kathmandu")
-        utc = pytz.utc
-        utc_datetime = record["date"].replace(tzinfo=utc)
-        ne_datetime = utc_datetime.astimezone(nepali_timezone)
-        temp_utc_date = datetime.date(year=ne_datetime.year, month=ne_datetime.month, day=ne_datetime.day)
-        final_nepali_date = nepali_datetime.date.from_datetime_date(temp_utc_date)
-        record["date"] = final_nepali_date.strftime("%d/%m/%Y")
+        final_nepali_date = nepali_datetime.date.today()
+        if record["date"]:
+            ne_datetime, message = get_nepali_datetime_from_utc(record["date"], format="BS")
+            if ne_datetime:
+                final_nepali_date = nepali_datetime.date(ne_datetime.year, ne_datetime.month, ne_datetime.day)
+                record["date"] = final_nepali_date.strftime("%d/%m/%Y")
+            else:
+                final_nepali_date = nepali_datetime.date.today()
+                log.error(f"Error occured while getting nepali datetiem from utc -> {e}")
         
         if from_ and to:
             exact_from_day = final_nepali_date == from_date
@@ -148,7 +151,7 @@ def export_ledger_to_pdf():
                     company_info=Settings.CURRENT_SETTINGS.get("company_profile"), ledger_details=Settings.CURRENT_LEDGER_ACCOUNT, 
                     title=f"{name if name else company}_Ledger_{from_to_part}", author="IMAB System - Datakhoj",
                     subject=f"Ledger_A/C_{name if name else company}_{from_to_part}")
-        log.info(f"Bill generated and saved as: {filename}")
+        log.info(f"Ledger generated and saved as: {filename}")
         return True, filename
     except Exception as e:
         if os.path.exists(os.path.join(os.getcwd(),"bills",filename)):
