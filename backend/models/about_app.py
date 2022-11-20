@@ -9,5 +9,6 @@ class AboutApp(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     app_version = Column(String)
+    unique_machine_code = Column(String)
     trial_begin_on = Column(DateTime)
     trial_completed = Column(Boolean)

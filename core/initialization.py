@@ -1,4 +1,5 @@
 import os
+import subprocess
 from backend.api.about_app import add_update_app_configuration
 
 
@@ -17,7 +18,7 @@ def database_initialization():
 def initialize_app_configuration():
     try:
         data = {
-            "app_version":"1.0"
+            "app_version":"1.0",
         }
         status, message = add_update_app_configuration(data)
         if status:

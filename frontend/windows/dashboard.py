@@ -18,7 +18,7 @@ try:
     # frontend imports
     import frontend.config as Settings
     from frontend.utils.frontend import exitParent, showCurrentTime, handle_buttons_on_activation
-    from frontend.utils.app_configuration import has_trial_started, start_trial, is_trial_complete
+    from frontend.utils.app_configuration import has_trial_started, start_trial, is_trial_complete, is_machine_same
     from frontend.frames.inventory import openInventory
     from frontend.frames.home import openHome
     from frontend.frames.profile import openProfile
@@ -205,6 +205,12 @@ def createTopBar(container):
 
 def openDashboard(container):
     try:
+        if not is_machine_same():
+            messagebox.showerror("Inabi System", "The application does not belong to this machine. In case of any inconvenience, please contact the developers. \n\nDevelopers Info:\nDatakhoj Private Limited\nPhone: (+977) 9862585910\nEmail: datakhoj.ai@gmail.com\n\nThank you!")
+            container.destroy()
+            return False
+
+        log.info("FOUND: Machine is same.")
         createSidebar(container)
 
         Settings.board = Frame(container, borderwidth=1, width=500, height=500)
