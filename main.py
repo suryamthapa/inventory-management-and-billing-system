@@ -10,7 +10,6 @@ def main():
         import core.splash as splashScreen
         splashScreen.splashScreen.mainloop()
     except (ImportError, ModuleNotFoundError) as e:
-        print(e)
         sys.exit("Import error")
 
 if __name__=="__main__":

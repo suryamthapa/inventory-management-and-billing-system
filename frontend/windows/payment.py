@@ -4,7 +4,7 @@ from tkinter import *
 from tkinter import messagebox
 import frontend.config as globals
 if globals.DATE_TIME_TYPE == "NEPALI":
-    from nepali_datetime import date
+    from frontend.utils.nepali_datetime import date
 else:
     from datetime import date
 import frontend.frames.billing as billingFrame

@@ -3,11 +3,11 @@
 import os
 import logging
 import threading
-import nepali_datetime
 from tkinter import messagebox
 from tkinter import *
 from ttkwidgets.autocomplete import AutocompleteEntry
 # frontend imports
+import frontend.utils.nepali_datetime as nepali_datetime
 import frontend.config as globals
 from frontend.utils.accounts import get_formatted_account, preprocess_ledger_details, export_ledger_to_pdf
 from frontend.utils.frontend import makeColumnResponsive

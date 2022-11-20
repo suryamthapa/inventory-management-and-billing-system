@@ -2,11 +2,11 @@
 
 import logging
 from pytz import timezone
-import nepali_datetime
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 # frontend imports
+from frontend.utils import nepali_datetime
 import frontend.config as globals
 import frontend.frames.accounts as accountsFrame
 from frontend.utils.accounts import saveAccount

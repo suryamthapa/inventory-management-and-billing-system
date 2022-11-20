@@ -5,7 +5,7 @@ import math
 import frontend.config as Settings
 import frontend.windows.dashboard as dashboard
 if Settings.DATE_TIME_TYPE == "NEPALI":
-    from nepali_datetime import date
+    from frontend.utils.nepali_datetime import date
 else:
     from datetime import date
 

@@ -1,4 +1,4 @@
-import nepali_datetime
+from frontend.utils import nepali_datetime
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle

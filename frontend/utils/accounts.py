@@ -1,13 +1,13 @@
 
 from tkinter import *
 from tkinter import messagebox
-import nepali_datetime
 import datetime
 import pytz
 import os
 from pytz import timezone
 import logging
 # frontend imports
+import frontend.utils.nepali_datetime as nepali_datetime
 import frontend.config as Settings
 from frontend.utils.ledgerPdfGenerator import CustomerLedger
 # backend imports

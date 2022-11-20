@@ -6,7 +6,7 @@ from tkinter import messagebox
 import threading
 import frontend.config as Settings
 if Settings.DATE_TIME_TYPE == "NEPALI":
-    from nepali_datetime import date
+    from frontend.utils.nepali_datetime import date
 else:
     from datetime import date
 # frontend imports

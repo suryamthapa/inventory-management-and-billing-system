@@ -2,31 +2,35 @@
 Window for dashboard where user will be able to do different things
 user will be able to access the dashboard only after entering valid liscence key in welcome screen
 """
-# in-built module imports
-import os
 import logging
-import datetime
-from PIL import ImageTk
-from PIL import Image as PILImage
-from tkinter import *
-from tkinter import messagebox
-# frontend imports
-import frontend.config as Settings
-from frontend.utils.frontend import exitParent, showCurrentTime, handle_buttons_on_activation
-from frontend.utils.app_configuration import has_trial_started, start_trial, is_trial_complete
-from frontend.frames.inventory import openInventory
-from frontend.frames.home import openHome
-from frontend.frames.profile import openProfile
-from frontend.frames.settings import openSettings
-import frontend.frames.billing as billingSystem
-from frontend.frames.customers import openCustomers
-from frontend.frames.accounts import openAccounts
-from frontend.windows.lisence import createLicenseInformationWindow
-# backend imports
-from backend.models import LisenceStatus
-
 
 log = logging.getLogger("frontend")
+
+try:
+    # in-built module imports
+    import os
+    import datetime
+    from PIL import ImageTk
+    from PIL import Image as PILImage
+    from tkinter import *
+    from tkinter import messagebox
+    # frontend imports
+    import frontend.config as Settings
+    from frontend.utils.frontend import exitParent, showCurrentTime, handle_buttons_on_activation
+    from frontend.utils.app_configuration import has_trial_started, start_trial, is_trial_complete
+    from frontend.frames.inventory import openInventory
+    from frontend.frames.home import openHome
+    from frontend.frames.profile import openProfile
+    from frontend.frames.settings import openSettings
+    import frontend.frames.billing as billingSystem
+    from frontend.frames.customers import openCustomers
+    from frontend.frames.accounts import openAccounts
+    from frontend.windows.lisence import createLicenseInformationWindow
+    # backend imports
+    from backend.models import LisenceStatus
+except Exception as e:
+    log.error(f"Error occured while importing modules from dashboard -> {e}")
+
 
 def showFrame(frameName, refreshMode=False):
     alreadyOpen = True

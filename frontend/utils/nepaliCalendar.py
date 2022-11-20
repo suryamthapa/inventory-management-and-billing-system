@@ -6,8 +6,8 @@ Sunday as the last (the European convention). Use setfirstweekday() to
 set the first day of the week (0=Monday, 6=Sunday)."""
 
 import sys
-from nepali_datetime import _DAYNAMES, _days_in_month
-import nepali_datetime as datetime
+from frontend.utils.nepali_datetime import _DAYNAMES, _days_in_month
+import frontend.utils.nepali_datetime as datetime
 import locale as _locale
 from itertools import repeat
 

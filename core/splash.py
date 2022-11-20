@@ -16,7 +16,7 @@ def check_if_module_exists(name):
 
 
 def ensure_modules():
-    modules = ["ttkwidgets", "alembic", "PIL", "reportlab", "frontend", "backend", "core", "nepali_datetime", "pytz"]
+    modules = ["ttkwidgets", "alembic", "PIL", "reportlab", "frontend", "backend", "core", "pytz"]
     for module in modules:
         value = check_if_module_exists(module)
         if not value:
