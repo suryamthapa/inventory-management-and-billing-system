@@ -87,7 +87,7 @@ def createAddProductWindow():
                 refreshProductsList()
                 if globals.CURRENT_FRAME=="inventoryFrame":
                     # refresh auto complete values in search entry
-                    field = globals.customersFilterOptionsMap.get(globals.filterOption.get())
+                    field = globals.productsFilterOptionsMap.get(globals.filterOption.get())
                     globals.queryEntry.config(completevalues=[record[field] if record.get(field) else "" for record in globals.PRODUCTS_LIST])
                     # reload the inventory table
                     inventory.handleSearchProduct(globals.CURRENT_SEARCH_QUERY.get("products"))
