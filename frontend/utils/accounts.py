@@ -45,7 +45,7 @@ def get_formatted_account(customer_id, asc = True, sort_column: str = "transacti
                 record["date"] = final_nepali_date.strftime("%d/%m/%Y")
             else:
                 final_nepali_date = nepali_datetime.date.today()
-                log.error(f"Error occured while getting nepali datetiem from utc -> {e}")
+                log.error(f"Error occured while getting nepali datetiem from utc -> {message}")
         
         if from_ and to:
             exact_from_day = final_nepali_date == from_date

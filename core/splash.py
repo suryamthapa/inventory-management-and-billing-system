@@ -60,6 +60,14 @@ def folders_files_initialization():
         if not os.path.exists("ledgers"):
             os.mkdir("ledgers")
 
+        # ensure data folder
+        if not os.path.exists("data"):
+            os.mkdir("data")
+            from core.calendar_bs import write_calendar_to_csv
+            status = write_calendar_to_csv()
+            if not status:
+                raise Exception("ERROR: Could not initialize calendar csv file")
+
         if not os.path.exists("migrations"):
             raise Exception("NOT FOUND: migrations folder") 
             
