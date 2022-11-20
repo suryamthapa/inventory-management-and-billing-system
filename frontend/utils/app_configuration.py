@@ -10,7 +10,6 @@ log = logging.getLogger("frontend")
 def is_machine_same():
     current_machine_id = subprocess.check_output('wmic csproduct get uuid').decode("utf-8")
     current_machine_id = current_machine_id.split('\n')[1].strip()
-    current_machine_id = "123"
     status, message = get_about_app()
     if status:
         if message["unique_machine_code"] == current_machine_id:
