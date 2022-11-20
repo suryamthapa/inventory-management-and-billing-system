@@ -32,15 +32,12 @@ def createLicenseInformationWindow():
         Label(statusFrame, text="Status: ", font=globals.appFontNormalBold).pack(side="left")
         if globals.LISENCE_INFO.get("status")==LisenceStatus.expired: 
             status = "Expired"
-            handle_buttons_on_activation(globals.PREMIUM_FEATURES_FRAMES, deactivation=True)
         elif globals.LISENCE_INFO.get("status")==LisenceStatus.active: 
             status = "Active"
         elif globals.LISENCE_INFO.get("status")==LisenceStatus.not_activated_yet: 
             status = "Not activated yet"
-            handle_buttons_on_activation(globals.PREMIUM_FEATURES_FRAMES, deactivation=True)
         else: 
             status = "Could not find lisence status. Please contact the developer."
-            handle_buttons_on_activation(globals.PREMIUM_FEATURES_FRAMES, deactivation=True)
         statusLabel = Label(statusFrame, text=status)
         statusLabel.pack(side="left")
 
@@ -113,16 +110,14 @@ def createLicenseInformationWindow():
                 status, message = add_lisence(data)
                 if status:
                     refreshLisenceInfo()
-                    handle_buttons_on_activation(globals.PREMIUM_FEATURES_FRAMES)
+                    handle_buttons_on_activation()
                     dashboard.showFrame(globals.CURRENT_FRAME, refreshMode=True)
                     licenseWindow.destroy()
+                    globals.appStatusLabel.config(text="Status: Active")
                     messagebox.showinfo("Product activation", f"Activation successful!\n\nLisence Key: {status}\n\nThank you!")
                     status = is_trial_complete(forceComplete=True)
                     if not status:
                         messagebox.showerror("Product activation", f"App is activated however some error has occured!\nPlease check logs for errors!\n\nYou can close this dialogue and continue working!\n\nThank you!")
-                    else:
-                        # messagebox.showinfo("InaBi System", "Also the trial has been marked as completed.")
-                        print("Trial complete status: ",is_trial_complete())
                     return True
                 else:
                     messagebox.showerror("Product activation", f"Could not activate the app!\n\n{message}")
@@ -134,7 +129,7 @@ def createLicenseInformationWindow():
                 status, message = add_lisence(data)
                 if status:
                     refreshLisenceInfo()
-                    handle_buttons_on_activation(globals.PREMIUM_FEATURES_FRAMES)
+                    handle_buttons_on_activation()
                     dashboard.showFrame(globals.CURRENT_FRAME, refreshMode=True)
                     licenseWindow.destroy()
                     messagebox.showinfo("Product activation", f"Activation successful!\n\nLisence Key: {status}\n\nThank you!")

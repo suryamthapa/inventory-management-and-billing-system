@@ -78,6 +78,7 @@ paginationBackButton = None
 paginationForwardButton = None
 
 # global labels
+appStatusLabel = None
 sidebarBrandName = None
 profileBrandName = None
 paginationPageInfo = None
