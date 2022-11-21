@@ -44,6 +44,14 @@ def add_update_app_configuration(data: dict = {}, db: Session=get_db()):
             db.commit()
             db.close()
             return True, "App configuration initialized."
+        elif not about_app.unique_machine_code:
+            current_machine_id = subprocess.check_output('wmic csproduct get uuid').decode("utf-8")
+            current_machine_id = current_machine_id.split('\n')[1].strip()
+            setattr(about_app, "unique_machine_code", current_machine_id)
+            db.commit()
+            db.close()
+            return True, "App configuration initialized."
+            
         for key, value in data.items():
             setattr(about_app, key, value)
     

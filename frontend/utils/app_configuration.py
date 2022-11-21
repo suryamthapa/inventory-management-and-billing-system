@@ -38,8 +38,9 @@ def is_trial_complete(forceComplete=False):
                 
             current_time = datetime.datetime.now()
             trial_begin_on = message["trial_begin_on"]
+            difference = current_time - trial_begin_on
 
-            if (current_time - trial_begin_on).seconds > 7*86400:
+            if (difference.days+1) > 7:
                 data = {"trial_completed": True}
                 status, message = add_update_app_configuration(data)
                 if status:
@@ -64,7 +65,8 @@ def has_trial_started():
 
 def start_trial():
     data = {
-        "trial_begin_on": datetime.datetime.now()
+        "trial_begin_on": datetime.datetime.now(),
+        "trial_completed": False
     }
     status, message = add_update_app_configuration(data)
     if status:

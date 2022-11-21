@@ -12,6 +12,7 @@ def refreshLisenceInfo():
     info = getLisenceInfo()
     Settings.LISENCE_INFO = info
 
+
 def getLisenceInfo():
     status, message = get_lisence()
     payload = {
@@ -30,9 +31,10 @@ def getLisenceStatus(status, message):
 
         current_time = datetime.datetime.now()
         activated_on = message["activated_on"]
-        duration  = message["duration"] if message["duration"] else 1
+        duration  = int(message["duration"]) if message.get("duration") else 1
+        difference = current_time - activated_on
         # check if expired, if yes update db
-        if (activated_on - current_time).seconds > duration*365*86400:
+        if (difference.days+1) > duration*365:
             data = {"status": LisenceStatus.expired}
             status, message = update_lisence(message["lisence_key"], data)
             if status:

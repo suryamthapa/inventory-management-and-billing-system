@@ -13,6 +13,14 @@ from frontend.utils.products import saveProduct, refreshProductsList
 log = logging.getLogger("frontend")
 
 
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+
+
 def createAddProductWindow():
     try:
         addProductWindow = Toplevel()
@@ -62,11 +70,11 @@ def createAddProductWindow():
                 stockEntry.focus()
                 return False
 
-            if not markedPriceEntry.get().isdigit():
+            if not isfloat(markedPriceEntry.get()):
                 messagebox.showwarning("Invalid", "Marked price should contain numbers only.")
                 markedPriceEntry.focus()
                 return False
-            if not costPriceEntry.get().isdigit():
+            if not isfloat(costPriceEntry.get()):
                 messagebox.showwarning("Invalid", "Cost price should contain numbers only.")
                 costPriceEntry.focus()
                 return False

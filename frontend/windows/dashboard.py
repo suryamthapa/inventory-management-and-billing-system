@@ -247,7 +247,8 @@ def openDashboard(container):
             if status:
                 trial_day = int((datetime.datetime.now()-trial_begin_on).days)+1
                 log.info(f"Trial has already been started -> Day {trial_day}")
-                messagebox.showinfo("InaBi System", f"Welcome to day {trial_day} of your trial.")
+                trial_day = f"day {trial_day}" if trial_day!=7 else "the last day"
+                messagebox.showinfo("InaBi System", f"Welcome to {trial_day} of your trial.")
             else:
                 log.info("Trial has not started yet")
                 response = messagebox.askyesnocancel("InaBi System", "Welcome to Inventory Management and Billing System, by Datakhoj Private Limited.\n\nWe are offering you a free trial of 7 days so that you can use all of our premium features!\n\nClick Yes to proceed.")
