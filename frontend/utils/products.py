@@ -5,7 +5,7 @@ from backend.api.products import get_products, update_product, add_product
 
 
 def refreshProductsList():
-    status, data = get_products()
+    status, data = get_products(limit=None)
     if status:
         Settings.PRODUCTS_LIST = data["data"]
 
@@ -16,7 +16,7 @@ def updateProduct(id, data):
         messagebox.showerror("Update Product", message)
         return False
     else:
-        messagebox.showinfo("Update Product",f"Product updated successfully! \n id: {message}")
+        messagebox.showinfo("Update Product",f"{message}")
         return True
 
 

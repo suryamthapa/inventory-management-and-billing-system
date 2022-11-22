@@ -3,7 +3,9 @@ import datetime
 import logging
 from tkinter import *
 from tkinter import messagebox
+# frontend imports
 import frontend.config as globals
+from frontend.utils.frontend import get_nepali_datetime_from_utc
 from frontend.utils.app_configuration import is_trial_complete
 from frontend.utils.frontend import handle_buttons_on_activation
 from frontend.utils.lisences import refreshLisenceInfo
@@ -28,10 +30,14 @@ def createLicenseInformationWindow():
         statusFrame = Frame(licenseWindow)
         statusFrame.pack(anchor="w", padx=10, pady=(10, 0))
         Label(statusFrame, text="Status: ", font=globals.appFontNormalBold).pack(side="left")
-        if globals.LISENCE_INFO.get("status")==LisenceStatus.expired: status = "Expired"
-        elif globals.LISENCE_INFO.get("status")==LisenceStatus.active: status = "Active"
-        elif globals.LISENCE_INFO.get("status")==LisenceStatus.not_activated_yet: status = "Not activated yet"
-        else: status = "Could not find lisence status. Please contact the developer."
+        if globals.LISENCE_INFO.get("status")==LisenceStatus.expired: 
+            status = "Expired"
+        elif globals.LISENCE_INFO.get("status")==LisenceStatus.active: 
+            status = "Active"
+        elif globals.LISENCE_INFO.get("status")==LisenceStatus.not_activated_yet: 
+            status = "Not activated yet"
+        else: 
+            status = "Could not find lisence status. Please contact the developer."
         statusLabel = Label(statusFrame, text=status)
         statusLabel.pack(side="left")
 
@@ -45,7 +51,12 @@ def createLicenseInformationWindow():
                 anchor="w").pack(side="left")
             
             activated_on = globals.LISENCE_INFO.get("activated_on")
-            expiryLabelText = f"{activated_on.year+1}-{activated_on.month}-{activated_on.day}"
+            activated_on, message = get_nepali_datetime_from_utc(activated_on, format="BS")
+            expiryLabelText = "Could not calculate"
+            if activated_on:
+                expiryLabelText = f"{activated_on.year+1}-{activated_on.month}-{activated_on.day}"
+            else:
+                log.error(f"Error occured while getting nepali datetiem from utc -> {e}")
 
             expiryLabel = Label(expiryFrame, text=expiryLabelText)
             expiryLabel.pack(side="left")
@@ -80,7 +91,7 @@ def createLicenseInformationWindow():
                 return False
 
             if len(newLicenseEntry.get())!=24:
-                messagebox.showwarning("InaBi System", "Invalid Lisence Key!\n\nKey must contain 24 characters only!")
+                messagebox.showwarning("InaBi System", "Invalid Lisence Key!")
                 newLicenseEntry.focus()
                 return False
             
@@ -95,20 +106,18 @@ def createLicenseInformationWindow():
                 return False
 
             if globals.LISENCE_INFO.get("status")==LisenceStatus.not_activated_yet:
-                data = {"lisence_key": newLicenseEntry.get(), "duration": 1, "activated_on":datetime.datetime.now()}
+                data = {"lisence_key": newLicenseEntry.get(), "duration": 1, "activated_on":datetime.datetime.utcnow()}
                 status, message = add_lisence(data)
                 if status:
                     refreshLisenceInfo()
-                    handle_buttons_on_activation(["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame"])
+                    handle_buttons_on_activation()
                     dashboard.showFrame(globals.CURRENT_FRAME, refreshMode=True)
                     licenseWindow.destroy()
+                    globals.appStatusLabel.config(text="Status: Active")
                     messagebox.showinfo("Product activation", f"Activation successful!\n\nLisence Key: {status}\n\nThank you!")
                     status = is_trial_complete(forceComplete=True)
                     if not status:
                         messagebox.showerror("Product activation", f"App is activated however some error has occured!\nPlease check logs for errors!\n\nYou can close this dialogue and continue working!\n\nThank you!")
-                    else:
-                        # messagebox.showinfo("InaBi System", "Also the trial has been marked as completed.")
-                        print("Trial complete status: ",is_trial_complete())
                     return True
                 else:
                     messagebox.showerror("Product activation", f"Could not activate the app!\n\n{message}")
@@ -116,11 +125,11 @@ def createLicenseInformationWindow():
                     
 
             if globals.LISENCE_INFO.get("status")==LisenceStatus.expired:
-                data = {"lisence_key": newLicenseEntry.get(), "duration": 1, "activated_on":datetime.datetime.now()}
+                data = {"lisence_key": newLicenseEntry.get(), "duration": 1, "activated_on":datetime.datetime.utcnow()}
                 status, message = add_lisence(data)
                 if status:
                     refreshLisenceInfo()
-                    handle_buttons_on_activation(["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame"])
+                    handle_buttons_on_activation()
                     dashboard.showFrame(globals.CURRENT_FRAME, refreshMode=True)
                     licenseWindow.destroy()
                     messagebox.showinfo("Product activation", f"Activation successful!\n\nLisence Key: {status}\n\nThank you!")
@@ -131,7 +140,7 @@ def createLicenseInformationWindow():
                     
 
             if globals.LISENCE_INFO.get("status")==LisenceStatus.active:
-                data = {"lisence_key": newLicenseEntry.get(), "duration": 1, "activated_on":datetime.datetime.now()}
+                data = {"lisence_key": newLicenseEntry.get(), "duration": 1, "activated_on":datetime.datetime.utcnow()}
                 status, message = add_lisence(data)
                 if status:
                     refreshLisenceInfo()
@@ -143,10 +152,6 @@ def createLicenseInformationWindow():
                     messagebox.showerror("Product activation", f"Could not update the lisence key!\n\n{message}")
                     return False
             
-            
-            
-            
-
         Button(buttonsWrapper,
             text="Activate",
             bg=globals.appBlue,

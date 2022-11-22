@@ -3,29 +3,37 @@ Window for dashboard where user will be able to do different things
 user will be able to access the dashboard only after entering valid liscence key in welcome screen
 """
 # in-built module imports
-import os
 import logging
+import sys
+import os
 import datetime
 from PIL import ImageTk
 from PIL import Image as PILImage
 from tkinter import *
 from tkinter import messagebox
-# frontend imports
-import frontend.config as Settings
-from frontend.utils.frontend import exitParent, showCurrentTime, handle_buttons_on_activation
-from frontend.utils.app_configuration import has_trial_started, start_trial, is_trial_complete
-from frontend.frames.inventory import openInventory
-from frontend.frames.home import openHome
-from frontend.frames.profile import openProfile
-from frontend.frames.settings import openSettings
-import frontend.frames.billing as billingSystem
-from frontend.frames.customers import openCustomers
-from frontend.windows.lisence import createLicenseInformationWindow
-# backend imports
-from backend.models import LisenceStatus
-
 
 log = logging.getLogger("frontend")
+
+try:
+    # frontend imports
+    import frontend.config as Settings
+    from frontend.utils.frontend import exitParent, showCurrentTime, handle_buttons_on_activation
+    from frontend.utils.app_configuration import has_trial_started, start_trial, is_trial_complete, is_machine_same
+    from frontend.frames.inventory import openInventory
+    from frontend.frames.home import openHome
+    from frontend.frames.profile import openProfile
+    from frontend.frames.settings import openSettings
+    import frontend.frames.billing as billingSystem
+    from frontend.frames.customers import openCustomers
+    from frontend.frames.accounts import openAccounts
+    from frontend.windows.lisence import createLicenseInformationWindow
+    # backend imports
+    from backend.models import LisenceStatus
+except Exception as e:
+    log.error(f"Error occured while importing modules from dashboard -> {e}")
+    messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
+    sys.exit("Import error")
+
 
 def showFrame(frameName, refreshMode=False):
     alreadyOpen = True
@@ -39,6 +47,7 @@ def showFrame(frameName, refreshMode=False):
     Settings.inventoryButton.configure(bg=Settings.appDarkGreen)
     Settings.billingSystemButton.configure(bg=Settings.appDarkGreen)
     Settings.customersButton.configure(bg=Settings.appDarkGreen)
+    Settings.accountsButton.configure(bg=Settings.appDarkGreen)
 
     if not alreadyOpen:
         try:
@@ -64,6 +73,9 @@ def showFrame(frameName, refreshMode=False):
             elif frameName=="customersFrame":
                 Settings.customersButton.configure(bg=Settings.appGreen)
                 openCustomers(Settings.mainFrame)
+            elif frameName=="accountsFrame":
+                Settings.accountsButton.configure(bg=Settings.appGreen)
+                openAccounts(Settings.mainFrame)
             log.info(f"OPENED: {frameName}")
         except Exception as e:
             log.error(f"{frameName} --> {e}")
@@ -123,13 +135,21 @@ def createSidebar(container):
         command=lambda : showFrame("customersFrame"))
     Settings.customersButton.grid(row=3, column=0, pady=optionsPadY)
 
+    Settings.accountsButton = Button(options, 
+        text="Accounts", 
+        width=optionsWidth, 
+        bg=Settings.appDarkGreen, 
+        fg=optionsColor,
+        command=lambda : showFrame("accountsFrame"))
+    Settings.accountsButton.grid(row=4, column=0, pady=optionsPadY)
+
     Settings.billingSystemButton = Button(options, 
         text="Billing System", 
         width=optionsWidth, 
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("billingSystemFrame"))
-    Settings.billingSystemButton.grid(row=4, column=0, pady=optionsPadY)
+    Settings.billingSystemButton.grid(row=5, column=0, pady=optionsPadY)
 
     Settings.salesAndAnalyticsButton = Button(options, 
         text="Sales and Analytics", 
@@ -137,7 +157,7 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : messagebox.showinfo("Sales and Analytics", "Feature comming soon in next update!\n\nYou will be able to view the sales and analytics of your company with the help of this feature.\n\nThank you!"))
-    Settings.salesAndAnalyticsButton.grid(row=5, column=0, pady=optionsPadY)
+    Settings.salesAndAnalyticsButton.grid(row=6, column=0, pady=optionsPadY)
 
     Settings.settingsButton = Button(options, 
         text="Settings", 
@@ -145,14 +165,14 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("settingsFrame"))
-    Settings.settingsButton.grid(row=6, column=0, pady=optionsPadY)
+    Settings.settingsButton.grid(row=7, column=0, pady=optionsPadY)
 
     Settings.exitButton = Button(options, 
         text="Exit", width=optionsWidth,
         bg=Settings.appDarkGreen,
         fg=optionsColor,
         command=lambda: exitParent(Settings.app))
-    Settings.exitButton.grid(row=7, column=0, pady=optionsPadY)
+    Settings.exitButton.grid(row=8, column=0, pady=optionsPadY)
 
     # Making the options frame expand to the height of screen
     Grid.rowconfigure(Settings.sidebar, 1, weight=1)
@@ -162,9 +182,17 @@ def createSidebar(container):
 def createTopBar(container):
     Settings.topBar = Frame(container, bg="#256D85")
     Settings.topBar.pack(side="top", fill="x")
-  
-    statusLabel = Label(Settings.topBar, text="Status: Active", font=Settings.appFontBigBold, fg="#DFF6FF", bg="#256D85")
-    statusLabel.grid(row=0, column=0, sticky="w", pady=22, padx=20)
+
+    appStatus = ""
+    if Settings.LISENCE_INFO.get("status") == LisenceStatus.not_activated_yet:
+        appStatus = "Inactive"
+    elif Settings.LISENCE_INFO.get("status") == LisenceStatus.active:
+        appStatus = "Active"
+    elif Settings.LISENCE_INFO.get("status") == LisenceStatus.expired:
+        appStatus = "Expired"
+
+    Settings.appStatusLabel = Label(Settings.topBar, text=f"Status: {appStatus}", font=Settings.appFontBigBold, fg="#DFF6FF", bg="#256D85")
+    Settings.appStatusLabel.grid(row=0, column=0, sticky="w", pady=22, padx=20)
 
     timeLabel = Label(Settings.topBar, font=Settings.appFontBigBold, fg="#DFF6FF", bg="#256D85")
     timeLabel.grid(row=0, column=0, sticky="e", pady=22, padx=20)
@@ -177,6 +205,12 @@ def createTopBar(container):
 
 def openDashboard(container):
     try:
+        if not is_machine_same():
+            messagebox.showerror("Inabi System", "The application does not belong to this machine. In case of any inconvenience, please contact the developers. \n\nDevelopers Info:\nDatakhoj Private Limited\nPhone: (+977) 9862585910\nEmail: datakhoj.ai@gmail.com\n\nThank you!")
+            container.destroy()
+            return False
+
+        log.info("FOUND: Machine is same.")
         createSidebar(container)
 
         Settings.board = Frame(container, borderwidth=1, width=500, height=500)
@@ -192,13 +226,14 @@ def openDashboard(container):
             log.info("COMPLETE: Trial")
             if Settings.LISENCE_INFO.get("status") == LisenceStatus.active:
                 log.info("Lisence is active")
+                messagebox.showinfo("InaBi System", "Welcome to Inventory Management and Billing System, by Datakhoj Private Limited!")
             elif Settings.LISENCE_INFO.get("status") is None:
                 log.error("Exception may have occured while updating lisence key to expired.")
-                handle_buttons_on_activation(["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame"], deactivation=True)
+                handle_buttons_on_activation(deactivation=True)
                 messagebox.showerror("InaBi System", "Could not check lisence status.\n\nPlease contact the developer.\n\nThank you!")
             else:
                 log.info("Lisence is expired or not registered yet")
-                handle_buttons_on_activation(["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame"], deactivation=True)
+                handle_buttons_on_activation(deactivation=True)
                 log.info("Premium features disabled.")
                 msg_trial_completed = "Your trial for 7 days has already completed.\n\nTo keep using the app, you need to activate it.\n\nClick Yes to activate."
                 msg_lisence_expired = "Your lisence key has been expired.\n\nTo continue using the features, you will have to reactivate the app with a new lisence key.\n\nClick Yes to enter a new lisence key."
@@ -212,17 +247,19 @@ def openDashboard(container):
             if status:
                 trial_day = int((datetime.datetime.now()-trial_begin_on).days)+1
                 log.info(f"Trial has already been started -> Day {trial_day}")
-                messagebox.showinfo("InaBi System", f"Welcome to day {trial_day} of your trial.")
+                trial_day = f"day {trial_day}" if trial_day!=7 else "the last day"
+                messagebox.showinfo("InaBi System", f"Welcome to {trial_day} of your trial.")
             else:
                 log.info("Trial has not started yet")
                 response = messagebox.askyesnocancel("InaBi System", "Welcome to Inventory Management and Billing System, by Datakhoj Private Limited.\n\nWe are offering you a free trial of 7 days so that you can use all of our premium features!\n\nClick Yes to proceed.")
                 if response!=1:
-                    handle_buttons_on_activation(["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame"], deactivation=True)
+                    handle_buttons_on_activation(deactivation=True)
                 else:
                     status, message = start_trial()
                     if status:
                         log.info("STARTING: Trial for 7 days")
                         messagebox.showinfo("Inabi System", "Congrats!\n\nYour free trial for 7 days has been started!")
+                        showFrame(Settings.CURRENT_FRAME, refreshMode=True)
                     else:
                         messagebox.showerror("Inabi System", f"Something went wrong!\n\n{message}.")
     except Exception as e:

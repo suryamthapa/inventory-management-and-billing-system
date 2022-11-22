@@ -6,3 +6,4 @@ from backend.models.products import Products
 from backend.models.sales import Sales
 from backend.models.bills import Bills
 from backend.models.settings import Settings
+from backend.models.accounts import Accounts

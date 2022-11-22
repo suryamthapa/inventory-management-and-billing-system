@@ -34,16 +34,21 @@ def deleteProduct(id, name):
 
 
 def handleSearchProduct(queryColumnDict, page=1, limit=11, sort_column="id", asc=True):
-    for column, query in queryColumnDict.items():
-        globals.CURRENT_SEARCH_QUERY["products"][column] = query
-    status, data = get_products(globals.CURRENT_SEARCH_QUERY["products"], page=page, limit=limit, sort_column=sort_column, asc=asc)
-    
-    if status:
-        createInventoryTable(globals.inventoryFrame, data=data)
-    else:
-        Label(globals.inventoryFrame, text="Error occured while fetching products from database.").pack()
-        Label(globals.inventoryFrame, text="Please check logs or contact the developer.").pack()
-    return True
+    try:
+        globals.CURRENT_SEARCH_QUERY["products"] = {}
+        for column, query in queryColumnDict.items():
+            globals.CURRENT_SEARCH_QUERY["products"][column] = query
+        status, data = get_products(globals.CURRENT_SEARCH_QUERY["products"], page=page, limit=limit, sort_column=sort_column, asc=asc)
+        
+        if status:
+            createInventoryTable(globals.inventoryFrame, data=data)
+        else:
+            Label(globals.inventoryFrame, text="Error occured while fetching products from database.").pack()
+            Label(globals.inventoryFrame, text="Please check logs or contact the developer.").pack()
+        return True
+    except Exception as e:
+        log.error(f"ERROR: while handling Search Product -> {e}")
+        messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
 
 
 def createtableTop(parent):
@@ -51,23 +56,48 @@ def createtableTop(parent):
     globals.tableTop = Frame(parent)
     globals.tableTop.pack(fill="x", pady=20, padx=10)
 
+    Label(globals.tableTop, text="Search product by").grid(row=0, column=0, sticky="w")
+
     globals.queryEntry = AutocompleteEntry(globals.tableTop,
                 width=30, 
                 font=20, 
-                completevalues=[record["product_name"] for record in globals.PRODUCTS_LIST])
-    globals.queryEntry.grid(row=0, column=0, ipady=5)
-    globals.queryEntry.bind("<Return>", lambda x: handleSearchProduct({"product_name":globals.queryEntry.get()}))
+                completevalues=[])
+    globals.queryEntry.grid(row=0, column=2, ipady=5)
+    globals.queryEntry.bind("<Return>", lambda x: proceedToSearch())
+
+    def setCompleteValues():
+        filterOptionsMap = {
+            "Product name": "product_name"
+        }
+        if filterOptionsMap.get(globals.filterOption.get()):
+            column_name = filterOptionsMap.get(globals.filterOption.get())
+            completevalues = [record[column_name] if record[column_name] else "" for record in globals.PRODUCTS_LIST]
+            globals.queryEntry.config(completevalues=completevalues)
+    
+    globals.filterOption = StringVar()
+    globals.filterOption.set("Product name")
+    filters = ["Product name"]
+
+    filter = OptionMenu(globals.tableTop, globals.filterOption, *filters, command=lambda x: setCompleteValues())
+    filter.grid(row=0, column=1, padx=(2, 5), sticky="w")
+    setCompleteValues()
 
     def proceedToSearch():
+        filterOptionsMap = {
+            "Product name": "product_name"
+        }
         if globals.queryEntry.get():
-            handleSearchProduct({"product_name":globals.queryEntry.get()})
+            if filterOptionsMap.get(globals.filterOption.get()):
+                handleSearchProduct({filterOptionsMap.get(globals.filterOption.get()):globals.queryEntry.get()})
+            else:
+                messagebox.showwarning("Inventory", "Please select a filter to search by.")
 
     searchButton = Button(globals.tableTop, 
                         text="Search", 
                         width=10, 
                         bg="#47B5FF",
                         command=proceedToSearch)
-    searchButton.grid(row=0, column=1, padx=5)
+    searchButton.grid(row=0, column=3, padx=5)
 
     def clearSearch():
         globals.queryEntry.delete(0, END)
@@ -80,23 +110,23 @@ def createtableTop(parent):
                         width=10, 
                         bg="#47B5FF",
                         command=clearSearch)
-    clearButton.grid(row=0, column=2, padx=5, sticky="w")
+    clearButton.grid(row=0, column=4, padx=5, sticky="w")
 
     addItemButton = Button(globals.tableTop, 
                         text="Add New Product", 
                         width=20, 
                         bg=globals.appBlue, 
                         command=lambda: addProducts.createAddProductWindow())
-    addItemButton.grid(row=0, column=3, padx=5, sticky="e")
+    addItemButton.grid(row=0, column=5, padx=5, sticky="e")
 
     exportButton = Button(globals.tableTop, 
                         text="Export",
                         width=10, 
                         bg=globals.appBlue, 
-                        command=lambda : messagebox.showinfo("Export Customers", "Feature comming soon in next update!\n\nYou will be able to export products to an excel file with the help of this feature.\n\nThank you!"))
-    exportButton.grid(row=0, column=4, padx=5, sticky="e")
+                        command=lambda : messagebox.showinfo("Export Products", "Feature comming soon in next update!\n\nYou will be able to export products to an excel file with the help of this feature.\n\nThank you!"))
+    exportButton.grid(row=0, column=6, padx=5, sticky="e")
     
-    Grid.columnconfigure(globals.tableTop, 2, weight=1)
+    Grid.columnconfigure(globals.tableTop, 4, weight=1)
 
 
 def createTableHeader(parent):
@@ -117,12 +147,12 @@ def createTableBody(parent, records):
         return True
     for index, record in enumerate(records):
         bg = "white" if (index+1)%2==0 else globals.appWhite
-        Label(parent, text=record.get("id"), bg=bg).grid(row=index+1, column=0, pady=5, sticky=W)
-        Label(parent, text=record.get("product_name"), bg=bg).grid(row=index+1, column=1,pady=5, sticky=W)
-        Label(parent, text=record.get("stock"), bg=bg).grid(row=index+1, column=2, pady=5, sticky=W)
-        Label(parent, text=record.get("unit"), bg=bg).grid(row=index+1, column=3, pady=5, sticky=W)
-        Label(parent, text=record.get("cost_price"), bg=bg).grid(row=index+1, column=4, pady=5, sticky=W)
-        Label(parent, text=record.get("marked_price"), bg=bg).grid(row=index+1, column=5, pady=5, sticky=W)
+        Label(parent, text=record.get("id"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=0, pady=5, sticky=W)
+        Label(parent, text=record.get("product_name"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=1,pady=5, sticky=W)
+        Label(parent, text=record.get("stock"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=2, pady=5, sticky=W)
+        Label(parent, text=record.get("unit"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=3, pady=5, sticky=W)
+        Label(parent, text=record.get("cost_price"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=4, pady=5, sticky=W)
+        Label(parent, text=record.get("marked_price"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=5, pady=5, sticky=W)
         Button(parent, text="update", width=10, bg="#47B5FF", command=lambda x=record: updateProducts.createUpdateProductWindow(x)).grid(row=index+1, column=6, pady=5)
         Button(parent, text="delete", width=10, bg="red", command=lambda id=record.get("id"), name=record.get("product_name"): deleteProduct(id, name)).grid(row=index+1, column=7, pady=5)
 

@@ -12,8 +12,8 @@ from frontend.utils.sales import refreshTotalSales
 
 log = logging.getLogger("frontend")
 
-DATE_TIME_TYPE = "ENGLISH"
-
+DATE_TIME_TYPE = "NEPALI"
+PREMIUM_FEATURES_FRAMES = ["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame", "accountsFrame"]
 # constants
 CURRENT_WORKING_DIRECTORY = os.getcwd()
 CURRENT_SETTINGS = getSettings()
@@ -21,6 +21,7 @@ LISENCE_INFO = getLisenceInfo()
 
 # Settings
 CURRENCY_LIST = ["NPR", "INR", "USD"]
+UNITS_LIST = ["PCS", "KGS", "GRAMS", "METER"]
 
 # global variables
 PREVIOUS_TIME = ''
@@ -38,8 +39,9 @@ refreshProductsList()
 PAGINATION_PAGE = 1
 PAGINATION_PAGE_LIMIT = 11
 CURRENT_SEARCH_QUERY = {
-    "customers":{}, 
-    "products":{}
+    "customers":{},
+    "products":{},
+    "accounts":{}
 }
 BILL_DETAILS = {
     "customer":{},
@@ -47,8 +49,19 @@ BILL_DETAILS = {
     "extra":{},
     "final":{}
 }
+CURRENT_LEDGER_ACCOUNT = {
+    "customer":{},
+    "account":{},
+    "from":"",
+    "to":"",
+    "summary":{
+            "dr_amount":0.00,
+            "cr_amount":0.00,
+            "account_balance":0.00
+        }
+}
 
-TOTAL_SALES = []
+TOTAL_SALES = {}
 refreshTotalSales()
 
 # global buttons
@@ -56,6 +69,7 @@ homeButton = None
 profileButton = None
 inventoryButton = None
 customersButton = None
+accountsButton = None
 settingsButton = None
 billingSystemButton = None
 salesAndAnalyticsButton = None
@@ -64,6 +78,7 @@ paginationBackButton = None
 paginationForwardButton = None
 
 # global labels
+appStatusLabel = None
 sidebarBrandName = None
 profileBrandName = None
 paginationPageInfo = None
@@ -99,6 +114,28 @@ rateQtyFrame = None
 customersFrame = None
 customersTable = None
 
+customersFilterOptionsMap = {
+            "Individual Name": "full_name",
+            "Company Name": "company",
+            "Company PAN no": "company_pan_no",
+            "Phone Number": "phone_number",
+            "Telephone": "telephone",
+            "Email": "email"
+        }
+productsFilterOptionsMap = {
+            "Product name": "product_name"
+        }
+filterOption = None
+billingCustomerfilterOption = None
+
+accountsFrame = None
+accountsTable = None
+ledgerDetailsMainFrame = None
+ledgerDetailsArea = None
+ledgerDetailsFrame = None
+accountCustomerDetailsFrame=None
+ledgerDetailsTable = None
+
 salesAndAnalyticsFrame = None
 
 # colors
@@ -112,10 +149,12 @@ app = Tk()
 screen_width = app.winfo_screenwidth()
 screen_height = app.winfo_screenheight()
 app.geometry(f"{1200}x{720}")
-app.title("Management System")
+app.title("Inventory Management and Billing System")
 app.state("zoomed")
 app.iconbitmap("./frontend/assets/images/favicon.ico")
 app.configure(bg=appWhite)
+
+defaultBgColor = None
 
 # fonts
 appFontSmall = Font(family="Helvetica", size=9, weight="normal", slant="roman", underline=0, overstrike=0)

@@ -4,7 +4,7 @@ from tkinter import *
 from tkinter import messagebox
 import frontend.config as globals
 if globals.DATE_TIME_TYPE == "NEPALI":
-    from nepali_datetime import date
+    from frontend.utils.nepali_datetime import date
 else:
     from datetime import date
 import frontend.frames.billing as billingFrame
@@ -29,12 +29,15 @@ def createPaymentWindow():
         paymentEntry = Entry(paymentWindow)
         paymentEntry.grid(row=1, column=1, pady=(10, 20), padx=10)
         paymentEntry.focus()
-        paymentEntry.insert(0, int(globals.BILL_DETAILS['final']['total']))
+        paymentEntry.insert(0, float(globals.BILL_DETAILS['final']['total']))
 
         def validatePayment(withoutPayment=False):
-            if not paymentEntry.get().isdigit() and not withoutPayment:
-                messagebox.showwarning("Payment", "Must be a number.")
-                return False
+            if not withoutPayment:
+                try:
+                    float(paymentEntry.get())
+                except:
+                    messagebox.showwarning("Payment", "Must be a number.")
+                    return False
             if float(paymentEntry.get().isdigit())>float(globals.BILL_DETAILS['final']['total']):
                 messagebox.showwarning("Payment", "Amount greater than actual payable amount.")
                 return False

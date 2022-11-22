@@ -5,6 +5,12 @@ __pycache__
 venv/
 logs/
 bills/
+ledgers/
 test.py
+test.ipynb
+references.py
+alembicScripts.py
+trackProgress.txt
 *.db
 *.doc
+*.pdf

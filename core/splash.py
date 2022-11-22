@@ -16,7 +16,7 @@ def check_if_module_exists(name):
 
 
 def ensure_modules():
-    modules = ["ttkwidgets", "alembic", "PIL", "reportlab", "frontend", "backend"]
+    modules = ["ttkwidgets", "alembic", "PIL", "reportlab", "frontend", "backend", "core", "pytz"]
     for module in modules:
         value = check_if_module_exists(module)
         if not value:
@@ -55,6 +55,18 @@ def folders_files_initialization():
         # ensure bills folder
         if not os.path.exists("bills"):
             os.mkdir("bills")
+
+        # ensure bills folder
+        if not os.path.exists("ledgers"):
+            os.mkdir("ledgers")
+
+        # ensure data folder
+        if not os.path.exists("data"):
+            os.mkdir("data")
+            from core.calendar_bs import write_calendar_to_csv
+            status = write_calendar_to_csv()
+            if not status:
+                raise Exception("ERROR: Could not initialize calendar csv file")
 
         if not os.path.exists("migrations"):
             raise Exception("NOT FOUND: migrations folder") 

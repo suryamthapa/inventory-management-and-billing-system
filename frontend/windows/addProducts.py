@@ -1,11 +1,24 @@
 # Window to add products in inventory.
 
 import threading
+import logging
 from tkinter import *
 from tkinter import messagebox
+from ttkwidgets.autocomplete import AutocompleteEntry
 import frontend.config as globals
 import frontend.frames.inventory as inventory
 from frontend.utils.products import saveProduct, refreshProductsList
+
+
+log = logging.getLogger("frontend")
+
+
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
 
 
 def createAddProductWindow():
@@ -23,19 +36,22 @@ def createAddProductWindow():
         productNameEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
         productNameEntry.grid(row=0, column=1, padx=5, pady=5)
 
-        Label(addProductFrame, text="Cost Price").grid(row=1, column=0, padx=5, pady=5)
-        costPriceEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        costPriceEntry.grid(row=1, column=1, padx=5, pady=5)
-        Label(addProductFrame, text="Marked Price").grid(row=1, column=2, padx=5, pady=5)
-        markedPriceEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        markedPriceEntry.grid(row=1, column=3, padx=5, pady=5)
+        Label(addProductFrame, text="Unit").grid(row=1, column=0, padx=5, pady=5)
+        unitEntry = AutocompleteEntry(addProductFrame, font=globals.appFontNormal,
+                completevalues=set([record["unit"] if record["unit"] else "" for record in globals.PRODUCTS_LIST]+globals.UNITS_LIST))
+        unitEntry.grid(row=1, column=1, padx=5, pady=5)
 
-        Label(addProductFrame, text="Unit").grid(row=2, column=0, padx=5, pady=5)
-        unitEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        unitEntry.grid(row=2, column=1, padx=5, pady=5)
-        Label(addProductFrame, text="Stock").grid(row=2, column=2, padx=5, pady=5)
+        Label(addProductFrame, text="Stock").grid(row=1, column=2, padx=5, pady=5)
         stockEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        stockEntry.grid(row=2, column=3, padx=5, pady=5)
+        stockEntry.grid(row=1, column=3, padx=5, pady=5)
+
+        Label(addProductFrame, text="Cost Price").grid(row=2, column=0, padx=5, pady=5)
+        costPriceEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+        costPriceEntry.grid(row=2, column=1, padx=5, pady=5)
+
+        Label(addProductFrame, text="Marked Price").grid(row=2, column=2, padx=5, pady=5)
+        markedPriceEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+        markedPriceEntry.grid(row=2, column=3, padx=5, pady=5)
 
         def validateProduct(quitWindow=False):
             if not productNameEntry.get():
@@ -54,11 +70,11 @@ def createAddProductWindow():
                 stockEntry.focus()
                 return False
 
-            if not markedPriceEntry.get().isdigit():
-                messagebox.showwarning("Invalid", "Selling price should contain numbers only.")
+            if not isfloat(markedPriceEntry.get()):
+                messagebox.showwarning("Invalid", "Marked price should contain numbers only.")
                 markedPriceEntry.focus()
                 return False
-            if not costPriceEntry.get().isdigit():
+            if not isfloat(costPriceEntry.get()):
                 messagebox.showwarning("Invalid", "Cost price should contain numbers only.")
                 costPriceEntry.focus()
                 return False
@@ -70,7 +86,7 @@ def createAddProductWindow():
             data = {"product_name": productNameEntry.get(),
                     "cost_price":costPriceEntry.get(),
                     "marked_price":markedPriceEntry.get(),
-                    "unit":unitEntry.get(),
+                    "unit":unitEntry.get().upper() if unitEntry.get() else unitEntry.get(),
                     "stock":stockEntry.get()}
             status = saveProduct(data)
 
@@ -79,13 +95,16 @@ def createAddProductWindow():
                 refreshProductsList()
                 if globals.CURRENT_FRAME=="inventoryFrame":
                     # refresh auto complete values in search entry
-                    globals.queryEntry.config(completevalues=[record["product_name"] for record in globals.PRODUCTS_LIST])
+                    field = globals.productsFilterOptionsMap.get(globals.filterOption.get())
+                    globals.queryEntry.config(completevalues=[record[field] if record.get(field) else "" for record in globals.PRODUCTS_LIST])
                     # reload the inventory table
                     inventory.handleSearchProduct(globals.CURRENT_SEARCH_QUERY.get("products"))
                 if globals.CURRENT_FRAME=="billingSystemFrame":
-                    # refresh auto complete values in product search entry
-                    globals.billingProductNameEntry.config(completevalues=[record["product_name"] for record in globals.PRODUCTS_LIST])
-            
+                    # refresh auto complete values in product search entry in billing frame
+                    globals.billingProductNameEntry.config(completevalues=[record["product_name"] if record.get("product_name") else "" for record in globals.PRODUCTS_LIST])
+            else:
+                return False
+                
             if quitWindow:
                 addProductWindow.destroy()
                 return True
