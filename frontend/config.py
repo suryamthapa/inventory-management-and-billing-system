@@ -11,7 +11,7 @@ from frontend.utils.sales import refreshTotalSales
 log = logging.getLogger("frontend")
 
 try:
-    from appConfigurations import version_info_link, executable_installer_link
+    from core.appConfigurations import version_info_link, executable_installer_link
 except Exception as e:
     log.error(f"ERROR: {e}")
     version_info_link = ""

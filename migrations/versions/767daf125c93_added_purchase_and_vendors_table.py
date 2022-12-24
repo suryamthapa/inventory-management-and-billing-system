@@ -27,10 +27,12 @@ def upgrade():
     sa.Column('address', sa.String(), nullable=False),
     sa.Column('phone_number', sa.String(), nullable=True),
     sa.Column('telephone', sa.String(), nullable=True),
+    sa.Column('email', sa.String(), nullable=True),
     sa.Column('extra_info', sa.JSON(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('phone_number'),
     sa.UniqueConstraint('telephone'),
+    sa.UniqueConstraint('email'),
     sa.UniqueConstraint('vendor_name')
     )
     op.create_table('purchases',

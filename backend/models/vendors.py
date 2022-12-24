@@ -16,6 +16,7 @@ class Vendors(Base):
     address = Column(String, nullable=False)
     phone_number = Column(String, unique=True, nullable=True)
     telephone = Column(String, unique=True, nullable=True)
+    email = Column(String, unique=True)
     extra_info = Column(JSON, nullable=True)
 
     purchase = relationship("Purchases")
