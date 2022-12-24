@@ -11,7 +11,7 @@ class Vendors(Base):
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    vat_number = Column(Integer, nullable=False)
+    vat_number = Column(String, nullable=False)
     vendor_name = Column(String, unique=True, nullable=False)
     address = Column(String, nullable=False)
     phone_number = Column(String, unique=True, nullable=True)

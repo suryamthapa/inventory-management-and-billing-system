@@ -117,12 +117,12 @@ def get_vendor(id: int = 0, vendor_name: str = "", vat_number: str = "", phone_n
 def add_vendor(data:dict ={}, db: Session=get_db()):
     try:
         vendor = Vendors(vendor_name=data.get("vendor_name"), 
-                        vat_number=data.get("vat_number") if data.get("vat_number") else None,
-                        phone_number=data.get("phone_number") if data.get("phone_number") else None,
-                        telephone=data.get("telephone") if data.get("telephone") else None,
-                        email=data.get("email") if data.get("email") else None,
+                        vat_number=data.get("vat_number"),
+                        phone_number=data.get("phone_number"),
+                        telephone=data.get("telephone"),
+                        email=data.get("email"),
                         address=data.get("address"),
-                        extra_info=data.get("extra_info") if data.get("extra_info") else None)
+                        extra_info=data.get("extra_info"))
     
         db.add(vendor)
         db.commit()

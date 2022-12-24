@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.Column('vat_number', sa.Integer(), nullable=False),
+    sa.Column('vat_number', sa.String(), nullable=False),
     sa.Column('vendor_name', sa.String(), nullable=False),
     sa.Column('address', sa.String(), nullable=False),
     sa.Column('phone_number', sa.String(), nullable=True),

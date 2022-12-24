@@ -25,6 +25,7 @@ try:
     from frontend.frames.settings import openSettings
     import frontend.frames.billing as billingSystem
     from frontend.frames.customers import openCustomers
+    from frontend.frames.vendors import openVendors
     from frontend.frames.accounts import openAccounts
     from frontend.windows.lisence import createLicenseInformationWindow
     from frontend.windows.appUpdates import createAppUpdatesWindow
@@ -49,6 +50,7 @@ def showFrame(frameName, refreshMode=False):
     Settings.billingSystemButton.configure(bg=Settings.appDarkGreen)
     Settings.customersButton.configure(bg=Settings.appDarkGreen)
     Settings.accountsButton.configure(bg=Settings.appDarkGreen)
+    Settings.vendorsButton.configure(bg=Settings.appDarkGreen)
 
     if not alreadyOpen:
         try:
@@ -74,6 +76,9 @@ def showFrame(frameName, refreshMode=False):
             elif frameName=="customersFrame":
                 Settings.customersButton.configure(bg=Settings.appGreen)
                 openCustomers(Settings.mainFrame)
+            elif frameName=="vendorsFrame":
+                Settings.vendorsButton.configure(bg=Settings.appGreen)
+                openVendors(Settings.mainFrame)
             elif frameName=="accountsFrame":
                 Settings.accountsButton.configure(bg=Settings.appGreen)
                 openAccounts(Settings.mainFrame)
@@ -144,13 +149,29 @@ def createSidebar(container):
         command=lambda : showFrame("accountsFrame"))
     Settings.accountsButton.grid(row=4, column=0, pady=optionsPadY)
 
+    Settings.vendorsButton = Button(options, 
+        text="Vendors", 
+        width=optionsWidth, 
+        bg=Settings.appDarkGreen, 
+        fg=optionsColor,
+        command=lambda : showFrame("vendorsFrame"))
+    Settings.vendorsButton.grid(row=5, column=0, pady=optionsPadY)
+
+    Settings.purchaseButton = Button(options, 
+        text="Purchase", 
+        width=optionsWidth, 
+        bg=Settings.appDarkGreen, 
+        fg=optionsColor,
+        command=lambda : showFrame("purchaseFrame"))
+    Settings.purchaseButton.grid(row=6, column=0, pady=optionsPadY)
+
     Settings.billingSystemButton = Button(options, 
         text="Billing System", 
         width=optionsWidth, 
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("billingSystemFrame"))
-    Settings.billingSystemButton.grid(row=5, column=0, pady=optionsPadY)
+    Settings.billingSystemButton.grid(row=7, column=0, pady=optionsPadY)
 
     Settings.salesAndAnalyticsButton = Button(options, 
         text="Sales and Analytics", 
@@ -158,7 +179,7 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : messagebox.showinfo("Sales and Analytics", "Feature comming soon in next update!\n\nYou will be able to view the sales and analytics of your company with the help of this feature.\n\nThank you!"))
-    Settings.salesAndAnalyticsButton.grid(row=6, column=0, pady=optionsPadY)
+    Settings.salesAndAnalyticsButton.grid(row=8, column=0, pady=optionsPadY)
 
     Settings.settingsButton = Button(options, 
         text="Settings", 
@@ -166,7 +187,7 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("settingsFrame"))
-    Settings.settingsButton.grid(row=7, column=0, pady=optionsPadY)
+    Settings.settingsButton.grid(row=9, column=0, pady=optionsPadY)
 
     Settings.updateButton = Button(options, 
         text="Check Updates",
@@ -174,14 +195,14 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=createAppUpdatesWindow)
-    Settings.updateButton.grid(row=8, column=0, pady=optionsPadY)
+    Settings.updateButton.grid(row=10, column=0, pady=optionsPadY)
 
     Settings.exitButton = Button(options, 
         text="Exit", width=optionsWidth,
         bg=Settings.appDarkGreen,
         fg=optionsColor,
         command=lambda: exitParent(Settings.app))
-    Settings.exitButton.grid(row=9, column=0, pady=optionsPadY)
+    Settings.exitButton.grid(row=11, column=0, pady=optionsPadY)
 
     # Making the options frame expand to the height of screen
     Grid.rowconfigure(Settings.sidebar, 1, weight=1)

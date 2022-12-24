@@ -6,6 +6,7 @@ import logging
 from frontend.utils.lisences import getLisenceInfo
 from frontend.utils.products import refreshProductsList
 from frontend.utils.customers import refreshCustomersList
+from frontend.utils.vendors import refreshVendorsList
 from frontend.utils.settings import getSettings
 from frontend.utils.sales import refreshTotalSales
 log = logging.getLogger("frontend")
@@ -39,6 +40,10 @@ CURRENT_FRAME = "homeFrame"
 CUSTOMERS_LIST = None
 refreshCustomersList()
 
+# customers info
+VENDORS_LIST = None
+refreshVendorsList()
+
 # products info
 PRODUCTS_LIST = None
 refreshProductsList()
@@ -49,7 +54,8 @@ PAGINATION_PAGE_LIMIT = 11
 CURRENT_SEARCH_QUERY = {
     "customers":{},
     "products":{},
-    "accounts":{}
+    "accounts":{},
+    "vendors":{}
 }
 BILL_DETAILS = {
     "customer":{},
@@ -77,7 +83,9 @@ homeButton = None
 profileButton = None
 inventoryButton = None
 customersButton = None
+vendorsButton = None
 accountsButton = None
+purchaseButton = None
 settingsButton = None
 billingSystemButton = None
 salesAndAnalyticsButton = None
@@ -123,10 +131,20 @@ rateQtyFrame = None
 customersFrame = None
 customersTable = None
 
+vendorsFrame = None
+vendorsTable = None
+
 customersFilterOptionsMap = {
             "Individual Name": "full_name",
             "Company Name": "company",
             "Company PAN no": "company_pan_no",
+            "Phone Number": "phone_number",
+            "Telephone": "telephone",
+            "Email": "email"
+        }
+vendorsFilterOptionsMap = {
+            "Vendor Name": "vendor_name",
+            "Vat Number": "vat_number",
             "Phone Number": "phone_number",
             "Telephone": "telephone",
             "Email": "email"
