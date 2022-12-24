@@ -27,6 +27,7 @@ try:
     from frontend.frames.customers import openCustomers
     from frontend.frames.accounts import openAccounts
     from frontend.windows.lisence import createLicenseInformationWindow
+    from frontend.windows.appUpdates import createAppUpdatesWindow
     # backend imports
     from backend.models import LisenceStatus
 except Exception as e:
@@ -167,12 +168,20 @@ def createSidebar(container):
         command=lambda : showFrame("settingsFrame"))
     Settings.settingsButton.grid(row=7, column=0, pady=optionsPadY)
 
+    Settings.updateButton = Button(options, 
+        text="Check Updates",
+        width=optionsWidth, 
+        bg=Settings.appDarkGreen, 
+        fg=optionsColor,
+        command=createAppUpdatesWindow)
+    Settings.updateButton.grid(row=8, column=0, pady=optionsPadY)
+
     Settings.exitButton = Button(options, 
         text="Exit", width=optionsWidth,
         bg=Settings.appDarkGreen,
         fg=optionsColor,
         command=lambda: exitParent(Settings.app))
-    Settings.exitButton.grid(row=8, column=0, pady=optionsPadY)
+    Settings.exitButton.grid(row=9, column=0, pady=optionsPadY)
 
     # Making the options frame expand to the height of screen
     Grid.rowconfigure(Settings.sidebar, 1, weight=1)

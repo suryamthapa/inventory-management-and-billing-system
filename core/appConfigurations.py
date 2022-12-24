@@ -1,0 +1,2 @@
+version_info_link = "https://raw.githubusercontent.com/datakhoj/InaBi-System-Public/main/versionInfo.txt"
+executable_installer_link = "https://github.com/datakhoj/InaBi-System-Public/blob/main/Inventory%20Management%20and%20Billing%20System.exe?raw=true"

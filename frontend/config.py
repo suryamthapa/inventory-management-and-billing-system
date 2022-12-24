@@ -8,9 +8,17 @@ from frontend.utils.products import refreshProductsList
 from frontend.utils.customers import refreshCustomersList
 from frontend.utils.settings import getSettings
 from frontend.utils.sales import refreshTotalSales
-
-
 log = logging.getLogger("frontend")
+
+try:
+    from appConfigurations import version_info_link, executable_installer_link
+except Exception as e:
+    log.error(f"ERROR: {e}")
+    version_info_link = ""
+    executable_installer_link = ""
+
+version_info_link = "https://raw.githubusercontent.com/datakhoj/InaBi-System-Public/main/versionInfo.txt" if not version_info_link else version_info_link
+executable_installer_link = "https://github.com/datakhoj/InaBi-System-Public/blob/main/Inventory%20Management%20and%20Billing%20System.exe?raw=true" if not executable_installer_link else executable_installer_link
 
 DATE_TIME_TYPE = "NEPALI"
 PREMIUM_FEATURES_FRAMES = ["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame", "accountsFrame"]
@@ -21,7 +29,7 @@ LISENCE_INFO = getLisenceInfo()
 
 # Settings
 CURRENCY_LIST = ["NPR", "INR", "USD"]
-UNITS_LIST = ["PCS", "KGS", "GRAMS", "METER"]
+UNITS_LIST = ["PCS", "KGS", "GRAMS", "METER", "BAGS"]
 
 # global variables
 PREVIOUS_TIME = ''
@@ -89,6 +97,7 @@ billingProductNameEntry = None
 billingCustomerNameEntry = None
 
 # global listbox
+progressbar = None
 billPreviewBox = None
 
 # global frames

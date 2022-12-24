@@ -7,3 +7,5 @@ from backend.models.sales import Sales
 from backend.models.bills import Bills
 from backend.models.settings import Settings
 from backend.models.accounts import Accounts
+from backend.models.vendors import Vendors
+from backend.models.purchase import Purchases

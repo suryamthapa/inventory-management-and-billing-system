@@ -11,6 +11,7 @@ test.ipynb
 references.py
 alembicScripts.py
 trackProgress.txt
+usedLisenceKeys.py
 *.db
 *.doc
 *.pdf
