@@ -12,5 +12,5 @@ def main():
         sys.exit("Import error")
 
 if __name__=="__main__":
-    # main()
-    elevate(main)
+    main()
+    # elevate(main)

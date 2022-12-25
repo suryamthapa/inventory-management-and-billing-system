@@ -7,6 +7,8 @@ from tkinter import messagebox
 from ttkwidgets.autocomplete import AutocompleteEntry
 import frontend.config as globals
 import frontend.frames.inventory as inventory
+import frontend.frames.billing as billingFrame
+import frontend.frames.purchaseEntry as purchaseEntryFrame
 from frontend.utils.products import saveProduct, refreshProductsList
 
 
@@ -102,6 +104,17 @@ def createAddProductWindow():
                 if globals.CURRENT_FRAME=="billingSystemFrame":
                     # refresh auto complete values in product search entry in billing frame
                     globals.billingProductNameEntry.config(completevalues=[record["product_name"] if record.get("product_name") else "" for record in globals.PRODUCTS_LIST])
+                    globals.billingProductNameEntry.delete(0, END)
+                    globals.billingProductNameEntry.insert(0, data["product_name"])
+                    data["id"] = status
+                    billingFrame.loadProductDetails(globals.rateQtyFrame, data)
+                if globals.CURRENT_FRAME=="purchaseEntrySystemFrame":
+                    # refresh auto complete values in product search entry in billing frame
+                    globals.purchaseProductNameEntry.config(completevalues=[record["product_name"] if record.get("product_name") else "" for record in globals.PRODUCTS_LIST])
+                    globals.purchaseProductNameEntry.delete(0, END)
+                    globals.purchaseProductNameEntry.insert(0, data["product_name"])
+                    data["id"] = status
+                    purchaseEntryFrame.loadProductDetails(globals.rateQtyFrame, data)
             else:
                 return False
                 
@@ -117,12 +130,13 @@ def createAddProductWindow():
             command=lambda : validateProduct(quitWindow=True),
             width=20).pack(side="right", ipadx=20, pady=20, padx=10)
         
-        Button(addProductWindow,
-            text="Save",
-            bg=globals.appBlue,
-            fg=globals.appDarkGreen,
-            command=validateProduct,
-            width=20).pack(side="right", ipadx=20, pady=20, padx=10)
+        if globals.CURRENT_FRAME == "inventoryFrame":
+            Button(addProductWindow,
+                text="Save",
+                bg=globals.appBlue,
+                fg=globals.appDarkGreen,
+                command=validateProduct,
+                width=20).pack(side="right", ipadx=20, pady=20, padx=10)
 
         # bring to the center of screen
         addProductWindow.update()

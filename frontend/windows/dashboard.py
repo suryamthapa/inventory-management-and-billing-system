@@ -27,6 +27,7 @@ try:
     from frontend.frames.customers import openCustomers
     from frontend.frames.vendors import openVendors
     from frontend.frames.accounts import openAccounts
+    from frontend.frames.purchaseEntry import openPurchaseEntrySystem
     from frontend.windows.lisence import createLicenseInformationWindow
     from frontend.windows.appUpdates import createAppUpdatesWindow
     # backend imports
@@ -51,6 +52,7 @@ def showFrame(frameName, refreshMode=False):
     Settings.customersButton.configure(bg=Settings.appDarkGreen)
     Settings.accountsButton.configure(bg=Settings.appDarkGreen)
     Settings.vendorsButton.configure(bg=Settings.appDarkGreen)
+    Settings.purchaseEntrySystemButton.configure(bg=Settings.appDarkGreen)
 
     if not alreadyOpen:
         try:
@@ -82,6 +84,9 @@ def showFrame(frameName, refreshMode=False):
             elif frameName=="accountsFrame":
                 Settings.accountsButton.configure(bg=Settings.appGreen)
                 openAccounts(Settings.mainFrame)
+            elif frameName=="purchaseEntrySystemFrame":
+                Settings.purchaseEntrySystemButton.configure(bg=Settings.appGreen)
+                openPurchaseEntrySystem(Settings.mainFrame)
             log.info(f"OPENED: {frameName}")
         except Exception as e:
             log.error(f"{frameName} --> {e}")
@@ -125,29 +130,21 @@ def createSidebar(container):
         command=lambda : showFrame("profileFrame"))
     Settings.profileButton.grid(row=1, column=0, pady=optionsPadY)
 
-    Settings.inventoryButton = Button(options, 
-        text="Inventory", 
-        width=optionsWidth, 
-        bg=Settings.appDarkGreen, 
-        fg=optionsColor,
-        command=lambda : showFrame("inventoryFrame"))
-    Settings.inventoryButton.grid(row=2, column=0, pady=optionsPadY)
-
     Settings.customersButton = Button(options, 
         text="Customers", 
         width=optionsWidth, 
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("customersFrame"))
-    Settings.customersButton.grid(row=3, column=0, pady=optionsPadY)
+    Settings.customersButton.grid(row=2, column=0, pady=optionsPadY)
 
     Settings.accountsButton = Button(options, 
-        text="Accounts", 
+        text="Customer Accounts", 
         width=optionsWidth, 
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("accountsFrame"))
-    Settings.accountsButton.grid(row=4, column=0, pady=optionsPadY)
+    Settings.accountsButton.grid(row=3, column=0, pady=optionsPadY)
 
     Settings.vendorsButton = Button(options, 
         text="Vendors", 
@@ -155,15 +152,23 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("vendorsFrame"))
-    Settings.vendorsButton.grid(row=5, column=0, pady=optionsPadY)
+    Settings.vendorsButton.grid(row=4, column=0, pady=optionsPadY)
 
-    Settings.purchaseButton = Button(options, 
-        text="Purchase", 
+    Settings.purchaseEntrySystemButton = Button(options, 
+        text="Purchase Entry", 
         width=optionsWidth, 
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
-        command=lambda : showFrame("purchaseFrame"))
-    Settings.purchaseButton.grid(row=6, column=0, pady=optionsPadY)
+        command=lambda : showFrame("purchaseEntrySystemFrame"))
+    Settings.purchaseEntrySystemButton.grid(row=5, column=0, pady=optionsPadY)
+    
+    Settings.inventoryButton = Button(options, 
+        text="Inventory", 
+        width=optionsWidth, 
+        bg=Settings.appDarkGreen, 
+        fg=optionsColor,
+        command=lambda : showFrame("inventoryFrame"))
+    Settings.inventoryButton.grid(row=6, column=0, pady=optionsPadY)
 
     Settings.billingSystemButton = Button(options, 
         text="Billing System", 

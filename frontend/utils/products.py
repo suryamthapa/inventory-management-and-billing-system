@@ -17,7 +17,7 @@ def updateProduct(id, data):
         return False
     else:
         messagebox.showinfo("Update Product",f"{message}")
-        return True
+        return status
 
 
 def saveProduct(data):
@@ -27,4 +27,4 @@ def saveProduct(data):
             return False
         else:
             messagebox.showinfo("Add Product",f"{message} \n id: {status}")
-            return True
+            return status

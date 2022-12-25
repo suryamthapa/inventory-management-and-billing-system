@@ -183,7 +183,6 @@ def handlePagination(currentPage, totalPages, command):
     globals.paginationPageInfo.config(text=f"Page {globals.PAGINATION_PAGE} out of {totalPages}")
     
 
-
 def createTableFooter(parent, currentPage, totalPages):
     # print(currentPage, totalPages)
     globals.PAGINATION_PAGE = currentPage
@@ -207,7 +206,6 @@ def createTableFooter(parent, currentPage, totalPages):
     handlePaginationButtonState(currentPage, totalPages)
     
     
-
 def createInventoryTable(parent, data):
     globals.inventoryTable.destroy() if globals.inventoryTable else None
     globals.inventoryTable = Frame(parent)

@@ -7,6 +7,7 @@ from ttkwidgets.autocomplete import AutocompleteEntry
 # frontend imports
 import frontend.config as globals
 import frontend.frames.inventory as inventory
+import frontend.frames.billing as billingFrame
 import frontend.windows.dashboard as dashboard
 from frontend.utils.products import updateProduct, refreshProductsList
 
@@ -66,23 +67,27 @@ def createUpdateProductWindow(productInfo):
                 "unit":unitEntry.get().upper() if unitEntry.get() else unitEntry.get(),
                 "stock":stockEntry.get()
             }
-            updateProduct(id, details)
+            status = updateProduct(id, details)
+            if status:
+                # refreshing products list
+                refreshProductsList()
+                if globals.CURRENT_FRAME=="inventoryFrame":
+                    # refresh auto complete values in search entry
+                    field = globals.productsFilterOptionsMap.get(globals.filterOption.get())
+                    globals.queryEntry.config(completevalues=[record[field] if record.get(field) else "" for record in globals.PRODUCTS_LIST])
+                    # reload the inventory table
+                    inventory.handleSearchProduct(globals.CURRENT_SEARCH_QUERY.get("products"))
+                if globals.CURRENT_FRAME=="billingSystemFrame":
+                    # refresh auto complete values in product search entry in billing frame
+                    globals.billingProductNameEntry.config(completevalues=[record["product_name"] if record.get("product_name") else "" for record in globals.PRODUCTS_LIST])
+                    globals.billingProductNameEntry.delete(0, END)
+                    globals.billingProductNameEntry.insert(0, details["product_name"])
+                    details["id"] = status
+                    billingFrame.loadProductDetails(globals.rateQtyFrame, details)
+                if globals.CURRENT_FRAME=="homeFrame":
+                    # refresh home frame
+                    dashboard.showFrame(globals.CURRENT_FRAME, refreshMode=True)
             updateProductWindow.destroy()
-            # refreshing products list
-            refreshProductsList()
-            if globals.CURRENT_FRAME=="inventoryFrame":
-                # refresh auto complete values in search entry
-                field = globals.productsFilterOptionsMap.get(globals.filterOption.get())
-                globals.queryEntry.config(completevalues=[record[field] if record.get(field) else "" for record in globals.PRODUCTS_LIST])
-                # reload the inventory table
-                inventory.handleSearchProduct(globals.CURRENT_SEARCH_QUERY.get("products"))
-            if globals.CURRENT_FRAME=="billingSystemFrame":
-                # refresh auto complete values in product search entry in billing frame
-                globals.billingProductNameEntry.config(completevalues=[record["product_name"] if record.get("product_name") else "" for record in globals.PRODUCTS_LIST])
-            if globals.CURRENT_FRAME=="homeFrame":
-                # refresh home frame
-                dashboard.showFrame(globals.CURRENT_FRAME, refreshMode=True)
-
 
         Button(updateProductWindow,
             text="Cancel",

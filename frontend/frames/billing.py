@@ -9,9 +9,9 @@ from ttkwidgets.autocomplete import AutocompleteEntry
 from tkinter import *
 # frontend imports
 import frontend.windows.dashboard as dashboard
-from frontend.windows.addProducts import createAddProductWindow
-from frontend.windows.addCustomers import createAddCustomerWindow
-from frontend.windows.updateProducts import createUpdateProductWindow
+import frontend.windows.addProducts as addProductsWindow
+import frontend.windows.addCustomers as addCustomersWindow
+import frontend.windows.updateProducts as updateProductsWindow
 import frontend.windows.payment as paymentWindow
 from frontend.utils.frontend import makeColumnResponsive
 from frontend.utils.products import updateProduct
@@ -93,33 +93,19 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
             quantityEntry.focus()
             return False
 
-        rateChanged = (float(rate)!=float(productDetails["marked_price"])) if not toUpdate else (float(rate)!=float(productDetails.get("rate")))
         stockChanged = int(quantity)>int(productDetails["stock"])
-
-        if rateChanged:
-            response = messagebox.askyesnocancel("Please confirm", 
-                                        f"""Rate of product you provided: Rs. {rate}\nRate in inventory: Rs. {productDetails["marked_price"]}\n\nClick Yes if you want to update the rate to Rs. {rate} in inventory?\nClick No to proceed without updating the rate in inventory.""")
-            if response==1:
-                productDetails["marked_price"] = str(rate)
-                updateProduct(productDetails["id"], productDetails)
-                productDetails["rate"] = productDetails["marked_price"]
-            elif response==0:
-                productDetails["rate"] = str(rate)
-            else:
-                return None
 
         if stockChanged:
             response = messagebox.askyesno("Please confirm", 
                                         f"""Available stock: {productDetails["stock"]}\nQuantity you provided: {quantity}\n\nDo you want to update the stock in inventory?""")
             if response==1:
-                createUpdateProductWindow(productDetails)
+                updateProductsWindow.createUpdateProductWindow(productDetails)
                 clearProductDetails()
                 return True
             else:
                 return None
-        
-        if not rateChanged:
-            productDetails["rate"] = str(rate)
+
+        productDetails["rate"] = str(rate)
         productDetails["quantity"] = str(quantity)
 
         addProductToBill(productDetails)
@@ -128,16 +114,17 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
         parent.config(bg=globals.defaultBgColor) if toUpdate else None
         if globals.BILL_DETAILS["products"].get(productDetails["id"]) and not toUpdate:
             messagebox.showinfo("Billing System", f"'{productDetails['product_name']}' is already added to the bill!\nIf you want to update, please click update button.")
-            return True
+            return False
         if len(globals.BILL_DETAILS["products"].keys())>15:
             messagebox.showinfo("Billing System", f"You can add upto 15 products only at once.\n\nPlease generate this bill and create another bill for remaining products.\n\nThank you!")
-            return True
+            return False
 
         globals.BILL_DETAILS["products"][productDetails["id"]] = {"product_name": productDetails["product_name"],
                                                                 "stock":productDetails["stock"],
                                                                 "unit":productDetails["unit"],
                                                                 "quantity":productDetails["quantity"],
                                                                 "marked_price":productDetails["marked_price"],
+                                                                "cost_price":productDetails["cost_price"],
                                                                 "rate":productDetails["rate"]}
         clearProductDetails()
         createBillDetailsTable(globals.billDetailsFrame)
@@ -216,6 +203,7 @@ def loadCustomerDetails(parent, customerDetails):
                                                 "company_pan_no":customerDetails["company_pan_no"] if customerDetails["company_pan_no"] else ""}
             
             globals.BILL_DETAILS["customer"] = customerData
+            clearCustomerDetails()
             createBillDetailsTable(globals.billDetailsFrame)
 
         Button(parent,
@@ -223,7 +211,7 @@ def loadCustomerDetails(parent, customerDetails):
             bg=globals.appGreen,
             fg=globals.appWhite,
             width=10,
-            command=addToBill).grid(row=2, column=4, rowspan=2, padx=5, pady=10)
+            command=addToBill).grid(row=3, column=3, padx=5, pady=10)
 
         makeColumnResponsive(parent)
     except Exception as e:
@@ -325,6 +313,37 @@ def createBillDetailsTableFooter(parent):
         Label(parent, text="Grand Total:", font=globals.appFontSmallBold).grid(row=baseIndex+3, column=0, sticky=W)
         Label(parent, text="Rs. {:,.2f}".format(totalPayable)).grid(row=baseIndex+3, column=1, sticky=W)
 
+    detailsCommands = LabelFrame(parent, borderwidth=0)
+    detailsCommands.grid(row=baseIndex+3, column=0, columnspan=4, sticky=E, pady=5)
+
+    askForPayment = int(globals.CURRENT_SETTINGS.get("ask_for_payment")) if globals.CURRENT_SETTINGS.get("ask_for_payment") else 0
+    
+    def proceedToMakePayment():
+        status = billUtils.preprocess_bill_details()
+        if status:
+            if askForPayment:
+                paymentWindow.createPaymentWindow()
+            else:
+                billUtils.make_payment(0)
+    
+    cta = "Pay and Generate Bill" if askForPayment else "Generate Bill"
+    Button(detailsCommands,
+        text=cta,
+        bg=globals.appBlue,
+        fg=globals.appDarkGreen,
+        width=20,
+        command=proceedToMakePayment,
+        state = DISABLED if not globals.BILL_DETAILS else NORMAL
+        ).pack(side="right", padx=5)
+
+
+    clear = Button(detailsCommands,
+                        text="Clear All",
+                        bg=globals.appBlue,
+                        fg=globals.appDarkGreen,
+                        command=clearBillingFrame)
+    clear.pack(side="right", padx=5)
+
     makeColumnResponsive(parent)
 
 
@@ -374,7 +393,7 @@ def createBillDetailsTable(parent):
     billDetailsHeaderBodyMain = LabelFrame(globals.billDetailsTable, text="Products")
     billDetailsHeaderBodyMain.grid(row=2, columnspan=4, sticky="wens")
 
-    canvas = Canvas(billDetailsHeaderBodyMain, bg="blue")
+    canvas = Canvas(billDetailsHeaderBodyMain, bg="blue", height=220)
     
     billDetailsHeaderBody = Frame(canvas)
     billDetailsHeaderBody.pack(fill="both", padx=5, pady=5)
@@ -475,7 +494,7 @@ def createCustomerDetailsArea(parent):
                     bg=globals.appBlue,
                     fg=globals.appDarkGreen,
                     width=20,
-                    command=lambda: createAddCustomerWindow()).pack(pady=5)
+                    command=lambda: addCustomersWindow.createAddCustomerWindow()).pack(pady=5)
         else:
             globals.billingCustomerNameEntry.focus()
 
@@ -526,7 +545,7 @@ def createProductDetailsArea(parent):
                         bg=globals.appBlue,
                         fg=globals.appDarkGreen,
                         width=20,
-                        command=lambda: createUpdateProductWindow(productDetails)).pack(pady=5)
+                        command=lambda: updateProductsWindow.createUpdateProductWindow(productDetails)).pack(pady=5)
                     return True
                 else:
                     loadProductDetails(globals.rateQtyFrame, productDetails)
@@ -539,7 +558,7 @@ def createProductDetailsArea(parent):
                     bg=globals.appBlue,
                     fg=globals.appDarkGreen,
                     width=20,
-                    command=lambda: createAddProductWindow()).pack(pady=5)
+                    command=lambda: addProductsWindow.createAddProductWindow()).pack(pady=5)
                 return True
             
         else:
@@ -695,8 +714,6 @@ def createBillDetailsArea(parent):
 
 
 def createBillingSystemFrame(parent):
-    askForPayment = int(globals.CURRENT_SETTINGS.get("ask_for_payment")) if globals.CURRENT_SETTINGS.get("ask_for_payment") else 0
-    
     globals.billingSystemFrame = Frame(parent, borderwidth=1)
     globals.billingSystemFrame.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -705,35 +722,6 @@ def createBillingSystemFrame(parent):
 
     createDetailsArea(detailsAndBillingFrame)
     createBillDetailsArea(detailsAndBillingFrame)
-
-    detailsCommands = LabelFrame(globals.billingSystemFrame, borderwidth=0)
-    detailsCommands.pack(fill="x", pady=5, expand=True)
-
-    def proceedToMakePayment():
-        status = billUtils.preprocess_bill_details()
-        if status:
-            if askForPayment:
-                paymentWindow.createPaymentWindow()
-            else:
-                billUtils.make_payment(0)
-    
-    cta = "Pay and Generate Bill" if askForPayment else "Generate Bill"
-    Button(detailsCommands,
-        text=cta,
-        bg=globals.appBlue,
-        fg=globals.appDarkGreen,
-        width=20,
-        command=proceedToMakePayment,
-        state = DISABLED if not globals.BILL_DETAILS else NORMAL
-        ).pack(side="right", padx=5)
-
-
-    clear = Button(detailsCommands,
-                        text="Clear All",
-                        bg=globals.appBlue,
-                        fg=globals.appDarkGreen,
-                        command=clearBillingFrame)
-    clear.pack(side="right", padx=5)
     
 
 def clearBillingFrame(force=False):

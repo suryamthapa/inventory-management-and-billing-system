@@ -5,6 +5,7 @@ from tkinter import *
 from tkinter import messagebox
 import frontend.config as globals
 import frontend.frames.vendors as vendors
+import frontend.frames.purchaseEntry as purchaseEntryFrame
 from frontend.utils.vendors import saveVendor, refreshVendorsList
 
 
@@ -86,10 +87,14 @@ def createAddVendorWindow():
                     globals.queryEntry.config(completevalues=[record[field] if record.get(field) else "" for record in globals.VENDORS_LIST])
                     # reload the inventory table
                     vendors.handleSearchVendor(globals.CURRENT_SEARCH_QUERY.get("vendors"))
-                if globals.CURRENT_FRAME=="billingSystemFrame":
+                if globals.CURRENT_FRAME=="purchaseEntrySystemFrame":
                     # refresh auto complete values in vendors search entry in billing frame
-                    field = globals.vendorsFilterOptionsMap.get(globals.billingVendorfilterOption.get())
-                    globals.billingVendorNameEntry.config(completevalues=[record[field] if record.get(field) else "" for record in globals.VENDORS_LIST])
+                    field = globals.vendorsFilterOptionsMap.get(globals.purchaseVendorfilterOption.get())
+                    globals.purchaseVendorNameEntry.config(completevalues=[record[field] if record.get(field) else "" for record in globals.VENDORS_LIST])
+                    globals.purchaseVendorNameEntry.delete(0, END)
+                    globals.purchaseVendorNameEntry.insert(0, data[field])
+                    data["id"] = status
+                    purchaseEntryFrame.loadVendorDetails(globals.namePhFrame, data)
             else:
                 return False
 
@@ -105,12 +110,13 @@ def createAddVendorWindow():
             command=lambda : validateVendor(quitWindow=True),
             width=20).pack(side="right", ipadx=20, pady=20, padx=10)
         
-        Button(addVendorWindow,
-            text="Save",
-            bg=globals.appBlue,
-            fg=globals.appDarkGreen,
-            command=validateVendor,
-            width=20).pack(side="right", ipadx=20, pady=20, padx=10)
+        if globals.CURRENT_FRAME=="vendorsFrame":
+            Button(addVendorWindow,
+                text="Save",
+                bg=globals.appBlue,
+                fg=globals.appDarkGreen,
+                command=validateVendor,
+                width=20).pack(side="right", ipadx=20, pady=20, padx=10)
 
         addVendorWindow.update()
         # bring to the center of screen

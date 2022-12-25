@@ -5,6 +5,7 @@ from tkinter import *
 from tkinter import messagebox
 import frontend.config as globals
 import frontend.frames.customers as customers
+import frontend.frames.billing as billingFrame
 from frontend.utils.customers import saveCustomer, refreshCustomersList
 
 
@@ -121,6 +122,10 @@ def createAddCustomerWindow():
                     # refresh auto complete values in customers search entry in billing frame
                     field = globals.customersFilterOptionsMap.get(globals.billingCustomerfilterOption.get())
                     globals.billingCustomerNameEntry.config(completevalues=[record[field] if record.get(field) else "" for record in globals.CUSTOMERS_LIST])
+                    globals.billingCustomerNameEntry.delete(0, END)
+                    globals.billingCustomerNameEntry.insert(0, data[field])
+                    data["id"] = status
+                    billingFrame.loadCustomerDetails(globals.namePhFrame, data)
             else:
                 return False
 
@@ -136,12 +141,13 @@ def createAddCustomerWindow():
             command=lambda : validateCustomer(quitWindow=True),
             width=20).pack(side="right", ipadx=20, pady=20, padx=10)
         
-        Button(addCustomerWindow,
-            text="Save",
-            bg=globals.appBlue,
-            fg=globals.appDarkGreen,
-            command=validateCustomer,
-            width=20).pack(side="right", ipadx=20, pady=20, padx=10)
+        if globals.CURRENT_FRAME == "customersFrame":
+            Button(addCustomerWindow,
+                text="Save",
+                bg=globals.appBlue,
+                fg=globals.appDarkGreen,
+                command=validateCustomer,
+                width=20).pack(side="right", ipadx=20, pady=20, padx=10)
 
         addCustomerWindow.update()
         # bring to the center of screen

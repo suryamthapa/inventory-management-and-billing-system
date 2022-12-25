@@ -63,6 +63,12 @@ BILL_DETAILS = {
     "extra":{},
     "final":{}
 }
+PURCHASE_DETAILS = {
+    "vendor":{},
+    "products":{},
+    "extra":{},
+    "final":{}
+}
 CURRENT_LEDGER_ACCOUNT = {
     "customer":{},
     "account":{},
@@ -88,6 +94,7 @@ accountsButton = None
 purchaseButton = None
 settingsButton = None
 billingSystemButton = None
+purchaseEntrySystemButton = None
 salesAndAnalyticsButton = None
 exitButton = None
 paginationBackButton = None
@@ -103,6 +110,8 @@ paginationPageInfo = None
 queryEntry = None
 billingProductNameEntry = None
 billingCustomerNameEntry = None
+purchaseProductNameEntry = None
+purchaseVendorNameEntry = None
 
 # global listbox
 progressbar = None
@@ -123,6 +132,10 @@ settingsFrame = None
 billingSystemFrame = None
 billDetailsFrame = None
 billDetailsTable = None
+
+purchaseEntrySystemFrame = None
+purchaseDetailsFrame = None
+purchaseDetailsTable = None
 # to load name and phone number of customer
 namePhFrame = None
 # to load rate and quantity of product
@@ -154,6 +167,7 @@ productsFilterOptionsMap = {
         }
 filterOption = None
 billingCustomerfilterOption = None
+purchaseVendorfilterOption = None
 
 accountsFrame = None
 accountsTable = None
