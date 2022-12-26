@@ -17,7 +17,7 @@ def updateCustomer(id, data):
         return False
     else:
         messagebox.showinfo("Update Customer",message)
-        return True
+        return status
 
 
 def saveCustomer(data):
@@ -27,4 +27,4 @@ def saveCustomer(data):
         return False
     else:
         messagebox.showinfo("Add Customer",f"{message} \n id: {status}")
-        return True
+        return status

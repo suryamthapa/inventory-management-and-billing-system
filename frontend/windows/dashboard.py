@@ -14,28 +14,29 @@ from tkinter import messagebox
 
 log = logging.getLogger("frontend")
 
-try:
+# try:
     # frontend imports
-    import frontend.config as Settings
-    from frontend.utils.frontend import exitParent, showCurrentTime, handle_buttons_on_activation
-    from frontend.utils.app_configuration import has_trial_started, start_trial, is_trial_complete, is_machine_same
-    from frontend.frames.inventory import openInventory
-    from frontend.frames.home import openHome
-    from frontend.frames.profile import openProfile
-    from frontend.frames.settings import openSettings
-    import frontend.frames.billing as billingSystem
-    from frontend.frames.customers import openCustomers
-    from frontend.frames.vendors import openVendors
-    from frontend.frames.accounts import openAccounts
-    from frontend.frames.purchaseEntry import openPurchaseEntrySystem
-    from frontend.windows.lisence import createLicenseInformationWindow
-    from frontend.windows.appUpdates import createAppUpdatesWindow
-    # backend imports
-    from backend.models import LisenceStatus
-except Exception as e:
-    log.error(f"Error occured while importing modules from dashboard -> {e}")
-    messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
-    sys.exit("Import error")
+import frontend.config as Settings
+from frontend.utils.frontend import exitParent, showCurrentTime, handle_buttons_on_activation
+from frontend.utils.app_configuration import has_trial_started, start_trial, is_trial_complete, is_machine_same
+from frontend.frames.inventory import openInventory
+from frontend.frames.home import openHome
+from frontend.frames.profile import openProfile
+from frontend.frames.settings import openSettings
+import frontend.frames.billing as billingSystem
+from frontend.frames.customers import openCustomers
+from frontend.frames.vendors import openVendors
+from frontend.frames.accounts import openAccounts
+from frontend.frames.purchaseEntry import openPurchaseEntrySystem
+from frontend.frames.purchase import openPurchaseView
+from frontend.windows.lisence import createLicenseInformationWindow
+from frontend.windows.appUpdates import createAppUpdatesWindow
+# backend imports
+from backend.models import LisenceStatus
+# except Exception as e:
+#     log.error(f"Error occured while importing modules from dashboard -> {e}")
+#     messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
+#     sys.exit("Import error")
 
 
 def showFrame(frameName, refreshMode=False):
@@ -53,6 +54,7 @@ def showFrame(frameName, refreshMode=False):
     Settings.accountsButton.configure(bg=Settings.appDarkGreen)
     Settings.vendorsButton.configure(bg=Settings.appDarkGreen)
     Settings.purchaseEntrySystemButton.configure(bg=Settings.appDarkGreen)
+    Settings.purchaseViewButton.configure(bg=Settings.appDarkGreen)
 
     if not alreadyOpen:
         try:
@@ -87,6 +89,9 @@ def showFrame(frameName, refreshMode=False):
             elif frameName=="purchaseEntrySystemFrame":
                 Settings.purchaseEntrySystemButton.configure(bg=Settings.appGreen)
                 openPurchaseEntrySystem(Settings.mainFrame)
+            elif frameName=="purchaseViewFrame":
+                Settings.purchaseViewButton.configure(bg=Settings.appGreen)
+                openPurchaseView(Settings.mainFrame)
             log.info(f"OPENED: {frameName}")
         except Exception as e:
             log.error(f"{frameName} --> {e}")
@@ -112,7 +117,7 @@ def createSidebar(container):
     options = Frame(Settings.sidebar, bg=Settings.appDarkGreen, borderwidth=0)
     options.grid(row=1, sticky="ns")
     optionsWidth = 19
-    optionsPadY = 10
+    optionsPadY = 8
 
     Settings.homeButton = Button(options, 
         text="Home",
@@ -161,6 +166,14 @@ def createSidebar(container):
         fg=optionsColor,
         command=lambda : showFrame("purchaseEntrySystemFrame"))
     Settings.purchaseEntrySystemButton.grid(row=5, column=0, pady=optionsPadY)
+
+    Settings.purchaseViewButton = Button(options, 
+        text="View Purchases", 
+        width=optionsWidth,
+        bg=Settings.appDarkGreen, 
+        fg=optionsColor,
+        command=lambda : showFrame("purchaseViewFrame"))
+    Settings.purchaseViewButton.grid(row=6, column=0, pady=optionsPadY)
     
     Settings.inventoryButton = Button(options, 
         text="Inventory", 
@@ -168,7 +181,7 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("inventoryFrame"))
-    Settings.inventoryButton.grid(row=6, column=0, pady=optionsPadY)
+    Settings.inventoryButton.grid(row=7, column=0, pady=optionsPadY)
 
     Settings.billingSystemButton = Button(options, 
         text="Billing System", 
@@ -176,7 +189,7 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("billingSystemFrame"))
-    Settings.billingSystemButton.grid(row=7, column=0, pady=optionsPadY)
+    Settings.billingSystemButton.grid(row=8, column=0, pady=optionsPadY)
 
     Settings.salesAndAnalyticsButton = Button(options, 
         text="Sales and Analytics", 
@@ -184,7 +197,7 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : messagebox.showinfo("Sales and Analytics", "Feature comming soon in next update!\n\nYou will be able to view the sales and analytics of your company with the help of this feature.\n\nThank you!"))
-    Settings.salesAndAnalyticsButton.grid(row=8, column=0, pady=optionsPadY)
+    Settings.salesAndAnalyticsButton.grid(row=9, column=0, pady=optionsPadY)
 
     Settings.settingsButton = Button(options, 
         text="Settings", 
@@ -192,7 +205,7 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=lambda : showFrame("settingsFrame"))
-    Settings.settingsButton.grid(row=9, column=0, pady=optionsPadY)
+    Settings.settingsButton.grid(row=10, column=0, pady=optionsPadY)
 
     Settings.updateButton = Button(options, 
         text="Check Updates",
@@ -200,14 +213,14 @@ def createSidebar(container):
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
         command=createAppUpdatesWindow)
-    Settings.updateButton.grid(row=10, column=0, pady=optionsPadY)
+    Settings.updateButton.grid(row=11, column=0, pady=optionsPadY)
 
     Settings.exitButton = Button(options, 
         text="Exit", width=optionsWidth,
         bg=Settings.appDarkGreen,
         fg=optionsColor,
         command=lambda: exitParent(Settings.app))
-    Settings.exitButton.grid(row=11, column=0, pady=optionsPadY)
+    Settings.exitButton.grid(row=12, column=0, pady=optionsPadY)
 
     # Making the options frame expand to the height of screen
     Grid.rowconfigure(Settings.sidebar, 1, weight=1)

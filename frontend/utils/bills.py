@@ -4,12 +4,9 @@ import logging
 import datetime
 from tkinter import messagebox
 import threading
-import frontend.config as Settings
-if Settings.DATE_TIME_TYPE == "NEPALI":
-    from frontend.utils.nepali_datetime import date
-else:
-    from datetime import date
 # frontend imports
+import frontend.config as Settings
+from frontend.utils.nepali_datetime import date
 from frontend.utils.products import refreshProductsList
 from frontend.utils.sales import refreshTotalSales
 from frontend.utils.billPdfGen import CustomerBill

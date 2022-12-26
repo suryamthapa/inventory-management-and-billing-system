@@ -3,12 +3,7 @@ import logging
 from tkinter import *
 from tkinter import messagebox
 import frontend.config as globals
-if globals.DATE_TIME_TYPE == "NEPALI":
-    from frontend.utils.nepali_datetime import date
-else:
-    from datetime import date
-import frontend.frames.billing as billingFrame
-from frontend.utils.bills import generate_and_save_bill, preview_pdf_in_browser, make_payment
+from frontend.utils.bills import make_payment
 
 
 log = logging.getLogger("frontend")

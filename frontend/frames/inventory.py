@@ -6,8 +6,8 @@ from tkinter import *
 from ttkwidgets.autocomplete import AutocompleteEntry
 # frontend imports
 import frontend.config as globals
-from frontend.utils.frontend import makeColumnResponsive
-from frontend.utils.products import refreshProductsList
+import frontend.utils.frontend as frontendUtils
+import frontend.utils.products as productUtils
 import frontend.windows.updateProducts as updateProducts
 import frontend.windows.addProducts as addProducts
 # backend imports
@@ -26,7 +26,7 @@ def deleteProduct(id, name):
         else:
             messagebox.showinfo("Delete Product",f"Product deleted successfully! \n id: {message}")
             # refreshing products list
-            refreshProductsList()
+            productUtils.refreshProductsList()
             # reload the inventory table
             handleSearchProduct(globals.CURRENT_SEARCH_QUERY.get("products"))
             # refresh auto complete values in search entry
@@ -138,7 +138,7 @@ def createTableHeader(parent):
     Label(parent, text="MP per unit", font=globals.appFontNormalBold).grid(row=0, column=5, sticky=W)
     Label(parent, text="", font=globals.appFontNormalBold).grid(row=0, column=6, sticky=W)
     Label(parent, text="", font=globals.appFontNormalBold).grid(row=0, column=7, sticky=W)
-    makeColumnResponsive(parent)
+    frontendUtils.makeColumnResponsive(parent)
 
 
 def createTableBody(parent, records):
@@ -156,7 +156,7 @@ def createTableBody(parent, records):
         Button(parent, text="update", width=10, bg="#47B5FF", command=lambda x=record: updateProducts.createUpdateProductWindow(x)).grid(row=index+1, column=6, pady=5)
         Button(parent, text="delete", width=10, bg="red", command=lambda id=record.get("id"), name=record.get("product_name"): deleteProduct(id, name)).grid(row=index+1, column=7, pady=5)
 
-    makeColumnResponsive(parent)
+    frontendUtils.makeColumnResponsive(parent)
 
 
 def handlePaginationButtonState(currentPage, totalPages):

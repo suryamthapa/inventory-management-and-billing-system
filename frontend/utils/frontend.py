@@ -8,10 +8,7 @@ from pytz import timezone
 import frontend.config as Settings
 import frontend.windows.dashboard as dashboard
 from frontend.utils import nepali_datetime
-if Settings.DATE_TIME_TYPE == "NEPALI":
-    from frontend.utils.nepali_datetime import date
-else:
-    from datetime import date
+from frontend.utils.nepali_datetime import date
 
 
 def exitParent(parent):

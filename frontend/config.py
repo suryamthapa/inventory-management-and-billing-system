@@ -6,7 +6,8 @@ import logging
 from frontend.utils.lisences import getLisenceInfo
 from frontend.utils.products import refreshProductsList
 from frontend.utils.customers import refreshCustomersList
-from frontend.utils.vendors import refreshVendorsList
+import frontend.utils.purchase as purchaseUtils
+import frontend.utils.vendors as vendorUtils
 from frontend.utils.settings import getSettings
 from frontend.utils.sales import refreshTotalSales
 log = logging.getLogger("frontend")
@@ -42,11 +43,15 @@ refreshCustomersList()
 
 # customers info
 VENDORS_LIST = None
-refreshVendorsList()
+vendorUtils.refreshVendorsList()
 
 # products info
 PRODUCTS_LIST = None
 refreshProductsList()
+
+# purchase info
+PURCHASE_LIST = None
+purchaseUtils.refreshPurchasesList()
 
 # pagination and search queries
 PAGINATION_PAGE = 1
@@ -55,7 +60,8 @@ CURRENT_SEARCH_QUERY = {
     "customers":{},
     "products":{},
     "accounts":{},
-    "vendors":{}
+    "vendors":{},
+    "purchases":{}
 }
 BILL_DETAILS = {
     "customer":{},
@@ -95,6 +101,7 @@ purchaseButton = None
 settingsButton = None
 billingSystemButton = None
 purchaseEntrySystemButton = None
+purchaseViewButton = None
 salesAndAnalyticsButton = None
 exitButton = None
 paginationBackButton = None
@@ -136,6 +143,9 @@ billDetailsTable = None
 purchaseEntrySystemFrame = None
 purchaseDetailsFrame = None
 purchaseDetailsTable = None
+
+purchaseViewFrame = None
+
 # to load name and phone number of customer
 namePhFrame = None
 # to load rate and quantity of product
@@ -161,6 +171,14 @@ vendorsFilterOptionsMap = {
             "Phone Number": "phone_number",
             "Telephone": "telephone",
             "Email": "email"
+        }
+purchaseFilterOptionsMap = {
+            "Invoice Number": "invoice_number",
+            "Vendor VAT/PAN Number": "vat_number",
+            "Vendor Name": "vendor_name",
+            "Vendor Telephone": "telephone",
+            "Vendor Phone Number": "phone_number",
+            "Vendor Email": "email"
         }
 productsFilterOptionsMap = {
             "Product name": "product_name"

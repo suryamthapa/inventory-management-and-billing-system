@@ -1,25 +1,31 @@
-import os
-import tempfile
 import logging
-import datetime
 from tkinter import messagebox
-import threading
 import frontend.config as Settings
-if Settings.DATE_TIME_TYPE == "NEPALI":
-    from frontend.utils.nepali_datetime import date
-else:
-    from datetime import date
 # frontend imports
 from frontend.utils.products import refreshProductsList
-from frontend.utils.sales import refreshTotalSales
-from frontend.utils.billPdfGen import CustomerBill
 import frontend.frames.billing as billingFrame
 # backend imports
 from backend.api.products import update_product
-from backend.api.purchase import add_purchase
+from backend.api.purchase import add_purchase, update_purchase, get_purchase
 
 
 log = logging.getLogger("frontend")
+
+
+def refreshPurchasesList():
+    status, data = get_purchase(limit=None)
+    if status:
+        Settings.PURCHASE_LIST = data["data"]
+
+
+def updatePurchase(id, data):
+    status, message = update_purchase(id=id, data=data)
+    if not status:
+        messagebox.showerror("Update Purchase", message)
+        return False
+    else:
+        messagebox.showinfo("Update Purchase",message)
+        return status
 
 
 def entry_purchase_and_add_stock():

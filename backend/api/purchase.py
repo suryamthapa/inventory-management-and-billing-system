@@ -84,7 +84,7 @@ def get_purchase(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
         def rowToDict(purchase):
             product_qty_payload = {}
             if purchase.product_qty:
-                product_qty_info = eval(purchase.product_qty) if type(purchase.product_qty) == str else purchase.product_qty
+                product_qty_info = eval(str(purchase.product_qty)) if purchase.product_qty else purchase.product_qty
                 for product_id, values in product_qty_info.items():
                     product = db.query(Products).filter(Products.id==product_id).first()
                     product_qty_payload[product_id] = {
@@ -100,7 +100,7 @@ def get_purchase(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
                             "phone_number":vendor.phone_number,
                             "telephone": vendor.telephone,
                             "email":vendor.email,
-                            "extra_info": vendor.extra_info
+                            "extra_info": eval(str(vendor.extra_info)) if vendor.extra_info else vendor.extra_info
                             } if vendor else {}
             return {"id": purchase.id,
                     "invoice_number":purchase.invoice_number,
@@ -114,7 +114,7 @@ def get_purchase(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
                     "vat":purchase.vat,
                     "cash_payment":purchase.cash_payment,
                     "balance_amount":purchase.balance_amount,
-                    "extra_info": eval(purchase.extra_info)}
+                    "extra_info": eval(str(purchase.extra_info)) if purchase.extra_info else purchase.extra_info}
         
         payload = {
             "message": "Success",
@@ -124,9 +124,47 @@ def get_purchase(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
             "page_size": len(purchases)}
 
         db.close()
-        log.info("FETCHED: All purchase.")
+        log.info(f"FETCHED: All purchase with queryDict -> {queryDict}.")
         return True, payload
     except Exception as e:
         db.close()
         log.error(f"Error occured while fetching purchase with queryDict: {queryDict} -> {e}")
+        return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
+
+
+def update_purchase(id: int, data: dict = {}, db: Session=get_db()):
+    try:
+        if not id: return False, "Please provide valid id."
+
+        purchase = db.query(Purchases).filter(Purchases.id==id).first()
+        if not purchase: 
+            db.close()
+            return False, "Purchase with given id does not exist."
+        for key, value in data.items():
+            setattr(purchase, key, value)
+    
+        db.commit()
+        db.close()
+        return True, "Purchase updated successfully!"
+    except IntegrityError as f:
+        db.close()
+        log.error(f"ERROR: while updating purchase with id {id}-> {f}")
+        return False, f"Purchase already exists with given invoice number."
+    except Exception as e:
+        db.close()
+        log.error(f"ERROR: while updating purchase with id {id}-> {e}")
+        return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
+
+
+def delete_purchase(id=None, db: Session=get_db()):
+    try:
+        if not id: return False, "Please provide valid id."
+    
+        db.query(Purchases).filter(Purchases.id==id).delete()
+        db.commit()
+        db.close()
+        return id, "Purchase deleted successfully!"
+    except Exception as e:
+        db.close()
+        log.error(f"ERROR: while deleting purchase with id {id} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
