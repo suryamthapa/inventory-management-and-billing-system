@@ -9,7 +9,7 @@ from sqlalchemy import table
 from ttkwidgets.autocomplete import AutocompleteEntry
 from tkinter import *
 # frontend imports
-from frontend.utils import nepali_datetime
+from core import nepali_datetime
 import frontend.windows.dashboard as dashboard
 import frontend.windows.addProducts as addProductsWindow
 import frontend.windows.addVendors as addVendorsWindow

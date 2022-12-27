@@ -7,7 +7,7 @@ from pytz import timezone
 # frontend imports
 import frontend.config as Settings
 import frontend.windows.dashboard as dashboard
-from frontend.utils import nepali_datetime
+from core import nepali_datetime
 from core.nepali_datetime import date
 
 
