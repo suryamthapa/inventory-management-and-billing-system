@@ -61,7 +61,7 @@ def install_update(exe_path, updateAppWindow):
         updateAppWindow.event_generate('<<Done>>')
         subprocess.Popen(exe_path)
     except Exception as e:
-        log.error(f"ERROR: While starting the executable installer for installing updates: {e}")
+        log.exception(f"ERROR: While starting the executable installer for installing updates: {e}")
         messagebox.showerror("App Updates", "Some error occured while installing the update.\n\nPlease check logs or contact the developer.\n\nThank you!")
 
 
@@ -114,7 +114,7 @@ def createAppUpdatesWindow():
                     log.error(f"ERROR: While downloading the executable installer for installing updates: {e}")
                     messagebox.showerror("App Updates", "Cound not download the installer.\n\nPlease check your internet connection and try again.\n\nThank you!")
                 except Exception as e:
-                    log.error(f"ERROR: While downloading the executable installer for installing updates: {e}")
+                    log.exception(f"ERROR: While downloading the executable installer for installing updates: {e}")
                     messagebox.showerror("App Updates", "Some error occured while downloading the updates.\n\nPlease check logs or contact the developer.\n\nThank you!")
                     
             updateAppWindow.update_idletasks()
@@ -141,5 +141,5 @@ def createAppUpdatesWindow():
         y = int((Settings.screen_height/2) - (updateAppWindow.winfo_height()/2))
         updateAppWindow.geometry(f'{updateAppWindow.winfo_width()}x{updateAppWindow.winfo_height()}+{x}+{y}')
     except Exception as e:
-        log.error(f"ERROR: while creating update window -> {e}")
+        log.exception(f"ERROR: while creating update window -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

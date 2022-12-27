@@ -67,7 +67,7 @@ def get_vendors(queryDict: dict = {}, asc = True, sort_column: str = "id",
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching vendors with queryDict: {queryDict} -> {e}")
+        log.exception(f"Error occured while fetching vendors with queryDict: {queryDict} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -110,7 +110,7 @@ def get_vendor(id: int = 0, vendor_name: str = "", vat_number: str = "", phone_n
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching vendor with id: {id} name: {vendor_name} phone number: {phone_number} email: {email} -> {e}")
+        log.exception(f"Error occured while fetching vendor with id: {id} name: {vendor_name} phone number: {phone_number} email: {email} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -131,11 +131,11 @@ def add_vendor(data:dict ={}, db: Session=get_db()):
         return vendor.id, "Vendor added successfully!"
     except IntegrityError as f:
         db.close()
-        log.error(f"ERROR: while adding vendor with data {data} -> {f}")
+        log.exception(f"ERROR: while adding vendor with data {data} -> {f}")
         return False, "Vendor with same name/phone/telephone/email already exists."
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while adding vendor with data {data} -> {e}")
+        log.exception(f"ERROR: while adding vendor with data {data} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -155,11 +155,11 @@ def update_vendor(id: int, data: dict = {}, db: Session=get_db()):
         return True, "Vendor updated successfully!"
     except IntegrityError as f:
         db.close()
-        log.error(f"ERROR: while updating vendor with id {id}-> {f}")
+        log.exception(f"ERROR: while updating vendor with id {id}-> {f}")
         return False, f"Vendor already exists with provided name."
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while updating vendor with id {id}-> {e}")
+        log.exception(f"ERROR: while updating vendor with id {id}-> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -173,5 +173,5 @@ def delete_vendor(id=None, db: Session=get_db()):
         return id, "Vendor deleted successfully!"
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while deleting vendor with id {id} -> {e}")
+        log.exception(f"ERROR: while deleting vendor with id {id} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"

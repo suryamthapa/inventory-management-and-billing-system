@@ -47,7 +47,7 @@ def handleSearchCustomer(queryColumnDict, page=1, limit=11, sort_column="id", as
             Label(globals.customersFrame, text="Please check logs or contact the developer.").pack()
         return True
     except Exception as e:
-        log.error(f"ERROR: while handling Search customer -> {e}")
+        log.exception(f"ERROR: while handling Search customer -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
 
 
@@ -235,6 +235,6 @@ def openCustomers(parent):
     try:
         createCustomersFrame(parent)
     except Exception as e:
-        log.error(f"ERROR: while creating customers frame -> {e}")
+        log.exception(f"ERROR: while creating customers frame -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
     

@@ -66,7 +66,7 @@ def get_customers(queryDict: dict = {}, asc = True, sort_column: str = "id",
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching customers with queryDict: {queryDict} -> {e}")
+        log.exception(f"Error occured while fetching customers with queryDict: {queryDict} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -110,7 +110,7 @@ def get_customer(id: int = 0, full_name: str = "", company: str = "", phone_numb
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching customer with id: {id} name: {name} phone number: {phone_number} email: {email} -> {e}")
+        log.exception(f"Error occured while fetching customer with id: {id} phone number: {phone_number} email: {email} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -131,11 +131,11 @@ def add_customer(data:dict ={}, db: Session=get_db()):
         return customer.id, "Customer added successfully!"
     except IntegrityError as f:
         db.close()
-        log.error(f"ERROR: while adding customer with data {data} -> {f}")
+        log.exception(f"ERROR: while adding customer with data {data} -> {f}")
         return False, "Customer with same name/phone/telephone/email already exists."
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while adding customer with data {data} -> {e}")
+        log.exception(f"ERROR: while adding customer with data {data} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -155,11 +155,11 @@ def update_customer(id: int, data: dict = {}, db: Session=get_db()):
         return True, "Customer updated successfully!"
     except IntegrityError as f:
         db.close()
-        log.error(f"ERROR: while updating customer with id {id}-> {f}")
+        log.exception(f"ERROR: while updating customer with id {id}-> {f}")
         return False, f"Customer already exists with provided name."
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while updating customer with id {id}-> {e}")
+        log.exception(f"ERROR: while updating customer with id {id}-> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -173,5 +173,5 @@ def delete_customer(id=None, db: Session=get_db()):
         return id, "Customer deleted successfully!"
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while deleting customer with id {id} -> {e}")
+        log.exception(f"ERROR: while deleting customer with id {id} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"

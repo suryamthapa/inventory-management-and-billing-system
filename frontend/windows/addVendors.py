@@ -124,5 +124,5 @@ def createAddVendorWindow():
         y = int((globals.screen_height/2) - (addVendorWindow.winfo_height()/2))
         addVendorWindow.geometry(f'{addVendorWindow.winfo_width()}x{addVendorWindow.winfo_height()}+{x}+{y}')
     except Exception as e:
-        log.error(f"ERROR: while creating Add Vendors window -> {e}")
+        log.exception(f"ERROR: while creating Add Vendors window -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

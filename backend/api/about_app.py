@@ -25,7 +25,7 @@ def get_about_app(db: Session = get_db()):
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while fetching about app configuration -> {e}")
+        log.exception(f"ERROR: while fetching about app configuration -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
         
 
@@ -60,6 +60,6 @@ def add_update_app_configuration(data: dict = {}, db: Session=get_db()):
         return True, "App configuration updated successfully!"
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while adding or updating about app configuration -> {e}")
+        log.exception(f"ERROR: while adding or updating about app configuration -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
     

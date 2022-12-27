@@ -198,5 +198,5 @@ def createAddAccountWindow(customerInfo):
         y = int((globals.screen_height/2) - (addAccountWindow.winfo_height()/2))
         addAccountWindow.geometry(f'{addAccountWindow.winfo_width()}x{addAccountWindow.winfo_height()}+{x}+{y}')
     except Exception as e:
-        log.error(f"ERROR: while creating Add Accounts window -> {e}")
+        log.exception(f"ERROR: while creating Add Accounts window -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

@@ -15,6 +15,14 @@ from frontend.utils.products import updateProduct, refreshProductsList
 log = logging.getLogger("frontend")
 
 
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+        
+
 def createUpdateProductWindow(productInfo):
     try:
         updateProductWindow = Toplevel()
@@ -60,6 +68,35 @@ def createUpdateProductWindow(productInfo):
         markedPriceEntry.insert(0, marked_price)
         
         def handleUpdate(id):
+            if not productNameEntry.get():
+                productNameEntry.focus()
+                return False
+            elif  not costPriceEntry.get():
+                costPriceEntry.focus()
+                return False
+            elif not markedPriceEntry.get():
+                markedPriceEntry.focus()
+                return False
+            elif not unitEntry.get():
+                unitEntry.focus()
+                return False
+            elif not stockEntry.get():
+                stockEntry.focus()
+                return False
+
+            if not isfloat(markedPriceEntry.get()):
+                messagebox.showwarning("Invalid", "Marked price should contain numbers only.")
+                markedPriceEntry.focus()
+                return False
+            if not isfloat(costPriceEntry.get()):
+                messagebox.showwarning("Invalid", "Cost price should contain numbers only.")
+                costPriceEntry.focus()
+                return False
+            if not stockEntry.get().isdigit():
+                stockEntry.focus()
+                messagebox.showwarning("Invalid", "Stock should contain numbers only.")
+                return False
+            
             details = {
                 "product_name":productNameEntry.get(),
                 "cost_price":costPriceEntry.get(),
@@ -110,5 +147,5 @@ def createUpdateProductWindow(productInfo):
         updateProductWindow.geometry(f'{updateProductWindow.winfo_width()}x{updateProductWindow.winfo_height()}+{x}+{y}')
     
     except Exception as e:
-        log.error(f"ERROR: while creating Update Products window -> {e}")
+        log.exception(f"ERROR: while creating Update Products window -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

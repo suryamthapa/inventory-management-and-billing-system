@@ -64,7 +64,7 @@ def get_products(queryDict: dict = {}, asc = True, sort_column: str = "id",
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching products with queryDict: {queryDict} -> {e}")
+        log.exception(f"Error occured while fetching products with queryDict: {queryDict} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -99,7 +99,7 @@ def get_product(id: int = 0, name: str = "", db: Session = get_db()):
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching product with id: {id} name: {name} -> {e}")
+        log.exception(f"Error occured while fetching product with id: {id} name: {name} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -121,7 +121,7 @@ def add_product(data:dict = {}, db: Session=get_db()):
         return False, "Product with same name already exists."
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while adding product with data {data} -> {e}")
+        log.exception(f"ERROR: while adding product with data {data} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -144,7 +144,7 @@ def update_product(id: int, data: dict = {}, db: Session=get_db()):
         return False, "Product already exists with provided name."
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while updating product with id {id}-> {e}")
+        log.exception(f"ERROR: while updating product with id {id}-> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -158,5 +158,5 @@ def delete_product(id=None, db: Session=get_db()):
         return id, "Product deleted successfully!"
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while deleting product with id {id} -> {e}")
+        log.exception(f"ERROR: while deleting product with id {id} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"

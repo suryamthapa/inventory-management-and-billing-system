@@ -89,7 +89,7 @@ def get_accounts(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching Accounts with queryDict: {queryDict} -> {e}")
+        log.exception(f"Error occured while fetching Accounts with queryDict: {queryDict} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -122,7 +122,7 @@ def get_account(id: int = 0, db: Session = get_db()):
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching account with id -> {id} -> {e}")
+        log.exception(f"Error occured while fetching account with id -> {id} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -141,7 +141,7 @@ def add_account(data:dict = {}, db: Session=get_db()):
         return account.id, "Account added successfully!"
     except Exception as e:
         db.close()
-        log.error(f"Error occured while adding account with data -> {data} -> {e}")
+        log.exception(f"Error occured while adding account with data -> {data} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -161,7 +161,7 @@ def update_account(id: int, data: dict = {}, db: Session=get_db()):
         return True, "Account updated successfully!"
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while adding or updating account -> {e}")
+        log.exception(f"ERROR: while adding or updating account -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -175,5 +175,5 @@ def delete_account(id=None, db: Session=get_db()):
         return id, "Account deleted successfully!"
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while deleting account with id -> {id} and configuration -> {e}")
+        log.exception(f"ERROR: while deleting account with id -> {id} and configuration -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"

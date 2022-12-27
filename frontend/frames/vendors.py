@@ -47,7 +47,7 @@ def handleSearchVendor(queryColumnDict, page=1, limit=11, sort_column="id", asc=
             Label(globals.vendorsFrame, text="Please check logs or contact the developer.").pack()
         return True
     except Exception as e:
-        log.error(f"ERROR: while handling Search vendor -> {e}")
+        log.exception(f"ERROR: while handling Search vendor -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
 
 
@@ -223,6 +223,6 @@ def openVendors(parent):
     try:
         createVendorsFrame(parent)
     except Exception as e:
-        log.error(f"ERROR: while creating vendors frame -> {e}")
+        log.exception(f"ERROR: while creating vendors frame -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
     

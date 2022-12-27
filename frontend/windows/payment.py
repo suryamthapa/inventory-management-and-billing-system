@@ -63,5 +63,5 @@ def createPaymentWindow():
         y = int((globals.screen_height/2) - (paymentWindow.winfo_height()/2))
         paymentWindow.geometry(f'{paymentWindow.winfo_width()}x{paymentWindow.winfo_height()}+{x}+{y}')
     except Exception as e:
-        log.error(f"ERROR: while creating Bill Payment window -> {e}")
+        log.exception(f"ERROR: while creating Bill Payment window -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

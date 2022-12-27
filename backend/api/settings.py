@@ -17,7 +17,7 @@ def get_settings(db: Session = get_db()):
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching app settings -> {e}")
+        log.exception(f"Error occured while fetching app settings -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -34,7 +34,7 @@ def get_setting(key: str, db: Session = get_db()):
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching app setting with key: {key} -> {e}")
+        log.exception(f"Error occured while fetching app setting with key: {key} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -53,7 +53,7 @@ def add_update_setting(data: dict = {}, db: Session=get_db()):
         return True, "Updated successfully!"
     except Exception as e:
         db.close()
-        log.error(f"Error occured while adding or updating app setting with data: {data} -> {e}")
+        log.exception(f"Error occured while adding or updating app setting with data: {data} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -67,5 +67,5 @@ def delete_setting(key=None, db: Session=get_db()):
         return id, "Product deleted successfully!"
     except Exception as e:
         db.close()
-        log.error(f"Error occured while deleting app setting with key: {key} -> {e}")
+        log.exception(f"Error occured while deleting app setting with key: {key} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"

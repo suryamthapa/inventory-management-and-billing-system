@@ -94,7 +94,7 @@ def showFrame(frameName, refreshMode=False):
                 openPurchaseView(Settings.mainFrame)
             log.info(f"OPENED: {frameName}")
         except Exception as e:
-            log.error(f"{frameName} --> {e}")
+            log.exception(f"{frameName} --> {e}")
     
 
 def createSidebar(container):
@@ -311,5 +311,5 @@ def openDashboard(container):
                     else:
                         messagebox.showerror("Inabi System", f"Something went wrong!\n\n{message}.")
     except Exception as e:
-        log.error(f"ERROR: while creating dashboard -> {e}")
+        log.exception(f"ERROR: while creating dashboard -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

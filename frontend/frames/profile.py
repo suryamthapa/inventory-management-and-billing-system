@@ -179,5 +179,5 @@ def openProfile(parent):
     try:
         createProfileFrame(parent)
     except Exception as e:
-        log.error(f"ERROR: while creating home frame -> {e}")
+        log.exception(f"ERROR: while creating home frame -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

@@ -144,5 +144,5 @@ def createAddProductWindow():
         y = int((globals.screen_height/2) - (addProductWindow.winfo_height()/2))
         addProductWindow.geometry(f'{addProductWindow.winfo_width()}x{addProductWindow.winfo_height()}+{x}+{y}')
     except Exception as e:
-        log.error(f"ERROR: while creating Add Products window -> {e}")
+        log.exception(f"ERROR: while creating Add Products window -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

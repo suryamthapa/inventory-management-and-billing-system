@@ -38,11 +38,11 @@ def add_purchase(data:dict = {}, db: Session=get_db()):
         return purchase.id, "Purchase added successfully!"
     except IntegrityError as f:
         db.close()
-        log.error(f"ERROR: while adding purchase with data {data} -> {f}")
+        log.exception(f"ERROR: while adding purchase with data {data} -> {f}")
         return False, "Purchase with same invoice number already exists."
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while adding purchase with data {data} -> {e}")
+        log.exception(f"ERROR: while adding purchase with data {data} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -117,7 +117,7 @@ def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_c
                 date_of_purchase = final_nepali_date.strftime("%d/%m/%Y")
             else:
                 date_of_purchase = "N/A" 
-                log.error(f"Error occured while getting nepali datetime from utc -> {message}")
+                log.exception(f"Error occured while getting nepali datetime from utc -> {message}")
 
             return {"id": purchase.id,
                     "invoice_number":purchase.invoice_number,
@@ -164,11 +164,11 @@ def update_purchase(id: int, data: dict = {}, db: Session=get_db()):
         return True, "Purchase updated successfully!"
     except IntegrityError as f:
         db.close()
-        log.error(f"ERROR: while updating purchase with id {id}-> {f}")
+        log.exception(f"ERROR: while updating purchase with id {id}-> {f}")
         return False, f"Purchase already exists with given invoice number."
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while updating purchase with id {id}-> {e}")
+        log.exception(f"ERROR: while updating purchase with id {id}-> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -182,5 +182,5 @@ def delete_purchase(id=None, db: Session=get_db()):
         return id, "Purchase deleted successfully!"
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while deleting purchase with id {id} -> {e}")
+        log.exception(f"ERROR: while deleting purchase with id {id} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"

@@ -31,7 +31,7 @@ def add_sales(data:dict = {}, db: Session=get_db()):
         return sale.id, "Sales added successfully!"
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while adding sales with data {data} -> {e}")
+        log.exception(f"ERROR: while adding sales with data {data} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -97,5 +97,5 @@ def get_sales(queryDict: dict = {}, from_= None, to=None, asc = True, sort_colum
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching sales with queryDict: {queryDict} -> {e}")
+        log.exception(f"Error occured while fetching sales with queryDict: {queryDict} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"

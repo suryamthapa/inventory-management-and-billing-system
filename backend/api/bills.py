@@ -55,7 +55,7 @@ def get_bills(queryDict: dict = {}, asc = True, sort_column: str = "id",
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching bills with queryDict: {queryDict} -> {e}")
+        log.exception(f"Error occured while fetching bills with queryDict: {queryDict} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -82,7 +82,7 @@ def get_bill(id: int = 0, db: Session = get_db()):
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching bill with id -> {id} -> {e}")
+        log.exception(f"Error occured while fetching bill with id -> {id} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -101,7 +101,7 @@ def add_bill(data:dict = {}, db: Session=get_db()):
         return bill.id, "Bill added successfully!"
     except Exception as e:
         db.close()
-        log.error(f"Error occured while adding bill with data -> {data} -> {e}")
+        log.exception(f"Error occured while adding bill with data -> {data} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -121,7 +121,7 @@ def update_bill(id: int, data: dict = {}, db: Session=get_db()):
         return True, "Bill updated successfully!"
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while adding or updating about app configuration -> {e}")
+        log.exception(f"ERROR: while adding or updating about app configuration -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
@@ -135,5 +135,5 @@ def delete_bill(id=None, db: Session=get_db()):
         return id, "Bill deleted successfully!"
     except Exception as e:
         db.close()
-        log.error(f"ERROR: while deleting about app configuration -> {e}")
+        log.exception(f"ERROR: while deleting about app configuration -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"

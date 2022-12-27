@@ -165,5 +165,5 @@ def createLicenseInformationWindow():
         y = int((globals.screen_height/2) - (licenseWindow.winfo_height()/2))
         licenseWindow.geometry(f'{licenseWindow.winfo_width()}x{licenseWindow.winfo_height()}+{x}+{y}')
     except Exception as e:
-        log.error(f"ERROR: while creating lisence window -> {e}")
+        log.exception(f"ERROR: while creating lisence window -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

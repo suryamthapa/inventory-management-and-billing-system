@@ -64,7 +64,7 @@ def handleSearchAccount(column="", query="", from_="", to=""):
         createDetailsArea(globals.accountsFrame, data=data)
         return True
     except Exception as e:
-        log.error(f"ERROR: while handling Search Account -> {e}")
+        log.exception(f"ERROR: while handling Search Account -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
 
 
@@ -361,7 +361,7 @@ def loadCustomerDetails(parent, customerDetails):
         makeColumnResponsive(parent)
 
     except Exception as e:
-        log.error(f"While loading customer details -> {e}")
+        log.exception(f"While loading customer details -> {e}")
 
 
 def createCustomerDetailsArea(parent, data):
@@ -486,6 +486,6 @@ def openAccounts(parent):
     try:
         createAccountsFrame(parent)
     except Exception as e:
-        log.error(f"ERROR: while creating accounts frame -> {e}")
+        log.exception(f"ERROR: while creating accounts frame -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
     

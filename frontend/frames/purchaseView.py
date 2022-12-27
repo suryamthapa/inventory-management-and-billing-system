@@ -153,7 +153,6 @@ def createTableHeader(parent):
 
 
 def createTableBody(parent, records):
-    log.info(records)
     if not records:
         Label(parent, text="No records found!").grid(row=1, column=0, columnspan=8, pady=5)
         return True
@@ -316,6 +315,6 @@ def openPurchaseView(parent):
     try:
         createPurchasesFrame(parent)
     except Exception as e:
-        log.error(f"ERROR: while creating purchases frame -> {e}")
+        log.exception(f"ERROR: while creating purchases frame -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")
     
