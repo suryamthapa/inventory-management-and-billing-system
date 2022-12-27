@@ -10,7 +10,7 @@ from frontend.utils.frontend import makeColumnResponsive
 from frontend.utils.purchase import refreshPurchasesList
 import frontend.windows.dashboard as dashboard
 # backend imports
-from backend.api.purchase import delete_purchase, get_purchase
+from backend.api.purchase import delete_purchase, get_purchases
 
 
 log = logging.getLogger("frontend")
@@ -36,8 +36,7 @@ def deletePurchase(id, vendor_name, invoice_number):
                     completevalues = [str(record["vendor"].get(column_name)) if record.get("vendor").get(column_name) else "" for record in globals.PURCHASE_LIST]
                 else:
                     completevalues = [str(record[column_name]) if record.get(column_name) else "" for record in globals.PURCHASE_LIST]
-                globals.queryEntry.config(completevalues=completevalues)
-            globals.queryEntry.config(completevalues=[record["purchase_name"] if record["purchase_name"] else "" for record in globals.PURCHASE_LIST])
+                globals.queryEntry.config(completevalues=set(completevalues))
 
 
 def handleSearchPurchase(queryColumnDict, page=1, limit=11, sort_column="id", asc=True):
@@ -46,12 +45,11 @@ def handleSearchPurchase(queryColumnDict, page=1, limit=11, sort_column="id", as
         for column, query in queryColumnDict.items():
             globals.CURRENT_SEARCH_QUERY["purchases"][column] = query
         status, data = get_purchases(globals.CURRENT_SEARCH_QUERY["purchases"], page=page, limit=limit, sort_column=sort_column, asc=asc)
-        
         if status:
-            createPurchasesTable(globals.purchasesFrame, data=data)
+            createPurchasesTable(data=data)
         else:
-            Label(globals.purchasesFrame, text="Error occured while fetching products from database.").pack()
-            Label(globals.purchasesFrame, text="Please check logs or contact the developer.").pack()
+            Label(globals.purchaseViewFrame, text="Error occured while fetching products from database.").pack()
+            Label(globals.purchaseViewFrame, text="Please check logs or contact the developer.").pack()
         return True
     except Exception as e:
         log.error(f"ERROR: while handling Search purchase -> {e}")
@@ -80,7 +78,7 @@ def createPurchasesTop(parent):
                 completevalues = [str(record["vendor"].get(column_name)) if record.get("vendor").get(column_name) else "" for record in globals.PURCHASE_LIST]
             else:
                 completevalues = [str(record[column_name]) if record.get(column_name) else "" for record in globals.PURCHASE_LIST]
-            globals.queryEntry.config(completevalues=completevalues)
+            globals.queryEntry.config(completevalues=set(completevalues))
     
     globals.filterOption = StringVar()
     globals.filterOption.set("Invoice Number")
@@ -119,14 +117,14 @@ def createPurchasesTop(parent):
     clearButton.grid(row=0, column=4, padx=5, sticky="w")
 
     addItemButton = Button(globals.tableTop, 
-                        text="Add New Purchase", 
-                        width=15, 
-                        bg=globals.appBlue, 
-                        command=lambda: dashboard.showFrame("homeFrame"))
+                        text="Add Purchase Entry", 
+                        width=15,
+                        bg=globals.appBlue,
+                        command=lambda: dashboard.showFrame("purchaseEntrySystemFrame"))
     addItemButton.grid(row=0, column=5, padx=5, sticky="e")
     
     exportButton = Button(globals.tableTop, 
-                        text="Export",
+                        text="Export in Pdf",
                         width=10, 
                         bg=globals.appBlue, 
                         command=lambda : messagebox.showinfo("Export Purchases", "Feature comming soon in next update!\n\nYou will be able to export purchases to an excel file with the help of this feature.\n\nThank you!"))
@@ -136,25 +134,26 @@ def createPurchasesTop(parent):
 
 
 def createTableHeader(parent):
-    Label(parent, text="SN", font=globals.appFontNormalBold).grid(row=0, column=0, sticky=W)
-    Label(parent, text="", font=globals.appFontNormalBold).grid(row=0, column=1, sticky=W)
-    Label(parent, text="", font=globals.appFontNormalBold).grid(row=0, column=2, sticky=W)
-    Label(parent, text="Date", font=globals.appFontNormalBold).grid(row=0, column=3, sticky=W)
-    Label(parent, text="Invoice number", font=globals.appFontNormalBold).grid(row=0, column=4, sticky=W)
-    Label(parent, text="Vendor", font=globals.appFontNormalBold).grid(row=0, column=5, sticky=W)
-    Label(parent, text="Qty", font=globals.appFontNormalBold).grid(row=0, column=6, sticky=W)
-    Label(parent, text="B. Amount", font=globals.appFontNormalBold).grid(row=0, column=7, sticky=W)
-    Label(parent, text="Cash Discount", font=globals.appFontNormalBold).grid(row=0, column=8, sticky=W)
-    Label(parent, text="% Discount", font=globals.appFontNormalBold).grid(row=0, column=9, sticky=W)
-    Label(parent, text="Extra Discount", font=globals.appFontNormalBold).grid(row=0, column=10, sticky=W)
-    Label(parent, text="Excise Duty", font=globals.appFontNormalBold).grid(row=0, column=11, sticky=W)
-    Label(parent, text="VAT", font=globals.appFontNormalBold).grid(row=0, column=12, sticky=W)
-    Label(parent, text="Cash Payment", font=globals.appFontNormalBold).grid(row=0, column=13, sticky=W)
-    Label(parent, text="Total", font=globals.appFontNormalBold).grid(row=0, column=14, sticky=W)
+    Label(parent, text="SN", font=globals.appFontNormalBold).grid(row=0, column=0, sticky=W, padx=5)
+    Label(parent, text="", font=globals.appFontNormalBold).grid(row=0, column=1, sticky=W, padx=5)
+    Label(parent, text="", font=globals.appFontNormalBold).grid(row=0, column=2, sticky=W, padx=5)
+    Label(parent, text="Date", font=globals.appFontNormalBold).grid(row=0, column=3, sticky=W, padx=5)
+    Label(parent, text="Invoice number", font=globals.appFontNormalBold).grid(row=0, column=4, sticky=W, padx=5)
+    Label(parent, text="Vendor", font=globals.appFontNormalBold).grid(row=0, column=5, sticky=W, padx=5)
+    Label(parent, text="Qty", font=globals.appFontNormalBold).grid(row=0, column=6, sticky=W, padx=5)
+    Label(parent, text="B. Amount", font=globals.appFontNormalBold).grid(row=0, column=7, sticky=W, padx=5)
+    Label(parent, text="Cash Discount", font=globals.appFontNormalBold).grid(row=0, column=8, sticky=W, padx=5)
+    Label(parent, text="% Discount", font=globals.appFontNormalBold).grid(row=0, column=9, sticky=W, padx=5)
+    Label(parent, text="Extra Discount", font=globals.appFontNormalBold).grid(row=0, column=10, sticky=W, padx=5)
+    Label(parent, text="Excise Duty", font=globals.appFontNormalBold).grid(row=0, column=11, sticky=W, padx=5)
+    Label(parent, text="VAT", font=globals.appFontNormalBold).grid(row=0, column=12, sticky=W, padx=5)
+    Label(parent, text="Cash Payment", font=globals.appFontNormalBold).grid(row=0, column=13, sticky=W, padx=5)
+    Label(parent, text="Total", font=globals.appFontNormalBold).grid(row=0, column=14, sticky=W, padx=5)
     makeColumnResponsive(parent)
 
 
 def createTableBody(parent, records):
+    log.info(records)
     if not records:
         Label(parent, text="No records found!").grid(row=1, column=0, columnspan=8, pady=5)
         return True
@@ -186,25 +185,25 @@ def createTableBody(parent, records):
 
         bg = "white" if (index+1)%2==0 else globals.appWhite
         Label(parent, text=index+1, bg=bg).grid(row=index+1, column=0, pady=5, sticky=W),
-        Button(parent, text="update", width=10, bg=globals.appBlue, command=lambda x=record: proceedToUpdate(x)).grid(row=index+1, column=1, pady=5, sticky=W)
+        Button(parent, text="update", width=10, bg=globals.appBlue, command=lambda x=record: proceedToUpdate(x)).grid(row=index+1, column=1, pady=5, sticky=W, padx=5)
         Button(parent, text="delete", width=10, bg="red", command=lambda id=record.get("id"), vendor_name=record.get("vendor").\
                 get("vendor_name"), invoice_number=record.get("invoice_number"): deletePurchase(id, vendor_name, invoice_number)).\
-                grid(row=index+1, column=2, pady=5, sticky=W)
+                grid(row=index+1, column=2, pady=5, sticky=W, padx=5)
         Label(parent, text=record.get("date_of_purchase") if record.get("date_of_purchase") else "---", bg=bg, wraplength=160, justify="left").\
-                grid(row=index+1, column=3,pady=5, sticky=W)
+                grid(row=index+1, column=3,pady=5, sticky=W, padx=5)
         Label(parent, text=record.get("invoice_number") if record.get("invoice_number") else "---", bg=bg, wraplength=160, justify="left").\
-                grid(row=index+1, column=3,pady=5, sticky=W)
+                grid(row=index+1, column=4,pady=5, sticky=W, padx=5)
         Label(parent, text=record.get("vendor").get("vendor_name") if record.get("vendor").get("vendor_name") else "---", bg=bg, wraplength=160, justify="left").\
-                grid(row=index+1, column=4, pady=5, sticky=W)
-        Label(parent, text=quantity if quantity else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=5, pady=5, sticky=W)
-        Label(parent, text=record.get("balance_amount") if record.get("balance_amount") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=6, pady=5, sticky=W)
-        Label(parent, text=cashDiscount if cashDiscount else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=7, pady=5, sticky=W)
-        Label(parent, text=percentageDiscount if percentageDiscount else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=8, pady=5, sticky=W)
-        Label(parent, text=extraDiscount if extraDiscount else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=9, pady=5, sticky=W)
-        Label(parent, text=exciseDuty if exciseDuty else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=10, pady=5, sticky=W)
-        Label(parent, text=vatPercentage if vatPercentage else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=11, pady=5, sticky=W)
-        Label(parent, text=cashPayment if cashPayment else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=12, pady=5, sticky=W)
-        Label(parent, text=totalPayable if totalPayable else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=13, pady=5, sticky=W)
+                grid(row=index+1, column=5, pady=5, sticky=W, padx=5)
+        Label(parent, text=quantity if quantity else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=6, pady=5, sticky=W, padx=5)
+        Label(parent, text=record.get("balance_amount") if record.get("balance_amount") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=7, pady=5, sticky=W, padx=5)
+        Label(parent, text=cashDiscount if cashDiscount else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=8, pady=5, sticky=W, padx=5)
+        Label(parent, text=percentageDiscount if percentageDiscount else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=9, pady=5, sticky=W, padx=5)
+        Label(parent, text=extraDiscount if extraDiscount else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=10, pady=5, sticky=W, padx=5)
+        Label(parent, text=exciseDuty if exciseDuty else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=11, pady=5, sticky=W, padx=5)
+        Label(parent, text=vatPercentage if vatPercentage else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=12, pady=5, sticky=W, padx=5)
+        Label(parent, text=cashPayment if cashPayment else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=13, pady=5, sticky=W, padx=5)
+        Label(parent, text=totalPayable if totalPayable else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=14, pady=5, sticky=W, padx=5)
 
     makeColumnResponsive(parent)
 
@@ -256,21 +255,60 @@ def createTableFooter(parent, currentPage, totalPages):
     handlePaginationButtonState(currentPage, totalPages)
     
     
-def createPurchasesTable(parent, data):
-    globals.purchasesTable.destroy() if globals.purchasesTable else None
-    globals.purchasesTable = Frame(parent)
-    globals.purchasesTable.pack(fill="both", expand=True)
+def createPurchasesTable(data):
+    globals.purchaseViewTable.destroy() if globals.purchaseViewTable else None
+    globals.purchaseViewTable = Frame(globals.tableCanvas)
+    globals.purchaseViewTable.pack(fill="both", expand=True)
 
-    createTableHeader(globals.purchasesTable)
-    createTableBody(globals.purchasesTable, records=data["data"])
-    createTableFooter(globals.purchasesTable, currentPage=data["current_page"], totalPages=data["total_pages"])
+    canvasframe = globals.tableCanvas.create_window(0,0, window=globals.purchaseViewTable, anchor='nw')
+
+    def frameWidth(event):
+        if event.width > globals.purchaseViewTable.winfo_width():
+            globals.tableCanvas.itemconfig(canvasframe, width=event.width-4)
+        if event.height > globals.purchaseViewTable.winfo_height():
+            globals.tableCanvas.itemconfig(canvasframe, height=event.height-4)
+
+    def OnFrameConfigure(event):
+        globals.tableCanvas.configure(scrollregion=globals.tableCanvas.bbox("all"))
+    
+    globals.tableCanvas.bind('<Configure>', lambda e: frameWidth(e))
+    globals.purchaseViewTable.bind('<Configure>', lambda e: OnFrameConfigure(e))
+
+    def _bound_to_mousewheel(event):
+       globals.tableCanvas.bind_all("<MouseWheel>",_on_mousewheel)
+
+    def _unbound_to_mousewheel(event):
+       globals.tableCanvas.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(event):
+       globals.tableCanvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+    globals.purchaseViewTable.bind('<Enter>',_bound_to_mousewheel)
+    globals.purchaseViewTable.bind('<Leave>',_unbound_to_mousewheel)
+
+    createTableHeader(globals.purchaseViewTable)
+    createTableBody(globals.purchaseViewTable, records=data["data"])
+    createTableFooter(globals.purchaseViewTable, currentPage=data["current_page"], totalPages=data["total_pages"])
 
 
 def createPurchasesFrame(parent):
-    globals.purchasesFrame = Frame(parent, borderwidth=1)
-    globals.purchasesFrame.pack(fill="both", expand=True, padx=10)
+    globals.purchaseViewFrame = Frame(parent, borderwidth=1)
+    globals.purchaseViewFrame.pack(fill="both", expand=True, padx=10)
     
-    createPurchasesTop(globals.purchasesFrame)
+    createPurchasesTop(globals.purchaseViewFrame)
+
+    globals.tableCanvas = Canvas(globals.purchaseViewFrame)
+
+    canvasScrollVertical = Scrollbar(globals.purchaseViewFrame, orient="vertical", command=globals.tableCanvas.yview)
+    globals.tableCanvas.configure(yscrollcommand=canvasScrollVertical.set)
+    canvasScrollHorizontal = Scrollbar(globals.purchaseViewFrame, orient="horizontal", command=globals.tableCanvas.xview)
+    globals.tableCanvas.configure(xscrollcommand=canvasScrollHorizontal.set)
+
+    canvasScrollVertical.pack(side="right", fill="y")
+    canvasScrollHorizontal.pack(side="bottom", fill="x")
+
+    globals.tableCanvas.pack(side="left", fill="both", expand=True, padx=5, pady=5)
+
     handleSearchPurchase({})
 
 

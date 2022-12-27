@@ -6,7 +6,7 @@ from tkinter import messagebox
 import threading
 # frontend imports
 import frontend.config as Settings
-from frontend.utils.nepali_datetime import date
+from core.nepali_datetime import date
 from frontend.utils.products import refreshProductsList
 from frontend.utils.sales import refreshTotalSales
 from frontend.utils.billPdfGen import CustomerBill

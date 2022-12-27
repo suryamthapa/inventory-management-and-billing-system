@@ -145,6 +145,10 @@ purchaseDetailsFrame = None
 purchaseDetailsTable = None
 
 purchaseViewFrame = None
+purchaseViewTable = None
+
+# global canvas
+tableCanvas = None
 
 # to load name and phone number of customer
 namePhFrame = None

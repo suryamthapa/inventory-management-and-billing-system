@@ -8,7 +8,7 @@ from pytz import timezone
 import logging
 # frontend imports
 from frontend.utils.frontend import get_nepali_datetime_from_utc
-import frontend.utils.nepali_datetime as nepali_datetime
+import core.nepali_datetime as nepali_datetime
 import frontend.config as Settings
 from frontend.utils.ledgerPdfGenerator import CustomerLedger
 # backend imports

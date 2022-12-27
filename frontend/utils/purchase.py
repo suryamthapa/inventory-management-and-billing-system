@@ -6,14 +6,14 @@ from frontend.utils.products import refreshProductsList
 import frontend.frames.billing as billingFrame
 # backend imports
 from backend.api.products import update_product
-from backend.api.purchase import add_purchase, update_purchase, get_purchase
+from backend.api.purchase import add_purchase, update_purchase, get_purchases
 
 
 log = logging.getLogger("frontend")
 
 
 def refreshPurchasesList():
-    status, data = get_purchase(limit=None)
+    status, data = get_purchases(limit=None)
     if status:
         Settings.PURCHASE_LIST = data["data"]
 

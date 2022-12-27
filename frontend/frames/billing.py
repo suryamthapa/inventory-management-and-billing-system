@@ -215,7 +215,7 @@ def loadCustomerDetails(parent, customerDetails):
 
         makeColumnResponsive(parent)
     except Exception as e:
-        log.error(f"While loading customer details -> {e}")
+        log.exception(f"While loading customer details -> {e}")
 
 
 def createBillDetailsTableHeader(parent):
@@ -463,7 +463,7 @@ def createCustomerDetailsArea(parent):
         if filterOptionsMap.get(globals.billingCustomerfilterOption.get()):
             column_name = filterOptionsMap.get(globals.billingCustomerfilterOption.get())
             completevalues = [record[column_name] if record[column_name] else "" for record in globals.CUSTOMERS_LIST]
-            globals.billingCustomerNameEntry.config(completevalues=completevalues)
+            globals.billingCustomerNameEntry.config(completevalues=set(completevalues))
     
     globals.billingCustomerfilterOption = StringVar()
     globals.billingCustomerfilterOption.set("Company Name")
@@ -740,5 +740,5 @@ def openBillingSystem(parent):
     try:
         createBillingSystemFrame(parent)
     except Exception as e:
-        log.error(f"ERROR: while creating billing system frame -> {e}")
+        log.exception(f"ERROR: while creating billing system frame -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

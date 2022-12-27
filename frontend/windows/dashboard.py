@@ -28,7 +28,7 @@ from frontend.frames.customers import openCustomers
 from frontend.frames.vendors import openVendors
 from frontend.frames.accounts import openAccounts
 from frontend.frames.purchaseEntry import openPurchaseEntrySystem
-from frontend.frames.purchase import openPurchaseView
+from frontend.frames.purchaseView import openPurchaseView
 from frontend.windows.lisence import createLicenseInformationWindow
 from frontend.windows.appUpdates import createAppUpdatesWindow
 # backend imports

@@ -7,13 +7,13 @@ from tkinter import messagebox
 from tkinter import *
 from ttkwidgets.autocomplete import AutocompleteEntry
 # frontend imports
-import frontend.utils.nepali_datetime as nepali_datetime
+import core.nepali_datetime as nepali_datetime
 import frontend.config as globals
 from frontend.utils.accounts import get_formatted_account, preprocess_ledger_details, export_ledger_to_pdf
 from frontend.utils.frontend import makeColumnResponsive
 import frontend.windows.updateAccounts as updateAccounts
 import frontend.windows.addAccounts as addAccounts
-from frontend.utils.tkNepaliCalendar import DateEntry
+from core.tkNepaliCalendar import DateEntry
 # backend imports
 from backend.api.customers import get_customer
 from backend.api.accounts import delete_account

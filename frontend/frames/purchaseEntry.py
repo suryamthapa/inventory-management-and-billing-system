@@ -15,7 +15,7 @@ import frontend.windows.addProducts as addProductsWindow
 import frontend.windows.addVendors as addVendorsWindow
 from frontend.utils.frontend import makeColumnResponsive
 import frontend.utils.purchase as purchaseUtils
-from frontend.utils.tkNepaliCalendar import DateEntry
+from core.tkNepaliCalendar import DateEntry
 # backend imports
 from backend.api.products import get_product
 from backend.api.vendors import get_vendor
@@ -182,7 +182,7 @@ def loadVendorDetails(parent, vendorDetails):
 
         makeColumnResponsive(parent)
     except Exception as e:
-        log.error(f"While loading vendor details -> {e}")
+        log.exception(f"While loading vendor details -> {e}")
 
 
 def createPurchaseDetailsTableHeader(parent):
@@ -449,7 +449,7 @@ def createVendorDetailsArea(parent):
         if globals.vendorsFilterOptionsMap.get(globals.purchaseVendorfilterOption.get()):
             column_name = globals.vendorsFilterOptionsMap.get(globals.purchaseVendorfilterOption.get())
             completevalues = [record[column_name] if record[column_name] else "" for record in globals.VENDORS_LIST]
-            globals.purchaseVendorNameEntry.config(completevalues=completevalues)
+            globals.purchaseVendorNameEntry.config(completevalues=set(completevalues))
     
     globals.purchaseVendorfilterOption = StringVar()
     globals.purchaseVendorfilterOption.set("Vendor Name")
@@ -799,5 +799,5 @@ def openPurchaseEntrySystem(parent):
     try:
         createPurchaseEntrySystemFrame(parent)
     except Exception as e:
-        log.error(f"ERROR: while creating purchase system frame -> {e}")
+        log.exception(f"ERROR: while creating purchase system frame -> {e}")
         messagebox.showerror("InaBi System","Error occured!\n\nPlease check logs or contact the developer.\n\nThank you!")

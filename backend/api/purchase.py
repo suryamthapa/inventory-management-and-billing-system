@@ -9,6 +9,8 @@ from backend.database.deps import get_db
 from backend.models.purchase import Purchases
 from backend.models.products import Products
 from backend.models.vendors import Vendors
+from backend.utils.date_format import get_nepali_datetime_from_utc
+from core import nepali_datetime
 
 
 log = logging.getLogger("backend")
@@ -44,24 +46,28 @@ def add_purchase(data:dict = {}, db: Session=get_db()):
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 
-def get_purchase(queryDict: dict = {}, from_= None, to=None, asc = True, sort_column: str = "id", 
+def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_column: str = "id", 
                 page=1, limit=11, db: Session = get_db()):
     try:
         table_columns = [column.name for column in inspect(Purchases).c]
-        if sort_column not in table_columns:
+        vendor_table_columns = [column.name for column in inspect(Vendors).c]
+        if sort_column not in table_columns and sort_column not in vendor_table_columns:
             db.close()
-            return False,  {"message": f"Column '{sort_column}' does not exist in Purchases table.",
+            return False,  {"message": f"Column '{sort_column}' does not exist in Purchases or Vendors table.",
                             "data": []}
         
         for key in queryDict.keys():
-            if key not in table_columns:
+            if key not in table_columns and key not in vendor_table_columns:
                 db.close()
-                return False,  {"message": f"Column '{key}' does not exist in Purchases table.",
+                return False,  {"message": f"Column '{key}' does not exist in Purchases or Vendors table.",
                             "data": []}
 
-        toEval = ", ".join(f"Purchases.{key} == '{value}'" for key, value in queryDict.items()) if queryDict else None
-        query = db.query(Purchases).filter(eval(toEval)) if toEval else db.query(Purchases)
-        
+        toEval = ", ".join(f"Purchases.{key} == '{value}'" for key, value in queryDict.items() if key in table_columns) if queryDict else None
+        query = db.query(Purchases, Vendors).filter(Purchases.vendor_id == Vendors.id).filter(eval(toEval)) if toEval else db.query(Purchases, Vendors).filter(Purchases.vendor_id == Vendors.id)
+
+        toEvalForVendorQueries = ", ".join(f"Vendors.{key} == '{value}'" for key, value in queryDict.items() if key in vendor_table_columns) if queryDict else None
+        query = query.filter(eval(toEvalForVendorQueries)) if toEvalForVendorQueries else query
+
         total_purchase = query.count()
         if limit:
             skip = ((page-1)*limit)
@@ -82,6 +88,8 @@ def get_purchase(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
             purchases = query.all()
 
         def rowToDict(purchase):
+            vendor = purchase[1]
+            purchase = purchase[0]
             product_qty_payload = {}
             if purchase.product_qty:
                 product_qty_info = eval(str(purchase.product_qty)) if purchase.product_qty else purchase.product_qty
@@ -92,7 +100,7 @@ def get_purchase(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
                         "quantity":values.get("quantity"),
                         "rate":values.get("rate")
                         }
-            vendor = db.query(Vendors).filter(Vendors.id==purchase.vendor_id).first()
+            # vendor = db.query(Vendors).filter(Vendors.id==purchase.vendor_id).first()
             vendor_info = {"id": vendor.id,
                             "vat_number":vendor.vat_number,
                             "vendor_name": vendor.vendor_name,
@@ -102,9 +110,18 @@ def get_purchase(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
                             "email":vendor.email,
                             "extra_info": eval(str(vendor.extra_info)) if vendor.extra_info else vendor.extra_info
                             } if vendor else {}
+            
+            ne_datetime, message = get_nepali_datetime_from_utc(purchase.date_of_purchase, format="BS")
+            if ne_datetime:
+                final_nepali_date = nepali_datetime.date(ne_datetime.year, ne_datetime.month, ne_datetime.day)
+                date_of_purchase = final_nepali_date.strftime("%d/%m/%Y")
+            else:
+                date_of_purchase = "N/A" 
+                log.error(f"Error occured while getting nepali datetime from utc -> {message}")
+
             return {"id": purchase.id,
                     "invoice_number":purchase.invoice_number,
-                    "date_of_purchase": purchase.date_of_purchase,
+                    "date_of_purchase": date_of_purchase,
                     "product_qty":product_qty_payload,
                     "vendor":vendor_info,
                     "excise_duty":purchase.excise_duty,
@@ -115,7 +132,6 @@ def get_purchase(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
                     "cash_payment":purchase.cash_payment,
                     "balance_amount":purchase.balance_amount,
                     "extra_info": eval(str(purchase.extra_info)) if purchase.extra_info else purchase.extra_info}
-        
         payload = {
             "message": "Success",
             "data": list(map(rowToDict, purchases)),
@@ -128,7 +144,7 @@ def get_purchase(queryDict: dict = {}, from_= None, to=None, asc = True, sort_co
         return True, payload
     except Exception as e:
         db.close()
-        log.error(f"Error occured while fetching purchase with queryDict: {queryDict} -> {e}")
+        log.exception(f"Error occured while fetching purchase with queryDict: {queryDict} -> {e}")
         return False, "Something went wrong. Please check logs or contact the developer.\n\nThank you!"
 
 

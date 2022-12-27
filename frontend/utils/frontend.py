@@ -8,7 +8,7 @@ from pytz import timezone
 import frontend.config as Settings
 import frontend.windows.dashboard as dashboard
 from frontend.utils import nepali_datetime
-from frontend.utils.nepali_datetime import date
+from core.nepali_datetime import date
 
 
 def exitParent(parent):

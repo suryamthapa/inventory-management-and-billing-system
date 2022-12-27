@@ -11,7 +11,7 @@ import frontend.config as globals
 import frontend.frames.accounts as accountsFrame
 from frontend.utils.accounts import updateAccount
 from frontend.utils.frontend import makeColumnResponsive
-from frontend.utils.tkNepaliCalendar import DateEntry
+from core.tkNepaliCalendar import DateEntry
 # backend imports
 from backend.models import AccountType
 
