@@ -39,6 +39,10 @@ def check_for_update(updateInfoLabel, installButton, installed_version):
                 installButton.configure(state="normal", 
                                         bg=Settings.appBlue,
                                         fg=Settings.appDarkGreen)
+            if float(installed_version) == float(response.text.strip()):
+                updateInfoLabel.configure(text=f"App is up-to-date!")
+            else:
+                updateInfoLabel.configure(text=f"Something is wrong!")
         else:
             updateInfoLabel.configure(text="Sorry, no update available for now!")
             installButton.configure(state="disabled", bg=Settings.defaultBgColor)

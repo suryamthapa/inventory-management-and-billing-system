@@ -15,7 +15,7 @@ log = logging.getLogger("frontend")
 try:
     from core.appConfigurations import version_info_link, executable_installer_link
 except Exception as e:
-    log.error(f"ERROR: {e}")
+    log.exception(f"ERROR: {e}")
     version_info_link = ""
     executable_installer_link = ""
 
@@ -23,7 +23,14 @@ version_info_link = "https://raw.githubusercontent.com/datakhoj/InaBi-System-Pub
 executable_installer_link = "https://github.com/datakhoj/InaBi-System-Public/blob/main/Inventory%20Management%20and%20Billing%20System.exe?raw=true" if not executable_installer_link else executable_installer_link
 
 DATE_TIME_TYPE = "NEPALI"
-PREMIUM_FEATURES_FRAMES = ["inventoryFrame","billingSystemFrame","customersFrame","salesAndAnalyticsFrame", "accountsFrame"]
+PREMIUM_FEATURES_FRAMES = ["inventoryFrame",
+                            "billingSystemFrame",
+                            "customersFrame",
+                            "salesAndAnalyticsFrame", 
+                            "accountsFrame", 
+                            "purchaseEntrySystemFrame",
+                            "purchaseViewFrame"
+                        ]
 # constants
 CURRENT_WORKING_DIRECTORY = os.getcwd()
 CURRENT_SETTINGS = getSettings()

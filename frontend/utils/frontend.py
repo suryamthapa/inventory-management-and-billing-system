@@ -89,7 +89,9 @@ def handle_buttons_on_activation(deactivation=False):
         "customersFrame": "customersButton",
         "accountsFrame": "accountsButton",
         "homeFrame":"homeButton",
-        "salesAndAnalyticsFrame":"salesAndAnalyticsButton"
+        "salesAndAnalyticsFrame":"salesAndAnalyticsButton",
+        "purchaseEntrySystemFrame":"purchaseEntrySystemButton",
+        "purchaseViewFrame":"purchaseViewButton"
     }
     in_version_two = ["salesAndAnalyticsFrame"]
     for frame in Settings.PREMIUM_FEATURES_FRAMES:
