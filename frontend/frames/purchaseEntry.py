@@ -113,7 +113,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
         createPurchaseDetailsTable(globals.purchaseDetailsFrame)
 
     ctaBtn = Button(parent,
-        text="Add to Entry" if not toUpdate else "Update",
+        text="Add Product" if not toUpdate else "Update",
         bg=globals.appGreen,
         fg=globals.appWhite,
         width=10,
@@ -173,11 +173,12 @@ def loadVendorDetails(parent, vendorDetails):
             clearVendorDetails()
             createPurchaseDetailsTable(globals.purchaseDetailsFrame)
 
+        cta = "Add Vendor" if not globals.PURCHASE_DETAILS["vendor"] else "Update Vendor"
         Button(parent,
-            text="Add to Entry",
+            text=cta,
             bg=globals.appGreen,
             fg=globals.appWhite,
-            width=10,
+            width=12,
             command=addToPurchaseDetails).grid(row=3, column=3, padx=5, pady=10)
 
         makeColumnResponsive(parent)
@@ -301,37 +302,62 @@ def createPurchaseDetailsTableFooter(parent):
     detailsCommands.grid(row=baseIndex+8, column=0, columnspan=4, sticky=E, pady=5)
 
     def proceedToEntry():
+        log.info(globals.PURCHASE_DETAILS)
         status = purchaseUtils.preprocess_purchase_details()
         if status:
             response = messagebox.askyesno("Purchase Entry System", "Are you sure?")
             if response:
-                entry_status = purchaseUtils.entry_purchase()
-                if not entry_status:
-                    return False
+                if globals.PURCHASE_DETAILS.get("id") is None:
+                    entry_status = purchaseUtils.entry_purchase()
+                    if not entry_status:
+                        return False
+                    else:
+                        messagebox.showinfo("Purchase Entry System", "Purchase entry done successfully!\n\n- Products Added to inventory.\n- Stock updated.")
+                        return True
                 else:
-                    messagebox.showinfo("Purchase Entry System", "Purchase entry done successfully!\n\n- Products Added to inventory.\n- Stock updated.")
-                    return True
+                    update_status = purchaseUtils.update_purchase_entry()
+                    if not update_status:
+                        return False
+                    else:
+                        messagebox.showinfo("Purchase Entry System", "Purchase updated successfully!")
+                        return True
             else:
                 return False
         else:
             return False
-        
     
-    Button(detailsCommands,
-        text="Add Purchase Entry",
-        bg=globals.appBlue,
-        fg=globals.appDarkGreen,
-        width=20,
-        command=proceedToEntry,
-        state = DISABLED if not globals.PURCHASE_DETAILS else NORMAL
-        ).pack(side="right", padx=3)
+    if globals.PURCHASE_DETAILS.get("id") is not None:
+        Button(detailsCommands,
+            text="Update Purchase Entry",
+            bg=globals.appBlue,
+            fg=globals.appDarkGreen,
+            width=20,
+            command=proceedToEntry,
+            state = DISABLED if not globals.PURCHASE_DETAILS else NORMAL
+            ).pack(side="right", padx=3)
 
-    clear = Button(detailsCommands,
-                        text="Clear All",
-                        bg=globals.appBlue,
-                        fg=globals.appDarkGreen,
-                        command=clearPurchaseEntryFrame)
-    clear.pack(side="right", padx=3)
+        clear = Button(detailsCommands,
+                            text="Cancel Update",
+                            bg=globals.appBlue,
+                            fg=globals.appDarkGreen,
+                            command=clearPurchaseEntryFrame)
+        clear.pack(side="right", padx=3)
+    else:
+        Button(detailsCommands,
+            text="Add Purchase Entry",
+            bg=globals.appBlue,
+            fg=globals.appDarkGreen,
+            width=20,
+            command=proceedToEntry,
+            state = DISABLED if not globals.PURCHASE_DETAILS else NORMAL
+            ).pack(side="right", padx=3)
+
+        clear = Button(detailsCommands,
+                            text="Clear All",
+                            bg=globals.appBlue,
+                            fg=globals.appDarkGreen,
+                            command=clearPurchaseEntryFrame)
+        clear.pack(side="right", padx=3)
 
     makeColumnResponsive(parent)
 
@@ -476,7 +502,7 @@ def createVendorDetailsArea(parent):
                     child.destroy()
                 Label(globals.namePhFrame, text="Vendor does not exist.").pack(pady=5)
                 Button(globals.namePhFrame,
-                    text="Add Vendor",
+                    text="Add New Vendor",
                     bg=globals.appBlue,
                     fg=globals.appDarkGreen,
                     width=20,
@@ -788,11 +814,12 @@ def clearPurchaseEntryFrame(force=False):
         if not force:
             response = messagebox.askyesnocancel("Clear all", "Everything will reset.\nAre you sure?")
         if response==1:
+            globals.PURCHASE_DETAILS.pop("id", 0)
             globals.PURCHASE_DETAILS["vendor"] = {}
             globals.PURCHASE_DETAILS["products"] = {}
             globals.PURCHASE_DETAILS["extra"] = {}
             globals.PURCHASE_DETAILS["final"] = {}
-        dashboard.showFrame(globals.CURRENT_FRAME, True)
+            dashboard.showFrame(globals.CURRENT_FRAME, True)
 
 
 def openPurchaseEntrySystem(parent):

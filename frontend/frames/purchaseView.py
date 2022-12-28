@@ -158,22 +158,22 @@ def createTableBody(parent, records):
         return True
 
     def proceedToUpdate(record):
-        pass
+        globals.PURCHASE_DETAILS = record
+        dashboard.showFrame("purchaseEntrySystemFrame")
 
     for index, record in enumerate(records):
-        quantity = sum([float(r.get("quantity")) for r in record.get("product_qty").values()])
-        totalAmount = float(sum([float(r["rate"])*float(r["quantity"]) for r in record.get("product_qty").values()]))
+        quantity = sum([float(r.get("quantity")) for r in record.get("products").values()])
+        totalAmount = float(sum([float(r["rate"])*float(r["quantity"]) for r in record.get("products").values()]))
 
-        cashPayment = float(record.get("cash_payment")) if record.get("cash_payment") else 0
-        cashDiscount = float(record.get("cash_discount")) if record.get("cash_discount") else 0
-        percentageDiscount = float(record.get("p_discount")) if record.get("p_discount") else 0
-        extraDiscount = float(record.get("extra_discount")) if record.get("extra_discount") else 0
-        exciseDuty = float(record.get("excise_duty")) if record.get("excise_duty") else 0
-        vatPercentage = float(record.get("vat")) if record.get("vat") else 0
+        cashPayment = float(record.get("extra").get("cash_payment")) if record.get("extra").get("cash_payment") else 0
+        cashDiscount = float(record.get("extra").get("cash_discount")) if record.get("extra").get("cash_discount") else 0
+        percentageDiscount = float(record.get("extra").get("p_discount")) if record.get("extra").get("p_discount") else 0
+        extraDiscount = float(record.get("extra").get("extra_discount")) if record.get("extra").get("extra_discount") else 0
+        exciseDuty = float(record.get("extra").get("excise_duty")) if record.get("extra").get("excise_duty") else 0
+        vatPercentage = float(record.get("extra").get("vat")) if record.get("extra").get("vat") else 0
         
         discountByPercentage = float(totalAmount * (percentageDiscount/100))
         totalDiscountAmount = discountByPercentage + cashDiscount + extraDiscount
-        globals.PURCHASE_DETAILS.get("final")["discount"] = totalDiscountAmount
         
         taxableAmount = float((totalAmount - totalDiscountAmount) + exciseDuty)
         vatAmount = float(0)
@@ -186,16 +186,16 @@ def createTableBody(parent, records):
         Label(parent, text=index+1, bg=bg).grid(row=index+1, column=0, pady=5, sticky=W),
         Button(parent, text="update", width=10, bg=globals.appBlue, command=lambda x=record: proceedToUpdate(x)).grid(row=index+1, column=1, pady=5, sticky=W, padx=5)
         Button(parent, text="delete", width=10, bg="red", command=lambda id=record.get("id"), vendor_name=record.get("vendor").\
-                get("vendor_name"), invoice_number=record.get("invoice_number"): deletePurchase(id, vendor_name, invoice_number)).\
+                get("vendor_name"), invoice_number=record.get("extra").get("invoice_number"): deletePurchase(id, vendor_name, invoice_number)).\
                 grid(row=index+1, column=2, pady=5, sticky=W, padx=5)
-        Label(parent, text=record.get("date_of_purchase") if record.get("date_of_purchase") else "---", bg=bg, wraplength=160, justify="left").\
+        Label(parent, text=record.get("extra").get("date_of_purchase") if record.get("extra").get("date_of_purchase") else "---", bg=bg, wraplength=160, justify="left").\
                 grid(row=index+1, column=3,pady=5, sticky=W, padx=5)
-        Label(parent, text=record.get("invoice_number") if record.get("invoice_number") else "---", bg=bg, wraplength=160, justify="left").\
+        Label(parent, text=record.get("extra").get("invoice_number") if record.get("extra").get("invoice_number") else "---", bg=bg, wraplength=160, justify="left").\
                 grid(row=index+1, column=4,pady=5, sticky=W, padx=5)
         Label(parent, text=record.get("vendor").get("vendor_name") if record.get("vendor").get("vendor_name") else "---", bg=bg, wraplength=160, justify="left").\
                 grid(row=index+1, column=5, pady=5, sticky=W, padx=5)
         Label(parent, text=quantity if quantity else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=6, pady=5, sticky=W, padx=5)
-        Label(parent, text=record.get("balance_amount") if record.get("balance_amount") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=7, pady=5, sticky=W, padx=5)
+        Label(parent, text=record.get("extra").get("balance_amount") if record.get("extra").get("balance_amount") else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=7, pady=5, sticky=W, padx=5)
         Label(parent, text=cashDiscount if cashDiscount else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=8, pady=5, sticky=W, padx=5)
         Label(parent, text=percentageDiscount if percentageDiscount else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=9, pady=5, sticky=W, padx=5)
         Label(parent, text=extraDiscount if extraDiscount else "---", bg=bg, wraplength=160, justify="left").grid(row=index+1, column=10, pady=5, sticky=W, padx=5)

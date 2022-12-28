@@ -97,11 +97,13 @@ def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_c
                     product = db.query(Products).filter(Products.id==product_id).first()
                     product_qty_payload[product_id] = {
                         "product_name": product.product_name if product else "Deleted Product.",
+                        "stock": product.stock if product else 0,
+                        "unit": product.unit,
                         "quantity":values.get("quantity"),
-                        "rate":values.get("rate")
+                        "marked_price": product.marked_price if product else 0,
+                        "rate":values.get("rate"),
                         }
-            # vendor = db.query(Vendors).filter(Vendors.id==purchase.vendor_id).first()
-            vendor_info = {"id": vendor.id,
+            vendor_info = {"vendor_id": vendor.id,
                             "vat_number":vendor.vat_number,
                             "vendor_name": vendor.vendor_name,
                             "address": vendor.address,
@@ -111,6 +113,7 @@ def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_c
                             "extra_info": eval(str(vendor.extra_info)) if vendor.extra_info else vendor.extra_info
                             } if vendor else {}
             
+            date_of_purchase_utc = purchase.date_of_purchase
             ne_datetime, message = get_nepali_datetime_from_utc(purchase.date_of_purchase, format="BS")
             if ne_datetime:
                 final_nepali_date = nepali_datetime.date(ne_datetime.year, ne_datetime.month, ne_datetime.day)
@@ -120,18 +123,24 @@ def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_c
                 log.exception(f"Error occured while getting nepali datetime from utc -> {message}")
 
             return {"id": purchase.id,
-                    "invoice_number":purchase.invoice_number,
-                    "date_of_purchase": date_of_purchase,
-                    "product_qty":product_qty_payload,
                     "vendor":vendor_info,
-                    "excise_duty":purchase.excise_duty,
-                    "cash_discount":purchase.cash_discount,
-                    "p_discount":purchase.p_discount,
-                    "extra_discount":purchase.extra_discount,
-                    "vat":purchase.vat,
-                    "cash_payment":purchase.cash_payment,
-                    "balance_amount":purchase.balance_amount,
-                    "extra_info": eval(str(purchase.extra_info)) if purchase.extra_info else purchase.extra_info}
+                    "saved_products":product_qty_payload.copy(),
+                    "products":product_qty_payload,
+                    "extra":{
+                            "invoice_number":purchase.invoice_number,
+                            "date_of_purchase": date_of_purchase,
+                            "date_of_purchase_utc": date_of_purchase_utc,
+                            "excise_duty":purchase.excise_duty,
+                            "cash_discount":purchase.cash_discount,
+                            "p_discount":purchase.p_discount,
+                            "extra_discount":purchase.extra_discount,
+                            "vat":purchase.vat,
+                            "cash_payment":purchase.cash_payment,
+                            "balance_amount":purchase.balance_amount,
+                            "extra_info": eval(str(purchase.extra_info)) if purchase.extra_info else purchase.extra_info
+                            },
+                    "final":{}
+                    }
         payload = {
             "message": "Success",
             "data": list(map(rowToDict, purchases)),
@@ -161,7 +170,7 @@ def update_purchase(id: int, data: dict = {}, db: Session=get_db()):
     
         db.commit()
         db.close()
-        return True, "Purchase updated successfully!"
+        return id, "Purchase updated successfully!"
     except IntegrityError as f:
         db.close()
         log.exception(f"ERROR: while updating purchase with id {id}-> {f}")
