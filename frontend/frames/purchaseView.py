@@ -11,19 +11,30 @@ from frontend.utils.purchase import refreshPurchasesList
 import frontend.windows.dashboard as dashboard
 # backend imports
 from backend.api.purchase import delete_purchase, get_purchases
+from backend.api.products import update_product
 
 
 log = logging.getLogger("frontend")
 
 
-def deletePurchase(id, vendor_name, invoice_number):
+def deletePurchase(record):
+    id = record.get("id")
+    vendor_name = record.get("vendor").get("vendor_name")
+    invoice_number = record.get("extra").get("invoice_number")
     response = messagebox.askyesnocancel("Delete the purchase", f"Are you sure?\n\nid: {id}\nInvoice number: #{invoice_number}\nVendor Name: {vendor_name}")
     if response == 1:
         status, message = delete_purchase(id=id)
         if not status:
             messagebox.showerror("Delete Purchase", message)
         else:
+            for id, details in record.get("products").items():
+                product_update_status, product_update_message = update_product(id, data={"stock": float(details.get("stock")) - float(details.get("quantity"))})
+                if not status:
+                    log.error(f"{product_update_status} {product_update_message}")
+                else:
+                    log.info(f"{product_update_status} {product_update_message}")
             messagebox.showinfo("Delete Purchase",f"{message}")
+            
             # refreshing products list
             refreshPurchasesList()
             # reload the inventory table
@@ -185,8 +196,7 @@ def createTableBody(parent, records):
         bg = "white" if (index+1)%2==0 else globals.appWhite
         Label(parent, text=index+1, bg=bg).grid(row=index+1, column=0, pady=5, sticky=W),
         Button(parent, text="update", width=10, bg=globals.appBlue, command=lambda x=record: proceedToUpdate(x)).grid(row=index+1, column=1, pady=5, sticky=W, padx=5)
-        Button(parent, text="delete", width=10, bg="red", command=lambda id=record.get("id"), vendor_name=record.get("vendor").\
-                get("vendor_name"), invoice_number=record.get("extra").get("invoice_number"): deletePurchase(id, vendor_name, invoice_number)).\
+        Button(parent, text="delete", width=10, bg="red", command=lambda x=record: deletePurchase(x)).\
                 grid(row=index+1, column=2, pady=5, sticky=W, padx=5)
         Label(parent, text=record.get("extra").get("date_of_purchase") if record.get("extra").get("date_of_purchase") else "---", bg=bg, wraplength=160, justify="left").\
                 grid(row=index+1, column=3,pady=5, sticky=W, padx=5)

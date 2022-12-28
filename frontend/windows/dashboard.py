@@ -45,18 +45,12 @@ def showFrame(frameName, refreshMode=False):
         alreadyOpen = False
 
     # Back to default color
-    Settings.homeButton.configure(bg=Settings.appDarkGreen)
-    Settings.profileButton.configure(bg=Settings.appDarkGreen)
-    Settings.settingsButton.configure(bg=Settings.appDarkGreen)
-    Settings.inventoryButton.configure(bg=Settings.appDarkGreen)
-    Settings.billingSystemButton.configure(bg=Settings.appDarkGreen)
-    Settings.customersButton.configure(bg=Settings.appDarkGreen)
-    Settings.accountsButton.configure(bg=Settings.appDarkGreen)
-    Settings.vendorsButton.configure(bg=Settings.appDarkGreen)
-    Settings.purchaseEntrySystemButton.configure(bg=Settings.appDarkGreen)
-    Settings.purchaseViewButton.configure(bg=Settings.appDarkGreen)
-
-    if not alreadyOpen:
+    for button in Settings.buttonFrameMapping.values():
+        eval(f"Settings.{button}.configure(bg=Settings.appDarkGreen)")
+    
+    if alreadyOpen:
+        eval(f"Settings.{Settings.buttonFrameMapping.get(Settings.CURRENT_FRAME)}.configure(bg=Settings.appGreen)")
+    else:
         try:
             frame = eval(f"Settings.{Settings.CURRENT_FRAME}")
             if frame: eval(f"Settings.{Settings.CURRENT_FRAME}.destroy()")

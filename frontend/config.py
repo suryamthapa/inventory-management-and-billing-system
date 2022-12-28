@@ -114,6 +114,20 @@ exitButton = None
 paginationBackButton = None
 paginationForwardButton = None
 
+buttonFrameMapping = {
+        "homeFrame":"homeButton",
+        "profileFrame": "profileButton",
+        "customersFrame": "customersButton",
+        "accountsFrame": "accountsButton",
+        "vendorsFrame": "vendorsButton",
+        "purchaseEntrySystemFrame":"purchaseEntrySystemButton",
+        "purchaseViewFrame":"purchaseViewButton",
+        "inventoryFrame":"inventoryButton",
+        "billingSystemFrame": "billingSystemButton",
+        "salesAndAnalyticsFrame":"salesAndAnalyticsButton",
+        "settingsFrame": "settingsButton",
+    }
+
 # global labels
 appStatusLabel = None
 sidebarBrandName = None

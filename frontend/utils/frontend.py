@@ -81,26 +81,14 @@ def showCurrentTime(label):
 
 
 def handle_buttons_on_activation(deactivation=False):
-    buttonFrameMapping = {
-        "inventoryFrame":"inventoryButton",
-        "settingsFrame": "settingsButton",
-        "profileFrame": "profileButton",
-        "billingSystemFrame": "billingSystemButton",
-        "customersFrame": "customersButton",
-        "accountsFrame": "accountsButton",
-        "homeFrame":"homeButton",
-        "salesAndAnalyticsFrame":"salesAndAnalyticsButton",
-        "purchaseEntrySystemFrame":"purchaseEntrySystemButton",
-        "purchaseViewFrame":"purchaseViewButton"
-    }
     in_version_two = ["salesAndAnalyticsFrame"]
     for frame in Settings.PREMIUM_FEATURES_FRAMES:
         if deactivation:
-            eval(f"Settings.{buttonFrameMapping.get(frame)}").config(command=lambda: messagebox.showinfo("InaBi System", "This is the premium feature.\n\nTo use it: Please activate the app with a lisence key. Or please start the trial from home tab.\n\nThank you!"))
+            eval(f"Settings.{Settings.buttonFrameMapping.get(frame)}").config(command=lambda: messagebox.showinfo("InaBi System", "This is the premium feature.\n\nTo use it: Please activate the app with a lisence key. Or please start the trial from home tab.\n\nThank you!"))
         else:
             if frame in in_version_two:
-                eval(f"Settings.{buttonFrameMapping.get(frame)}").config(command=lambda : messagebox.showinfo("Sales and Analytics", "Feature comming soon in next update!\n\nYou will be able to view the sales and analytics of your company with the help of this feature.\n\nThank you!"))
+                eval(f"Settings.{Settings.buttonFrameMapping.get(frame)}").config(command=lambda : messagebox.showinfo("Sales and Analytics", "Feature comming soon in next update!\n\nYou will be able to view the sales and analytics of your company with the help of this feature.\n\nThank you!"))
             else:
-                eval(f"Settings.{buttonFrameMapping.get(frame)}").config(command=lambda x=frame: dashboard.showFrame(x))
+                eval(f"Settings.{Settings.buttonFrameMapping.get(frame)}").config(command=lambda x=frame: dashboard.showFrame(x))
 
     
