@@ -54,6 +54,37 @@ def get_nepali_datetime_from_utc(utc_datetime, format="bs"):
         return None, e
 
 
+def get_utc_datetime_from_nepali_date(ne_date):
+    try:
+        ne_date_meta = ne_date.split("/")
+
+        if len(ne_date_meta)!=3:
+            return False, "Invalid date"
+        
+        for m in ne_date_meta:
+            if not m.isdigit():
+                return False, "Invalid date"
+
+        user_year = int(ne_date_meta[2])
+        user_month = int(ne_date_meta[1])
+        if user_month > 12 or user_month < 1:
+            return False, "Invalid date"
+        user_day = int(ne_date_meta[0])
+        if user_day > 32 or user_day < 1:
+            return False, "Invalid date"
+            
+        utc_timezone = timezone("UTC")
+
+        todays_ne_datetime = nepali_datetime.datetime.now()
+        user_selected_ne_datetime = todays_ne_datetime.replace(year=user_year, month=user_month, day=user_day, hour=23, minute=59, second=59)
+        user_selected_en_datetime = user_selected_ne_datetime.to_datetime_datetime()
+        user_selected_utc_datetime = user_selected_en_datetime.astimezone(utc_timezone)
+        return user_selected_utc_datetime, True
+
+    except Exception as e:
+        return False, e
+
+
 def getCurrentTime():
     # get the current local time from the PC
     t = time.strftime('%I:%M:%S %p')

@@ -50,22 +50,26 @@ def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_c
                 page=1, limit=11, db: Session = get_db()):
     try:
         table_columns = [column.name for column in inspect(Purchases).c]
-        vendor_table_columns = [column.name for column in inspect(Vendors).c]
-        if sort_column not in table_columns and sort_column not in vendor_table_columns:
+        vendor_table_columns = ["vendor_id" if column.name == "id" else column.name for column in inspect(Vendors).c]
+        if sort_column and sort_column not in table_columns and sort_column not in vendor_table_columns:
             db.close()
-            return False,  {"message": f"Column '{sort_column}' does not exist in Purchases or Vendors table.",
+            message = f"Column '{sort_column}' does not exist in Purchases or Vendors table."
+            log.error(f"Sort {message}")
+            return False,  {"message": message,
                             "data": []}
         
         for key in queryDict.keys():
             if key not in table_columns and key not in vendor_table_columns:
                 db.close()
-                return False,  {"message": f"Column '{key}' does not exist in Purchases or Vendors table.",
+                message = f"Column '{sort_column}' does not exist in Purchases or Vendors table."
+                log.error(f"In querydict {queryDict} : {message}")
+                return False,  {"message": message,
                             "data": []}
 
-        toEval = ", ".join(f"Purchases.{key} == '{value}'" for key, value in queryDict.items() if key in table_columns) if queryDict else None
+        toEval = ", ".join(f"Purchases.{key}.ilike('%{value}%')" for key, value in queryDict.items() if key in table_columns) if queryDict else None
         query = db.query(Purchases, Vendors).filter(Purchases.vendor_id == Vendors.id).filter(eval(toEval)) if toEval else db.query(Purchases, Vendors).filter(Purchases.vendor_id == Vendors.id)
 
-        toEvalForVendorQueries = ", ".join(f"Vendors.{key} == '{value}'" for key, value in queryDict.items() if key in vendor_table_columns) if queryDict else None
+        toEvalForVendorQueries = ", ".join(f"Vendors.{key}.ilike('%{value}%')" for key, value in queryDict.items() if key in vendor_table_columns) if queryDict else None
         query = query.filter(eval(toEvalForVendorQueries)) if toEvalForVendorQueries else query
 
         total_purchase = query.count()
@@ -76,12 +80,20 @@ def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_c
             skip = 0
             totalPages = 1
         
-        sort_query = eval(f"Purchases.{sort_column}") if asc else eval(f"Purchases.{sort_column}.desc()")
-        query = query.order_by(sort_query)
+        if sort_column and sort_column in table_columns:
+            sort_query = eval(f"Purchases.{sort_column}") if asc else eval(f"Purchases.{sort_column}.desc()")
+            query = query.order_by(sort_query)
+        elif sort_column and sort_column in vendor_table_columns:
+            sort_column = "id" if sort_column == "vendor_id" else sort_column
+            sort_query = eval(f"Vendors.{sort_column}") if asc else eval(f"Vendors.{sort_column}.desc()")
+            query = query.order_by(sort_query)
         
-        if from_ and to:
-            query = query.filter(and_(func.date(Purchases.created_at) >= from_), func.date(Purchases.created_at) <= to)
-        
+        if from_ is not None:
+            if to is not None:
+                query = query.filter(and_(func.date(Purchases.date_of_purchase) >= from_, func.date(Purchases.date_of_purchase) <= to))
+            else:
+                query = query.filter(func.date(Purchases.date_of_purchase) >= from_)
+
         if limit:
             purchases = query.offset(skip).limit(limit).all()
         else:
@@ -149,7 +161,7 @@ def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_c
             "page_size": len(purchases)}
 
         db.close()
-        log.info(f"FETCHED: All purchase with queryDict -> {queryDict}.")
+        log.info(f"FETCHED: All purchase with queryDict -> {queryDict} sort column -> {sort_column} in {'ascending' if asc else 'descending'} order.")
         return True, payload
     except Exception as e:
         db.close()

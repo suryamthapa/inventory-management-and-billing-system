@@ -1,6 +1,6 @@
 # Billing system
 import os
-import math
+import datetime
 import logging
 from pytz import timezone
 from tkinter import messagebox
@@ -13,7 +13,7 @@ from core import nepali_datetime
 import frontend.windows.dashboard as dashboard
 import frontend.windows.addProducts as addProductsWindow
 import frontend.windows.addVendors as addVendorsWindow
-from frontend.utils.frontend import makeColumnResponsive
+from frontend.utils.frontend import makeColumnResponsive, get_utc_datetime_from_nepali_date
 import frontend.utils.purchase as purchaseUtils
 from core.tkNepaliCalendar import DateEntry
 # backend imports
@@ -678,21 +678,6 @@ def createExtraDetailsArea(parent):
             invoiceNumberEntry.focus()
             return False
         
-        if not date_of_purchase:
-            fromDateEntry.focus()
-            return False
-
-        date_of_purchase_meta = date_of_purchase.split("/")
-
-        if len(date_of_purchase_meta)!=3:
-            messagebox.showwarning("InaBi System", "Invalid Date.")
-            return False
-        
-        for m in date_of_purchase_meta:
-            if not m.isdigit():
-                messagebox.showwarning("InaBi System", "Invalid Date.")
-                return False
-        
         if cash_payment and not isfloat(cash_payment):
             messagebox.showwarning("Invalid", "Cash Payment must be a number.")
             cashPaymentEntry.focus()
@@ -731,29 +716,20 @@ def createExtraDetailsArea(parent):
             vatEntry.focus()
             return False
 
-        user_year = int(date_of_purchase_meta[2])
-        user_month = int(date_of_purchase_meta[1])
-        if user_month > 12 or user_month < 1:
-            messagebox.showwarning("InaBi System", "Invalid Date.")
+        date_of_purchase_utc, message = get_utc_datetime_from_nepali_date(date_of_purchase)
+        if not date_of_purchase_utc:
+            log.error(f"Error on Date of purchase: {message}")
+            messagebox.showerror("Purhase View", "Please enter a valid date.")
             return False
-        user_day = int(date_of_purchase_meta[0])
-        if user_day > 32 or user_day < 1:
-            messagebox.showwarning("InaBi System", "Invalid Date.")
-            return False
-            
-        utc_timezone = timezone("UTC")
 
-        todays_ne_datetime = nepali_datetime.datetime.now()
-        user_selected_ne_datetime = todays_ne_datetime.replace(year=user_year, month=user_month, day=user_day)
+        utc_timezone = timezone("UTC")
+        today_utc = datetime.datetime.utcnow().astimezone(utc_timezone)
 
         # check if user selected date is greater than today
-        if user_selected_ne_datetime>todays_ne_datetime:
+        if date_of_purchase_utc>today_utc:
             messagebox.showwarning("InaBi System", "Please select date upto today only.")
             fromDateEntry.focus()
             return False
-
-        user_selected_en_datetime = user_selected_ne_datetime.to_datetime_datetime()
-        user_selected_utc_datetime = user_selected_en_datetime.astimezone(utc_timezone)
         
         globals.PURCHASE_DETAILS["extra"] = {"invoice_number": invoice_number,
                                             "excise_duty": excise_duty,
@@ -764,7 +740,7 @@ def createExtraDetailsArea(parent):
                                             "cash_payment": cash_payment,
                                             "balance_amount": balance_amount,
                                             "date_of_purchase":date_of_purchase,
-                                            "date_of_purchase_utc":user_selected_utc_datetime}
+                                            "date_of_purchase_utc":date_of_purchase_utc}
         createPurchaseDetailsTable(globals.purchaseDetailsFrame)
 
     Button(extraDetails,

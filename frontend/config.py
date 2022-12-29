@@ -145,7 +145,7 @@ purchaseVendorNameEntry = None
 progressbar = None
 billPreviewBox = None
 
-# global frames
+# global frames and tables
 topBar = None
 mainFrame = None
 homeFrame = None
@@ -167,6 +167,7 @@ purchaseDetailsTable = None
 
 purchaseViewFrame = None
 purchaseViewTable = None
+CURRENT_PURCHASE_ENTRIES = {}
 
 # global canvas
 tableCanvas = None
@@ -182,6 +183,17 @@ customersTable = None
 vendorsFrame = None
 vendorsTable = None
 
+accountsFrame = None
+accountsTable = None
+ledgerDetailsMainFrame = None
+ledgerDetailsArea = None
+ledgerDetailsFrame = None
+accountCustomerDetailsFrame=None
+ledgerDetailsTable = None
+
+salesAndAnalyticsFrame = None
+
+# filter variables and option maps
 customersFilterOptionsMap = {
             "Individual Name": "full_name",
             "Company Name": "company",
@@ -212,15 +224,35 @@ filterOption = None
 billingCustomerfilterOption = None
 purchaseVendorfilterOption = None
 
-accountsFrame = None
-accountsTable = None
-ledgerDetailsMainFrame = None
-ledgerDetailsArea = None
-ledgerDetailsFrame = None
-accountCustomerDetailsFrame=None
-ledgerDetailsTable = None
+# sort variables and option maps
+customersSortOptionsMap = {
+                        "Customer Id":"id",
+                        "Individual Name": "full_name",
+                        "Company Name": "company",
+                        "Created Date": "created_at",
+                        "Updated Date": "updated_at",
+                    }
+vendorsFilterOptionsMap = {
+            "Vendor Id":"id",
+            "Vendor Name": "vendor_name",
+            "Created Date": "created_at",
+            "Updated Date": "updated_at",
+        }
+purchaseSortOptionsMap = {
+            "Date of Purchase":"date_of_purchase",
+            "Vendor Name": "vendor_name",
+            "Created Date": "created_at",
+            "Updated Date": "updated_at",
+        }
+productsSortOptionsMap = {
+            "Product Id":"id",
+            "Product Name": "product_name",
+            "Created Date": "created_at",
+            "Updated Date": "updated_at",
+        }
+sortOption = None
+sortOrder = None
 
-salesAndAnalyticsFrame = None
 
 # colors
 appWhite = "#DFF6FF"

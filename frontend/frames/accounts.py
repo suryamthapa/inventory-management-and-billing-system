@@ -10,7 +10,7 @@ from ttkwidgets.autocomplete import AutocompleteEntry
 import core.nepali_datetime as nepali_datetime
 import frontend.config as globals
 from frontend.utils.accounts import get_formatted_account, preprocess_ledger_details, export_ledger_to_pdf
-from frontend.utils.frontend import makeColumnResponsive
+from frontend.utils.frontend import makeColumnResponsive, get_utc_datetime_from_nepali_date
 import frontend.windows.updateAccounts as updateAccounts
 import frontend.windows.addAccounts as addAccounts
 from core.tkNepaliCalendar import DateEntry
@@ -152,7 +152,6 @@ def createLedgerDetailsTableTop(parent):
     def proceedToLoadDetails():
         from_ = fromDateEntry.get()
         to = toDateEntry.get()
-        log.info(from_, to)
         if not from_:
             fromDateEntry.focus()
             return False

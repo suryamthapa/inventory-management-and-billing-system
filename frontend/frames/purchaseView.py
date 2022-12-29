@@ -1,14 +1,17 @@
 """Frame for purchase""" 
 # built-in module imports
+import datetime
+from pytz import timezone
 import logging
 from tkinter import messagebox
 from tkinter import *
 from ttkwidgets.autocomplete import AutocompleteEntry
 # frontend imports
 import frontend.config as globals
-from frontend.utils.frontend import makeColumnResponsive
+from frontend.utils.frontend import makeColumnResponsive, get_utc_datetime_from_nepali_date
 from frontend.utils.purchase import refreshPurchasesList
 import frontend.windows.dashboard as dashboard
+from core.tkNepaliCalendar import DateEntry
 # backend imports
 from backend.api.purchase import delete_purchase, get_purchases
 from backend.api.products import update_product
@@ -50,16 +53,21 @@ def deletePurchase(record):
                 globals.queryEntry.config(completevalues=set(completevalues))
 
 
-def handleSearchPurchase(queryColumnDict, page=1, limit=11, sort_column="id", asc=True):
+def handleSearchPurchase(queryColumnDict, page=1, limit=11, sort_column="id", asc=True, from_=None, to=None):
     try:
+        log.info(f"{queryColumnDict} {from_} {to}")
         globals.CURRENT_SEARCH_QUERY["purchases"] = {}
         for column, query in queryColumnDict.items():
             globals.CURRENT_SEARCH_QUERY["purchases"][column] = query
-        status, data = get_purchases(globals.CURRENT_SEARCH_QUERY["purchases"], page=page, limit=limit, sort_column=sort_column, asc=asc)
+        status, data = get_purchases(globals.CURRENT_SEARCH_QUERY["purchases"], page=page, limit=limit, sort_column=sort_column, asc=asc, from_=from_, to=to)
         if status:
+            globals.CURRENT_PURCHASE_ENTRIES = data.copy()
+            globals.CURRENT_PURCHASE_ENTRIES["from"] = from_
+            globals.CURRENT_PURCHASE_ENTRIES["to"] = to
             createPurchasesTable(data=data)
         else:
-            Label(globals.purchaseViewFrame, text="Error occured while fetching products from database.").pack()
+            globals.CURRENT_PURCHASE_ENTRIES = {}
+            Label(globals.purchaseViewFrame, text="Error occured while fetching purchases from database.").pack()
             Label(globals.purchaseViewFrame, text="Please check logs or contact the developer.").pack()
         return True
     except Exception as e:
@@ -88,7 +96,7 @@ def createPurchasesTop(parent):
             if column_name in ["vendor_name", "vat_number", "email", "telephone", "phone_number"]:
                 completevalues = [str(record["vendor"].get(column_name)) if record.get("vendor").get(column_name) else "" for record in globals.PURCHASE_LIST]
             else:
-                completevalues = [str(record[column_name]) if record.get(column_name) else "" for record in globals.PURCHASE_LIST]
+                completevalues = [str(record["extra"].get(column_name)) if record.get("extra") else "" for record in globals.PURCHASE_LIST]
             globals.queryEntry.config(completevalues=set(completevalues))
     
     globals.filterOption = StringVar()
@@ -99,11 +107,43 @@ def createPurchasesTop(parent):
     filter.grid(row=0, column=1, padx=(2, 5), sticky="w")
     setCompleteValues()
 
-    def proceedToSearch():
-        
-        if globals.queryEntry.get():
+    def proceedToSearch(forSort = False, forDateFilter = False):
+        if forSort and globals.purchaseSortOptionsMap.get(globals.sortOption.get()) is None:
+            messagebox.showerror("Purhase View", "Please select a field to sort by.")
+            return False
+
+        from_ = fromDateEntry.get()
+        to = toDateEntry.get()
+        if from_ == "Select date" and to == "Select date":
+            final_from_ = None
+            final_to = None
+        else:
+            utc_timezone = timezone("UTC")
+            final_from_ = datetime.datetime.utcnow().astimezone(utc_timezone)
+            final_to = datetime.datetime.utcnow().astimezone(utc_timezone)
+            if from_ != "Select date":
+                final_from_, message = get_utc_datetime_from_nepali_date(from_)
+            if to != "Select date":
+                final_to, msg = get_utc_datetime_from_nepali_date(to)
+            log.info(f"In Purchase View Frame: {final_from_=} {final_to=}")
+            if not final_from_ or not final_to:
+                log.error(f"Error on from -> {message}")
+                log.error(f"Error on to -> {msg}")
+                messagebox.showerror("Purhase View", "Invalid Date.")
+                return False
+            if final_from_ > final_to:
+                messagebox.showerror("Purhase View", "'From' date should not be greater than 'To' date.")
+                return False
+            final_from_ = datetime.date(final_from_.year, final_from_.month, final_from_.day)
+            final_to = datetime.date(final_to.year, final_to.month, final_to.day)
+
+        if globals.queryEntry.get() or forSort or forDateFilter:
             if globals.purchaseFilterOptionsMap.get(globals.filterOption.get()):
-                handleSearchPurchase({globals.purchaseFilterOptionsMap.get(globals.filterOption.get()):globals.queryEntry.get()})
+                handleSearchPurchase({globals.purchaseFilterOptionsMap.get(globals.filterOption.get()):globals.queryEntry.get()}, 
+                                    sort_column=globals.purchaseSortOptionsMap.get(globals.sortOption.get()),
+                                    asc=False if globals.sortOrder.get() else True,
+                                    from_=final_from_,
+                                    to=final_to)
             else:
                 messagebox.showwarning("Purchases", "Please select a filter to search by.")
 
@@ -118,7 +158,12 @@ def createPurchasesTop(parent):
         globals.queryEntry.delete(0, END)
         globals.queryEntry.insert(0, "")
         globals.CURRENT_SEARCH_QUERY["purchases"] = {}
-        handleSearchPurchase({})
+        fromDateEntry.delete(0,END)
+        fromDateEntry.insert(0,"Select date")
+        toDateEntry.delete(0,END)
+        toDateEntry.insert(0,"Select date")
+        globals.sortOption.set("Select a field")
+        proceedToSearch(forDateFilter=True)
 
     clearButton = Button(globals.tableTop,
                         text="Clear", 
@@ -141,6 +186,44 @@ def createPurchasesTop(parent):
                         command=lambda : messagebox.showinfo("Export Purchases", "Feature comming soon in next update!\n\nYou will be able to export purchases to an excel file with the help of this feature.\n\nThank you!"))
     exportButton.grid(row=0, column=6, padx=5, sticky="e")
     
+    fromToSortGroup = Frame(globals.tableTop)
+    fromToSortGroup.grid(row=1, column=0, columnspan=7, pady=(20,0), sticky="w")
+
+    Label(fromToSortGroup, text="Sort By").grid(row=0, column=0, sticky="w")
+
+    globals.sortOption = StringVar()
+    globals.sortOption.set("Select a field")
+    filters = list(globals.purchaseSortOptionsMap.keys())
+
+    filter = OptionMenu(fromToSortGroup, globals.sortOption, *filters, command=lambda x: proceedToSearch(forSort=True))
+    filter.grid(row=0, column=1, padx=(2, 5), sticky="w")
+
+    globals.sortOrder = IntVar()
+    checkBtn = Checkbutton(fromToSortGroup, text = "Descending", variable = globals.sortOrder,
+                    onvalue = 1, offvalue = 0, width = 8, justify="left", command= lambda : proceedToSearch(forSort=True))
+    checkBtn.grid(row=0, column=2, padx=(1, 10), sticky="w")
+
+    Label(fromToSortGroup, text="From: ").grid(row=0, column=3, padx=(20,0))
+    fromDateEntry = DateEntry(fromToSortGroup)
+    fromDateEntry.grid(row=0, column=4, sticky="w", padx=(10,5))
+    fromDateEntry.delete(0,END)
+    fromDateEntry.insert(0,"Select date")
+    
+    Label(fromToSortGroup, text="To: ").grid(row=0, column=5, sticky="w")
+    toDateEntry = DateEntry(fromToSortGroup)
+    toDateEntry.grid(row=0, column=6, sticky="w", padx=(2,5))
+    toDateEntry.delete(0,END)
+    toDateEntry.insert(0,"Select date")
+
+    applyDateButton = Button(fromToSortGroup, 
+                        text="Apply Date", 
+                        width=12,
+                        bg=globals.appGreen,
+                        fg=globals.appWhite,
+                        command=lambda : proceedToSearch(forDateFilter=True))
+    applyDateButton.grid(row=0, column=7, padx=2, sticky="w")
+
+    makeColumnResponsive(fromToSortGroup)
     Grid.columnconfigure(globals.tableTop, 4, weight=1)
 
 
@@ -249,17 +332,17 @@ def createTableFooter(parent, currentPage, totalPages):
                                         bg=globals.appGreen, 
                                         fg=globals.appWhite,
                                         command=lambda : handlePagination(currentPage, totalPages, "back"))
-    globals.paginationBackButton.grid(row=14, column=6, pady=10)
+    globals.paginationBackButton.grid(row=14, column=0, pady=10, sticky="E")
 
     globals.paginationPageInfo = Label(parent, text=f"Page {currentPage} out of {totalPages}")
-    globals.paginationPageInfo.grid(row=globals.PAGINATION_PAGE_LIMIT+3, column=7, pady=10)
+    globals.paginationPageInfo.grid(row=globals.PAGINATION_PAGE_LIMIT+3, column=1, pady=10, sticky="NSWE")
     
     globals.paginationForwardButton = Button(parent, 
                                             text=">>", 
                                             bg=globals.appGreen, 
                                             fg=globals.appWhite, 
                                             command=lambda : handlePagination(currentPage, totalPages, "forward"))
-    globals.paginationForwardButton.grid(row=14, column=8, pady=10)
+    globals.paginationForwardButton.grid(row=14, column=2, pady=10, sticky="W")
 
     handlePaginationButtonState(currentPage, totalPages)
     
@@ -316,7 +399,7 @@ def createPurchasesFrame(parent):
     canvasScrollVertical.pack(side="right", fill="y")
     canvasScrollHorizontal.pack(side="bottom", fill="x")
 
-    globals.tableCanvas.pack(side="left", fill="both", expand=True, padx=5, pady=5)
+    globals.tableCanvas.pack(side="left", fill="both", expand=True, padx=3, pady=5)
 
     handleSearchPurchase({})
 
