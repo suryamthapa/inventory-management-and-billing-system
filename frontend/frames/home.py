@@ -80,12 +80,6 @@ def createInventoryInfo(parent):
             bg = "white" if (index+1)%2==0 else globals.appWhite
             Label(outOfStockInfoHeaderBody, text=record["id"], bg=bg).grid(row=index+1, column=0, pady=5, padx=5, sticky=W)
             Label(outOfStockInfoHeaderBody, text=record["product_name"], bg=bg).grid(row=index+1, column=1, pady=5, padx=5, sticky=W)
-            Button(outOfStockInfoHeaderBody,
-                        text="Add Stock",
-                        bg=globals.appBlue,
-                        fg=globals.appDarkGreen,
-                        width=10,
-                        command=lambda productDetails=record: createUpdateProductWindow(productDetails)).grid(row=index+1, column=2, pady=5, padx=5, sticky=W)
     else:
         Label(outOfStockInfoHeaderBody, text="No product out of stock!", fg=globals.appDarkGreen).grid(row=1, columnspan=3, pady=5, sticky="nswe")
     

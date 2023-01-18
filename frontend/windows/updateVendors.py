@@ -84,7 +84,7 @@ def createUpdateVendorWindow(vendorInfo):
                 addressEntry.focus()
                 return False
 
-            details = {"vendor_name": vendorNameEntry.get() if vendorNameEntry.get() else None,
+            details = {"vendor_name": vendorNameEntry.get().upper() if vendorNameEntry.get() else None,
                     "vat_number":vendorVatNoEntry.get() if vendorVatNoEntry.get() else None,
                     "phone_number":phoneNumberEntry.get() if phoneNumberEntry.get() else None,
                     "telephone":telephoneEntry.get() if telephoneEntry.get() else None,

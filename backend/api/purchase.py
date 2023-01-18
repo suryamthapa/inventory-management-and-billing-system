@@ -19,7 +19,9 @@ log = logging.getLogger("backend")
 def add_purchase(data:dict = {}, db: Session=get_db()):
     try:
         purchase = Purchases(invoice_number=data.get("invoice_number"),
-                    date_of_purchase=data.get("date_of_purchase"),
+                    purchase_year=data.get("purchase_year"),
+                    purchase_month=data.get("purchase_month"),
+                    purchase_day=data.get("purchase_day"),
                     product_qty=data.get("product_qty"),
                     vendor_id=data.get("vendor_id"),
                     excise_duty=data.get("excise_duty"),
@@ -49,7 +51,7 @@ def add_purchase(data:dict = {}, db: Session=get_db()):
 def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_column: str = "id", 
                 page=1, limit=11, db: Session = get_db()):
     try:
-        table_columns = [column.name for column in inspect(Purchases).c]
+        table_columns = [column.name for column in inspect(Purchases).c] + ["date_of_purchase"]
         vendor_table_columns = ["vendor_id" if column.name == "id" else column.name for column in inspect(Vendors).c]
         if sort_column and sort_column not in table_columns and sort_column not in vendor_table_columns:
             db.close()
@@ -81,18 +83,28 @@ def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_c
             totalPages = 1
         
         if sort_column and sort_column in table_columns:
-            sort_query = eval(f"Purchases.{sort_column}") if asc else eval(f"Purchases.{sort_column}.desc()")
-            query = query.order_by(sort_query)
+            if sort_column == "date_of_purchase":
+                query = query.order_by(Purchases.purchase_year, Purchases.purchase_month, Purchases.purchase_day) if asc else query.order_by(Purchases.purchase_year.desc(), Purchases.purchase_month.desc(), Purchases.purchase_day.desc())
+            else:
+                sort_query = eval(f"Purchases.{sort_column}") if asc else eval(f"Purchases.{sort_column}.desc()")
+                query = query.order_by(sort_query)
         elif sort_column and sort_column in vendor_table_columns:
             sort_column = "id" if sort_column == "vendor_id" else sort_column
             sort_query = eval(f"Vendors.{sort_column}") if asc else eval(f"Vendors.{sort_column}.desc()")
             query = query.order_by(sort_query)
         
         if from_ is not None:
+            from_meta = from_.split("/")
+            from_year = int(from_meta[2])
+            from_month = int(from_meta[1])
+            from_day = int(from_meta[0])
+            query = query.filter(and_(Purchases.purchase_year >= from_year, Purchases.purchase_month >= from_month, Purchases.purchase_day >= from_day))
             if to is not None:
-                query = query.filter(and_(func.date(Purchases.date_of_purchase) >= from_, func.date(Purchases.date_of_purchase) <= to))
-            else:
-                query = query.filter(func.date(Purchases.date_of_purchase) >= from_)
+                to_meta = to.split("/")
+                to_year = int(to_meta[2])
+                to_month = int(to_meta[1])
+                to_day = int(to_meta[0])
+                query = query.filter(and_(Purchases.purchase_year <= to_year, Purchases.purchase_month <= to_month, Purchases.purchase_day <= to_day))
 
         if limit:
             purchases = query.offset(skip).limit(limit).all()
@@ -110,9 +122,9 @@ def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_c
                     product_qty_payload[product_id] = {
                         "product_name": product.product_name if product else "Deleted Product.",
                         "stock": product.stock if product else 0,
-                        "unit": product.unit,
+                        "unit": product.unit if product else "",
                         "quantity":values.get("quantity"),
-                        "marked_price": product.marked_price if product else 0,
+                        "cost_price": product.cost_price if product else 0,
                         "rate":values.get("rate"),
                         }
             vendor_info = {"vendor_id": vendor.id,
@@ -125,23 +137,15 @@ def get_purchases(queryDict: dict = {}, from_= None, to=None, asc = True, sort_c
                             "extra_info": eval(str(vendor.extra_info)) if vendor.extra_info else vendor.extra_info
                             } if vendor else {}
             
-            date_of_purchase_utc = purchase.date_of_purchase
-            ne_datetime, message = get_nepali_datetime_from_utc(purchase.date_of_purchase, format="BS")
-            if ne_datetime:
-                final_nepali_date = nepali_datetime.date(ne_datetime.year, ne_datetime.month, ne_datetime.day)
-                date_of_purchase = final_nepali_date.strftime("%d/%m/%Y")
-            else:
-                date_of_purchase = "N/A" 
-                log.exception(f"Error occured while getting nepali datetime from utc -> {message}")
-
             return {"id": purchase.id,
                     "vendor":vendor_info,
                     "saved_products":product_qty_payload.copy(),
                     "products":product_qty_payload,
                     "extra":{
                             "invoice_number":purchase.invoice_number,
-                            "date_of_purchase": date_of_purchase,
-                            "date_of_purchase_utc": date_of_purchase_utc,
+                            "purchase_year": purchase.purchase_year,
+                            "purchase_month": purchase.purchase_month,
+                            "purchase_day": purchase.purchase_day,
                             "excise_duty":purchase.excise_duty,
                             "cash_discount":purchase.cash_discount,
                             "p_discount":purchase.p_discount,

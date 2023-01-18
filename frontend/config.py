@@ -7,9 +7,9 @@ from frontend.utils.lisences import getLisenceInfo
 from frontend.utils.products import refreshProductsList
 from frontend.utils.customers import refreshCustomersList
 import frontend.utils.purchase as purchaseUtils
+import frontend.utils.bills as billUtils
 import frontend.utils.vendors as vendorUtils
 from frontend.utils.settings import getSettings
-from frontend.utils.sales import refreshTotalSales
 log = logging.getLogger("frontend")
 
 try:
@@ -26,10 +26,10 @@ DATE_TIME_TYPE = "NEPALI"
 PREMIUM_FEATURES_FRAMES = ["inventoryFrame",
                             "billingSystemFrame",
                             "customersFrame",
-                            "salesAndAnalyticsFrame", 
                             "accountsFrame", 
                             "purchaseEntrySystemFrame",
-                            "purchaseViewFrame"
+                            "purchaseViewFrame",
+                            "billsViewFrame",
                         ]
 # constants
 CURRENT_WORKING_DIRECTORY = os.getcwd()
@@ -45,20 +45,24 @@ PREVIOUS_TIME = ''
 CURRENT_FRAME = "homeFrame"
 
 # customers info
-CUSTOMERS_LIST = None
+CUSTOMERS_LIST = []
 refreshCustomersList()
 
 # customers info
-VENDORS_LIST = None
+VENDORS_LIST = []
 vendorUtils.refreshVendorsList()
 
 # products info
-PRODUCTS_LIST = None
+PRODUCTS_LIST = []
 refreshProductsList()
 
 # purchase info
-PURCHASE_LIST = None
+PURCHASE_LIST = []
 purchaseUtils.refreshPurchasesList()
+
+# bills info
+BILLS_LIST = []
+billUtils.refreshBillsList()
 
 # pagination and search queries
 PAGINATION_PAGE = 1
@@ -68,7 +72,8 @@ CURRENT_SEARCH_QUERY = {
     "products":{},
     "accounts":{},
     "vendors":{},
-    "purchases":{}
+    "purchases":{},
+    "bills":{}
 }
 BILL_DETAILS = {
     "customer":{},
@@ -95,7 +100,6 @@ CURRENT_LEDGER_ACCOUNT = {
 }
 
 TOTAL_SALES = {}
-refreshTotalSales()
 
 # global buttons
 homeButton = None
@@ -107,9 +111,9 @@ accountsButton = None
 purchaseButton = None
 settingsButton = None
 billingSystemButton = None
+billsViewButton = None
 purchaseEntrySystemButton = None
 purchaseViewButton = None
-salesAndAnalyticsButton = None
 exitButton = None
 paginationBackButton = None
 paginationForwardButton = None
@@ -124,7 +128,7 @@ buttonFrameMapping = {
         "purchaseViewFrame":"purchaseViewButton",
         "inventoryFrame":"inventoryButton",
         "billingSystemFrame": "billingSystemButton",
-        "salesAndAnalyticsFrame":"salesAndAnalyticsButton",
+        "billsViewFrame": "billsViewButton",
         "settingsFrame": "settingsButton",
     }
 
@@ -160,6 +164,10 @@ settingsFrame = None
 billingSystemFrame = None
 billDetailsFrame = None
 billDetailsTable = None
+
+billsViewFrame = None
+billsViewTable = None
+CURRENT_BILL_ENTRIES = {}
 
 purchaseEntrySystemFrame = None
 purchaseDetailsFrame = None
@@ -217,6 +225,15 @@ purchaseFilterOptionsMap = {
             "Vendor Phone Number": "phone_number",
             "Vendor Email": "email"
         }
+billsFilterOptionsMap = {
+            "Invoice Number": "bill_number",
+            "Individual Customer Name": "full_name",
+            "Customer Company Name": "company",
+            "Customer VAT/PAN No": "company_pan_no",
+            "Customer Telephone": "telephone",
+            "Customer Phone Number": "phone_number",
+            "Customer Email": "email"
+        }
 productsFilterOptionsMap = {
             "Product name": "product_name"
         }
@@ -229,26 +246,23 @@ customersSortOptionsMap = {
                         "Customer Id":"id",
                         "Individual Name": "full_name",
                         "Company Name": "company",
-                        "Created Date": "created_at",
-                        "Updated Date": "updated_at",
                     }
 vendorsFilterOptionsMap = {
             "Vendor Id":"id",
             "Vendor Name": "vendor_name",
-            "Created Date": "created_at",
-            "Updated Date": "updated_at",
         }
 purchaseSortOptionsMap = {
             "Date of Purchase":"date_of_purchase",
             "Vendor Name": "vendor_name",
-            "Created Date": "created_at",
-            "Updated Date": "updated_at",
+        }
+billsSortOptionsMap = {
+            "Date of Sale":"date_of_sale",
+            "Individual Customer Name": "full_name",
+            "Customer Company Name": "company",
         }
 productsSortOptionsMap = {
             "Product Id":"id",
             "Product Name": "product_name",
-            "Created Date": "created_at",
-            "Updated Date": "updated_at",
         }
 sortOption = None
 sortOrder = None

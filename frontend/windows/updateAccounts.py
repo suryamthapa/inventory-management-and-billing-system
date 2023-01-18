@@ -122,6 +122,8 @@ def createUpdateAccountWindow(customerInfo, accountInfo):
         amountEntry = Entry(updateAccountFrame, bd=globals.defaultEntryBorderWidth)
         amountEntry.grid(row=1, column=3, padx=5, pady=5, sticky=W)
         amountEntry.insert(0, amount)
+        if bill_id:
+            amountEntry.configure(state="disabled")
 
         makeColumnResponsive(updateAccountFrame )
 
@@ -163,23 +165,24 @@ def createUpdateAccountWindow(customerInfo, accountInfo):
             
             user_year = int(date_meta[2])
             user_month = int(date_meta[1])
+            if user_month > 12 or user_month < 1:
+                messagebox.showwarning("Add Account", "Date is invalid.")
+                return False
             user_day = int(date_meta[0])
+            if user_day > 32 or user_day < 1:
+                messagebox.showwarning("Add Account", "Date is invalid.")
+                return False
 
-            utc_timezone = timezone("UTC")
-
-            todays_ne_datetime = nepali_datetime.datetime.now()
-            user_selected_ne_datetime = todays_ne_datetime.replace(year=user_year, month=user_month, day=user_day)
-            
             # check if user selected date is greater than today
-            if user_selected_ne_datetime>todays_ne_datetime:
-                messagebox.showwarning("InaBi System", "Please select date upto today only.")
+            date_of_transaction = nepali_datetime.date(year=user_year, month=user_month, day=user_day)
+            if date_of_transaction>nepali_datetime.datetime.now().date():
+                messagebox.showwarning("Add Account", "Please select date upto today only.")
                 dateEntry.focus()
                 return False
             
-            user_selected_en_datetime = user_selected_ne_datetime.to_datetime_datetime()
-            user_selected_utc_datetime = user_selected_en_datetime.astimezone(utc_timezone)
-
-            data = {"transaction_date": user_selected_utc_datetime,
+            data = {"transaction_year": user_year,
+                    "transaction_month": user_month,
+                    "transaction_day": user_day,
                     "customer_id": customer_id,
                     "type": AccountType.credit if typeOption.get()=="credit" else AccountType.debit,
                     "description": descriptionVar.get(),

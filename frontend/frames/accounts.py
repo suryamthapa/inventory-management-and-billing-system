@@ -107,7 +107,7 @@ def createLedgerDetailsTableBody(parent, data):
 
 
         Button(parent, text="update", width=6, bg="#47B5FF", command=lambda record=record: updateAccounts.createUpdateAccountWindow(globals.CURRENT_LEDGER_ACCOUNT["customer"], record)).grid(row=index+2, column=6, pady=5, padx=(0,2), sticky=W)
-        Button(parent, text="delete", width=6, bg="red", command=lambda record=record: deleteRecordFromAccount(record)).grid(row=index+2, column=7, pady=5, padx=(2,0), sticky=W)
+        Button(parent, text="delete", width=6, bg="red", command=lambda record=record: deleteRecordFromAccount(record), state="disabled" if record.get("bill_id") else "normal").grid(row=index+2, column=7, pady=5, padx=(2,0), sticky=W)
         
     makeColumnResponsive(parent)
 
@@ -172,20 +172,34 @@ def createLedgerDetailsTableTop(parent):
                 messagebox.showwarning("InaBi System", "Invalid Date.")
                 return False
         
+        from_year = int(from_date_meta[2])
+        from_month = int(from_date_meta[1])
+        if from_month > 12 or from_month < 1:
+            messagebox.showwarning("InaBi System", "'From' date is invalid.")
+            return False
+        from_day = int(from_date_meta[0])
+        if from_day > 32 or from_day < 1:
+            messagebox.showwarning("InaBi System", "'From' date is invalid.")
+            return False
+        
         for m in to_date_meta:
             if not m.isdigit():
                 messagebox.showwarning("InaBi System", "Invalid Date.")
                 return False
+        
+        to_year = int(to_date_meta[2])
+        to_month = int(to_date_meta[1])
+        if to_month > 12 or to_month < 1:
+            messagebox.showwarning("InaBi System", "'To' date is invalid.")
+            return False
+        to_day = int(to_date_meta[0])
+        if to_day > 32 or to_day < 1:
+            messagebox.showwarning("InaBi System", "'To' date is invalid.")
+            return False
 
-        if int(from_date_meta[2]) > int(to_date_meta[2]):
-            messagebox.showwarning("InaBi System", "From date should not be greater than To date.")
-            return False
-        
-        if int(from_date_meta[2]) == int(to_date_meta[2]) and int(from_date_meta[0])>int(to_date_meta[0]):
-            messagebox.showwarning("InaBi System", "From date should not be greater than To date.")
-            return False
-        
-        if int(from_date_meta[2]) == int(to_date_meta[2]) and int(from_date_meta[0])==int(to_date_meta[0]) and int(from_date_meta[1])>int(to_date_meta[1]):
+        from_date_ne = nepali_datetime.date(year=from_year, month=from_month, day=from_day)
+        to_date_ne = nepali_datetime.date(year=to_year, month=to_month, day=to_day)
+        if from_date_ne > to_date_ne:
             messagebox.showwarning("InaBi System", "From date should not be greater than To date.")
             return False
         

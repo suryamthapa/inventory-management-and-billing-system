@@ -37,15 +37,8 @@ def get_formatted_account(customer_id, asc = True, sort_column: str = "transacti
     start_from_found = False
     end_to_found = False
     for index, record in enumerate(accounts_data["data"]):
-        final_nepali_date = nepali_datetime.date.today()
-        if record["date"]:
-            ne_datetime, message = get_nepali_datetime_from_utc(record["date"], format="BS")
-            if ne_datetime:
-                final_nepali_date = nepali_datetime.date(ne_datetime.year, ne_datetime.month, ne_datetime.day)
-                record["date"] = final_nepali_date.strftime("%d/%m/%Y")
-            else:
-                final_nepali_date = nepali_datetime.date.today()
-                log.error(f"Error occured while getting nepali datetiem from utc -> {message}")
+        final_nepali_date = nepali_datetime.date(record["transaction_year"], record["transaction_month"], record["transaction_day"])
+        record["date"] = final_nepali_date.strftime("%d/%m/%Y")
         
         if from_ and to:
             exact_from_day = final_nepali_date == from_date

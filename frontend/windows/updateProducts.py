@@ -34,7 +34,6 @@ def createUpdateProductWindow(productInfo):
         product_id = productInfo["id"] if productInfo else ""
         product_name = productInfo["product_name"] if productInfo else ""
         cost_price = productInfo["cost_price"] if productInfo else ""
-        marked_price = productInfo["marked_price"] if productInfo else ""
         unit = productInfo["unit"] if productInfo else ""
         stock = productInfo["stock"] if productInfo else ""
 
@@ -46,63 +45,44 @@ def createUpdateProductWindow(productInfo):
         productNameEntry.grid(row=0, column=1, padx=5, pady=5)
         productNameEntry.insert(0, product_name)
         
-        Label(updateProductFrame, text="Unit").grid(row=1, column=0, padx=5, pady=5)
+        Label(updateProductFrame, text="Unit").grid(row=0, column=2, padx=5, pady=5)
         unitEntry = AutocompleteEntry(updateProductFrame, font=globals.appFontNormal,
                 completevalues=set([record["unit"] if record["unit"] else "" for record in globals.PRODUCTS_LIST]+globals.UNITS_LIST))
-        unitEntry.grid(row=1, column=1, padx=5, pady=5)
+        unitEntry.grid(row=0, column=3, padx=5, pady=5)
         unitEntry.insert(0, unit)
 
-        Label(updateProductFrame, text="Stock").grid(row=1, column=2, padx=5, pady=5)
+        Label(updateProductFrame, text="Stock").grid(row=1, column=0, padx=5, pady=5)
         stockEntry = Entry(updateProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        stockEntry.grid(row=1, column=3, padx=5, pady=5)
+        stockEntry.grid(row=1, column=1, padx=5, pady=5)
         stockEntry.insert(0, stock)
 
-        Label(updateProductFrame, text="Cost Price").grid(row=2, column=0, padx=5, pady=5)
+        Label(updateProductFrame, text="Cost Price").grid(row=1, column=2, padx=5, pady=5)
         costPriceEntry = Entry(updateProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        costPriceEntry.grid(row=2, column=1, padx=5, pady=5)
+        costPriceEntry.grid(row=1, column=3, padx=5, pady=5)
         costPriceEntry.insert(0, cost_price)
-
-        Label(updateProductFrame, text="Marked Price").grid(row=2, column=2, padx=5, pady=5)
-        markedPriceEntry = Entry(updateProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        markedPriceEntry.grid(row=2, column=3, padx=5, pady=5)
-        markedPriceEntry.insert(0, marked_price)
         
         def handleUpdate(id):
             if not productNameEntry.get():
                 productNameEntry.focus()
                 return False
-            elif  not costPriceEntry.get():
-                costPriceEntry.focus()
-                return False
-            elif not markedPriceEntry.get():
-                markedPriceEntry.focus()
-                return False
             elif not unitEntry.get():
                 unitEntry.focus()
                 return False
-            elif not stockEntry.get():
-                stockEntry.focus()
-                return False
 
-            if not isfloat(markedPriceEntry.get()):
-                messagebox.showwarning("Invalid", "Marked price should contain numbers only.")
-                markedPriceEntry.focus()
-                return False
-            if not isfloat(costPriceEntry.get()):
+            if costPriceEntry.get() and not isfloat(costPriceEntry.get()):
                 messagebox.showwarning("Invalid", "Cost price should contain numbers only.")
                 costPriceEntry.focus()
                 return False
-            if not stockEntry.get().isdigit():
+            if stockEntry.get() and not isfloat(stockEntry.get()):
                 stockEntry.focus()
                 messagebox.showwarning("Invalid", "Stock should contain numbers only.")
                 return False
             
             details = {
-                "product_name":productNameEntry.get(),
-                "cost_price":costPriceEntry.get(),
-                "marked_price":markedPriceEntry.get(),
-                "unit":unitEntry.get().upper() if unitEntry.get() else unitEntry.get(),
-                "stock":stockEntry.get()
+                "product_name":productNameEntry.get().upper(),
+                "cost_price":costPriceEntry.get() if costPriceEntry.get() else 0,
+                "unit":unitEntry.get().upper(),
+                "stock":stockEntry.get() if stockEntry.get() else 0
             }
             status = updateProduct(id, details)
             if status:

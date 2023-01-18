@@ -11,6 +11,14 @@ from core import nepali_datetime
 from core.nepali_datetime import date
 
 
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+        
+
 def exitParent(parent):
     response = messagebox.askyesnocancel("Exit the app", "Are you sure?")
     if response==1:
@@ -112,7 +120,7 @@ def showCurrentTime(label):
 
 
 def handle_buttons_on_activation(deactivation=False):
-    in_version_two = ["salesAndAnalyticsFrame"]
+    in_version_two = []
     for frame in Settings.PREMIUM_FEATURES_FRAMES:
         if deactivation:
             eval(f"Settings.{Settings.buttonFrameMapping.get(frame)}").config(command=lambda: messagebox.showinfo("InaBi System", "This is the premium feature.\n\nTo use it: Please activate the app with a lisence key. Or please start the trial from home tab.\n\nThank you!"))

@@ -24,6 +24,7 @@ from frontend.frames.home import openHome
 from frontend.frames.profile import openProfile
 from frontend.frames.settings import openSettings
 import frontend.frames.billing as billingSystem
+from frontend.frames.billsView import openBillsView
 from frontend.frames.customers import openCustomers
 from frontend.frames.vendors import openVendors
 from frontend.frames.accounts import openAccounts
@@ -40,6 +41,7 @@ from backend.models import LisenceStatus
 
 
 def showFrame(frameName, refreshMode=False):
+    log.info(f"OPENING: {frameName}")
     alreadyOpen = True
     if Settings.CURRENT_FRAME!=frameName or refreshMode:
         alreadyOpen = False
@@ -71,6 +73,9 @@ def showFrame(frameName, refreshMode=False):
             elif frameName=="billingSystemFrame":
                 Settings.billingSystemButton.configure(bg=Settings.appGreen)
                 billingSystem.openBillingSystem(Settings.mainFrame)
+            elif frameName=="billsViewFrame":
+                Settings.billsViewButton.configure(bg=Settings.appGreen)
+                openBillsView(Settings.mainFrame)
             elif frameName=="customersFrame":
                 Settings.customersButton.configure(bg=Settings.appGreen)
                 openCustomers(Settings.mainFrame)
@@ -185,13 +190,13 @@ def createSidebar(container):
         command=lambda : showFrame("billingSystemFrame"))
     Settings.billingSystemButton.grid(row=8, column=0, pady=optionsPadY)
 
-    Settings.salesAndAnalyticsButton = Button(options, 
-        text="Sales and Analytics", 
+    Settings.billsViewButton = Button(options, 
+        text="View Bills", 
         width=optionsWidth, 
         bg=Settings.appDarkGreen, 
         fg=optionsColor,
-        command=lambda : messagebox.showinfo("Sales and Analytics", "Feature comming soon in next update!\n\nYou will be able to view the sales and analytics of your company with the help of this feature.\n\nThank you!"))
-    Settings.salesAndAnalyticsButton.grid(row=9, column=0, pady=optionsPadY)
+        command=lambda : showFrame("billsViewFrame"))
+    Settings.billsViewButton.grid(row=9, column=0, pady=optionsPadY)
 
     Settings.settingsButton = Button(options, 
         text="Settings", 

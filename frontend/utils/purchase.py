@@ -30,7 +30,6 @@ def updatePurchase(id, data):
 
 def entry_purchase_and_add_stock():
     invoice_number = Settings.PURCHASE_DETAILS.get("extra").get("invoice_number")
-    date_of_purchase_utc = Settings.PURCHASE_DETAILS.get("extra").get("date_of_purchase_utc")
     excise_duty = Settings.PURCHASE_DETAILS.get("extra").get("excise_duty")
     cash_discount = Settings.PURCHASE_DETAILS.get("extra").get("cash_discount")
     p_discount = Settings.PURCHASE_DETAILS.get("extra").get("p_discount")
@@ -48,7 +47,9 @@ def entry_purchase_and_add_stock():
         }
 
     data = {"invoice_number":invoice_number,
-        "date_of_purchase": date_of_purchase_utc,
+        "purchase_year": Settings.PURCHASE_DETAILS.get("extra").get("purchase_year"),
+        "purchase_month": Settings.PURCHASE_DETAILS.get("extra").get("purchase_month"),
+        "purchase_day": Settings.PURCHASE_DETAILS.get("extra").get("purchase_day"),
         "product_qty":product_qty_info,
         "vendor_id":Settings.PURCHASE_DETAILS.get("vendor").get("vendor_id"),
         "excise_duty":excise_duty,
@@ -59,10 +60,12 @@ def entry_purchase_and_add_stock():
         "cash_payment":cash_payment,
         "balance_amount":balance_amount,
         "extra_info": extra_info}
+    
     purchase_id, message = add_purchase(data)
     if not purchase_id:
         log.error(f"{purchase_id} {message}")
         return False, message
+
     for id, details in Settings.PURCHASE_DETAILS.get("products").items():
         status, message = update_product(id, data={"stock": float(details.get("stock"))+float(details.get("quantity"))})
         if not status:
@@ -89,7 +92,6 @@ def update_purchase_and_fix_stock():
     log.info(Settings.PURCHASE_DETAILS)
     id = Settings.PURCHASE_DETAILS.get("id")
     invoice_number = Settings.PURCHASE_DETAILS.get("extra").get("invoice_number")
-    date_of_purchase_utc = Settings.PURCHASE_DETAILS.get("extra").get("date_of_purchase_utc")
     excise_duty = Settings.PURCHASE_DETAILS.get("extra").get("excise_duty")
     cash_discount = Settings.PURCHASE_DETAILS.get("extra").get("cash_discount")
     p_discount = Settings.PURCHASE_DETAILS.get("extra").get("p_discount")
@@ -107,7 +109,9 @@ def update_purchase_and_fix_stock():
         }
  
     data = {"invoice_number":invoice_number,
-        "date_of_purchase": date_of_purchase_utc,
+        "purchase_year": Settings.PURCHASE_DETAILS.get("extra").get("purchase_year"),
+        "purchase_month": Settings.PURCHASE_DETAILS.get("extra").get("purchase_month"),
+        "purchase_day": Settings.PURCHASE_DETAILS.get("extra").get("purchase_day"),
         "product_qty":product_qty_info,
         "vendor_id":Settings.PURCHASE_DETAILS.get("vendor").get("vendor_id"),
         "excise_duty":excise_duty,

@@ -23,8 +23,7 @@ def num2words(num):
 
 
 class CustomerBill(BaseDocTemplate):
-    def __init__(self, filename, company_info, bill_details, 
-                 show_discount=False, show_vat=False, show_tax=False, show_payment=False, **kwargs):
+    def __init__(self, filename, company_info, bill_details, show_payment=False, **kwargs):
         super().__init__(filename, page_size=A4, _pageBreakQuick=0, **kwargs)
         self.company_info = company_info
         self.bill_details = bill_details
@@ -52,22 +51,20 @@ class CustomerBill(BaseDocTemplate):
         # final data
         final_data = []
         total_amount = self.bill_details["final"].get("total") if self.bill_details["final"].get("total") else 0
-        if show_discount or show_vat or show_tax:
-            subtotal = self.bill_details["final"].get("subtotal") if self.bill_details["final"].get("subtotal") else 0
-            final_data.append(["Basic Amount", "{:,.2f}".format(float(subtotal))])
-            if show_discount:
-                discount_label = "Discount"
-                if self.bill_details["extra"].get("discount_percentage"):
-                    discount_label = f'Discount({self.bill_details["extra"].get("discount_percentage")}%)'
-                discount = self.bill_details["final"].get("discount") if self.bill_details["final"].get("discount") else 0
-                final_data.append([discount_label, "{:,.2f}".format(float(discount))])
-            if show_vat:
-                vat = self.bill_details["final"].get("vat") if self.bill_details["final"].get("vat") else 0
-                final_data.append([f'Vat({self.bill_details["extra"].get("vat")}%)', "{:,.2f}".format(float(vat))])
-            if show_tax:
-                tax = self.bill_details["final"].get("tax") if self.bill_details["final"].get("tax") else 0
-                final_data.append([f'Tax({self.bill_details["extra"].get("tax")}%)', "{:,.2f}".format(float(tax))])
-
+        subtotal = self.bill_details["final"].get("subtotal") if self.bill_details["final"].get("subtotal") else 0
+        final_data.append(["Basic Amount", "{:,.2f}".format(float(subtotal))])
+        
+        discount_label = "Discount"
+        if self.bill_details["extra"].get("discount_percentage"):
+            discount_label = f'Discount({self.bill_details["extra"].get("discount_percentage")}%)'
+        discount = self.bill_details["final"].get("discount") if self.bill_details["final"].get("discount") else 0
+        final_data.append([discount_label, "-{:,.2f}".format(float(discount))])
+        
+        taxableAmount = float(subtotal) - float(discount)
+        final_data.append([f'Taxable Amount', "{:,.2f}".format(float(taxableAmount))])
+        
+        vat = self.bill_details["final"].get("vat") if self.bill_details["final"].get("vat") else 0
+        final_data.append([f'Vat({self.bill_details["extra"].get("vat")}%)', "{:,.2f}".format(float(vat))])
         
         totalStyle = ParagraphStyle("totalStyle", fontName="Helvetica-Bold", fontSize=10)
         final_data += [[Paragraph("GRAND TOTAL", totalStyle), "{:,.2f}".format(float(total_amount))]]
@@ -76,7 +73,7 @@ class CustomerBill(BaseDocTemplate):
             paid_amount = self.bill_details["final"].get("paid_amount") if self.bill_details["final"].get("paid_amount") else 0
             final_data.append([Paragraph("PAID", totalStyle), "{:,.2f}".format(float(paid_amount))])
             final_data.append([Paragraph("DUE", totalStyle), "{:,.2f}".format(float(total_amount)-float(paid_amount))])
-            num = "{:,.2f}".format(float(total_amount)-float(paid_amount))
+            num = "{:.2f}".format(float(total_amount)-float(paid_amount))
         else:
             num = "{:.2f}".format(float(total_amount))
         # in words
@@ -86,9 +83,9 @@ class CustomerBill(BaseDocTemplate):
         
         table_sub_style = [
                         ("FONT",(0,0),(-1,-1),"Helvetica",11),
-                        ("NOSPLIT",(0,0),(-1,-1))]
-        if show_discount or show_vat or show_tax:
-            table_sub_style.append(("LINEABOVE", (0,-1), (1,-1), 2, colors.black))
+                        ("NOSPLIT",(0,0),(-1,-1)),
+                        ("LINEABOVE", (0,-1), (1,-1), 2, colors.black)
+                        ]
         
         tableSubStyle = TableStyle(table_sub_style)
 
@@ -298,4 +295,4 @@ if __name__ == '__main__':
     CustomerBill('example.pdf', 
                 company_info=company_info, bill_details=bill_details, 
                 title=f"{bill_details['customer']['full_name']} 2020/11/12", author="IMAB System - Datakhoj",
-                subject=f"Bill To {bill_details['customer']['full_name']}", show_discount=False, show_vat=False, show_tax=False, show_payment=False)
+                subject=f"Bill To {bill_details['customer']['full_name']}", show_payment=False)

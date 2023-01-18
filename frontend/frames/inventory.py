@@ -131,13 +131,11 @@ def createtableTop(parent):
 
 def createTableHeader(parent):
     Label(parent, text="ID", font=globals.appFontNormalBold).grid(row=0, column=0, sticky=W)
-    Label(parent, text="Product Name", font=globals.appFontNormalBold).grid(row=0, column=1, sticky=W)
-    Label(parent, text="Stock", font=globals.appFontNormalBold).grid(row=0, column=2, sticky=W)
-    Label(parent, text="Unit", font=globals.appFontNormalBold).grid(row=0, column=3, sticky=W)
-    Label(parent, text="CP per unit", font=globals.appFontNormalBold).grid(row=0, column=4, sticky=W)
-    Label(parent, text="MP per unit", font=globals.appFontNormalBold).grid(row=0, column=5, sticky=W)
-    Label(parent, text="", font=globals.appFontNormalBold).grid(row=0, column=6, sticky=W)
-    Label(parent, text="", font=globals.appFontNormalBold).grid(row=0, column=7, sticky=W)
+    Label(parent, text="", font=globals.appFontNormalBold).grid(row=0, column=1, sticky=W)
+    Label(parent, text="Product Name", font=globals.appFontNormalBold).grid(row=0, column=2, sticky=W)
+    Label(parent, text="Stock", font=globals.appFontNormalBold).grid(row=0, column=3, sticky=W)
+    Label(parent, text="Unit", font=globals.appFontNormalBold).grid(row=0, column=4, sticky=W)
+    Label(parent, text="CP per unit", font=globals.appFontNormalBold).grid(row=0, column=5, sticky=W)
     frontendUtils.makeColumnResponsive(parent)
 
 
@@ -148,13 +146,11 @@ def createTableBody(parent, records):
     for index, record in enumerate(records):
         bg = "white" if (index+1)%2==0 else globals.appWhite
         Label(parent, text=record.get("id"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=0, pady=5, sticky=W)
-        Label(parent, text=record.get("product_name"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=1,pady=5, sticky=W)
-        Label(parent, text=record.get("stock"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=2, pady=5, sticky=W)
-        Label(parent, text=record.get("unit"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=3, pady=5, sticky=W)
-        Label(parent, text=record.get("cost_price"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=4, pady=5, sticky=W)
-        Label(parent, text=record.get("marked_price"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=5, pady=5, sticky=W)
-        Button(parent, text="update", width=10, bg="#47B5FF", command=lambda x=record: updateProducts.createUpdateProductWindow(x)).grid(row=index+1, column=6, pady=5)
-        Button(parent, text="delete", width=10, bg="red", command=lambda id=record.get("id"), name=record.get("product_name"): deleteProduct(id, name)).grid(row=index+1, column=7, pady=5)
+        Button(parent, text="update", width=10, bg="#47B5FF", command=lambda x=record: updateProducts.createUpdateProductWindow(x)).grid(row=index+1, column=1, pady=5)
+        Label(parent, text=record.get("product_name"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=2,pady=5, sticky=W)
+        Label(parent, text=record.get("stock"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=3, pady=5, sticky=W)
+        Label(parent, text=record.get("unit"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=4, pady=5, sticky=W)
+        Label(parent, text=record.get("cost_price"), bg=bg, wraplength=160, justify="left").grid(row=index+1, column=5, pady=5, sticky=W)
 
     frontendUtils.makeColumnResponsive(parent)
 
@@ -191,17 +187,17 @@ def createTableFooter(parent, currentPage, totalPages):
                                         bg=globals.appGreen, 
                                         fg=globals.appWhite,
                                         command=lambda : handlePagination(currentPage, totalPages, "back"))
-    globals.paginationBackButton.grid(row=14, column=5, pady=10)
+    globals.paginationBackButton.grid(row=14, column=0, pady=10, sticky="e")
 
     globals.paginationPageInfo = Label(parent, text=f"Page {currentPage} out of {totalPages}")
-    globals.paginationPageInfo.grid(row=globals.PAGINATION_PAGE_LIMIT+3, column=6, pady=10)
+    globals.paginationPageInfo.grid(row=globals.PAGINATION_PAGE_LIMIT+3, column=1, pady=10, sticky="nswe")
     
     globals.paginationForwardButton = Button(parent, 
                                             text=">>", 
                                             bg=globals.appGreen, 
                                             fg=globals.appWhite, 
                                             command=lambda : handlePagination(currentPage, totalPages, "forward"))
-    globals.paginationForwardButton.grid(row=14, column=7, pady=10)
+    globals.paginationForwardButton.grid(row=14, column=2, pady=10, sticky="w")
 
     handlePaginationButtonState(currentPage, totalPages)
     

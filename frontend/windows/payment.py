@@ -3,13 +3,13 @@ import logging
 from tkinter import *
 from tkinter import messagebox
 import frontend.config as globals
-from frontend.utils.bills import make_payment
+from frontend.utils.bills import make_payment_and_add_bill_entry
 
 
 log = logging.getLogger("frontend")
 
 
-def createPaymentWindow():
+def createPaymentWindow(forUpdate=False):
     try:
         paymentWindow = Toplevel()
         paymentWindow.grab_set()
@@ -37,7 +37,7 @@ def createPaymentWindow():
                 messagebox.showwarning("Payment", "Amount greater than actual payable amount.")
                 return False
             paidAmount = float(paymentEntry.get()) if not withoutPayment else float(0)
-            make_payment(paidAmount)
+            make_payment_and_add_bill_entry(paidAmount)
             paymentWindow.destroy()
 
         proceedBtn = Button(paymentWindow,

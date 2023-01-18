@@ -1,6 +1,6 @@
 import datetime
 from enum import unique
-from sqlalchemy import Column, Integer, DateTime, String, Enum
+from sqlalchemy import Column, Integer, DateTime, String, Enum, JSON
 from sqlalchemy.orm import relationship
 from backend.database.setup import Base
 from backend.models.bills import Bills
@@ -17,5 +17,6 @@ class Customers(Base):
     telephone = Column(String, unique=True)
     email = Column(String, unique=True)
     address = Column(String, nullable=False)
+    extra_info = Column(JSON, nullable=True)
 
     bills = relationship("Bills")

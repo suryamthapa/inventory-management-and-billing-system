@@ -1,21 +1,27 @@
 # Billing system
 import os
 import math
+import pytz
+import datetime
 import logging
+from pytz import timezone
 from tkinter import messagebox
 import frontend.config as globals
 from sqlalchemy import table
 from ttkwidgets.autocomplete import AutocompleteEntry
 from tkinter import *
+# core imports
+from core import nepali_datetime
 # frontend imports
 import frontend.windows.dashboard as dashboard
 import frontend.windows.addProducts as addProductsWindow
 import frontend.windows.addCustomers as addCustomersWindow
 import frontend.windows.updateProducts as updateProductsWindow
 import frontend.windows.payment as paymentWindow
-from frontend.utils.frontend import makeColumnResponsive
+from frontend.utils.frontend import makeColumnResponsive, get_utc_datetime_from_nepali_date, get_nepali_datetime_from_utc, isfloat
 from frontend.utils.products import updateProduct
 import frontend.utils.bills as billUtils
+from core.tkNepaliCalendar import DateEntry
 # backend imports
 from backend.api.products import get_product
 from backend.api.customers import get_customer
@@ -60,7 +66,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
     Label(parent, text="Rate").grid(row=1, column=0, padx=5, pady=(5, 10), sticky=W)
     rateEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
     rateEntry.grid(row=1, column=1, padx=5, pady=(5, 10), sticky=W)
-    rateEntry.insert(0, productDetails["marked_price"] if not toUpdate else productDetails["rate"])
+    rateEntry.insert(0, productDetails["cost_price"] if not toUpdate else productDetails["rate"])
 
     Label(parent, text="Quantity").grid(row=1, column=2, padx=5, pady=(5, 10), sticky=W)
     quantityEntry = Spinbox(parent, 
@@ -105,8 +111,8 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
             else:
                 return None
 
-        productDetails["rate"] = str(rate)
-        productDetails["quantity"] = str(quantity)
+        productDetails["rate"] = float(rate)
+        productDetails["quantity"] = float(quantity)
 
         addProductToBill(productDetails)
 
@@ -123,7 +129,6 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
                                                                 "stock":productDetails["stock"],
                                                                 "unit":productDetails["unit"],
                                                                 "quantity":productDetails["quantity"],
-                                                                "marked_price":productDetails["marked_price"],
                                                                 "cost_price":productDetails["cost_price"],
                                                                 "rate":productDetails["rate"]}
         clearProductDetails()
@@ -149,47 +154,47 @@ def loadCustomerDetails(parent, customerDetails):
             child.destroy()
 
         if customerDetails.get("full_name"):
-            Label(parent, text="Name").grid(row=1, column=0, padx=5, pady=10)
+            Label(parent, text="Name").grid(row=1, column=0, padx=5, pady=5)
             nameEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-            nameEntry.grid(row=1, column=1, padx=5, pady=10)
+            nameEntry.grid(row=1, column=1, padx=5, pady=5)
             nameEntry.insert(0, customerDetails["full_name"] if customerDetails.get("full_name") else "")
             nameEntry.config(state=DISABLED)
 
-            Label(parent, text="Address").grid(row=1, column=2, padx=5, pady=10)
+            Label(parent, text="Address").grid(row=1, column=2, padx=5, pady=5)
             addressEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-            addressEntry.grid(row=1, column=3, padx=5, pady=10)
+            addressEntry.grid(row=1, column=3, padx=5, pady=5)
             addressEntry.insert(0, customerDetails["address"] if customerDetails.get("address") else "")
             addressEntry.config(state=DISABLED)
 
         if customerDetails.get("company"):
-            Label(parent, text="Company").grid(row=1, column=0, padx=5, pady=10)
+            Label(parent, text="Company").grid(row=1, column=0, padx=5, pady=5)
             companyEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-            companyEntry.grid(row=1, column=1, padx=5, pady=10)
+            companyEntry.grid(row=1, column=1, padx=5, pady=5)
             companyEntry.insert(0, customerDetails["company"] if customerDetails.get("company") else "")
             companyEntry.config(state=DISABLED)
 
-            Label(parent, text="Company Pan No").grid(row=1, column=2, padx=5, pady=10)
+            Label(parent, text="Company Pan No").grid(row=1, column=2, padx=5, pady=5)
             companyPanEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-            companyPanEntry.grid(row=1, column=3, padx=5, pady=10)
+            companyPanEntry.grid(row=1, column=3, padx=5, pady=5)
             companyPanEntry.insert(0, customerDetails["company_pan_no"] if customerDetails.get("company_pan_no") else "")
             companyPanEntry.config(state=DISABLED)
         
-        Label(parent, text="Phone").grid(row=2, column=0, padx=5, pady=10)
+        Label(parent, text="Phone").grid(row=2, column=0, padx=5, pady=5)
         phEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        phEntry.grid(row=2, column=1, padx=5, pady=10)
+        phEntry.grid(row=2, column=1, padx=5, pady=5)
         phEntry.insert(0, customerDetails["phone_number"] if customerDetails.get("phone_number") else "")
         phEntry.config(state=DISABLED)
 
-        Label(parent, text="Telephone").grid(row=2, column=2, padx=5, pady=10)
+        Label(parent, text="Telephone").grid(row=2, column=2, padx=5, pady=5)
         telEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        telEntry.grid(row=2, column=3, padx=5, pady=10)
+        telEntry.grid(row=2, column=3, padx=5, pady=5)
         telEntry.insert(0, customerDetails["telephone"] if customerDetails.get("telephone") else "")
         telEntry.config(state=DISABLED)
 
         if customerDetails.get("company"):
-            Label(parent, text="Address").grid(row=3, column=0, padx=5, pady=10)
+            Label(parent, text="Address").grid(row=3, column=0, padx=5, pady=5)
             addressEntry = Entry(parent, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-            addressEntry.grid(row=3, column=1, padx=5, pady=10)
+            addressEntry.grid(row=3, column=1, padx=5, pady=5)
             addressEntry.insert(0, customerDetails["address"] if customerDetails.get("address") else "")
             addressEntry.config(state=DISABLED)
 
@@ -247,7 +252,7 @@ def createBillDetailsTableBody(parent):
                 "stock":globals.BILL_DETAILS.get("products")[id].get("stock"),
                 "unit":globals.BILL_DETAILS.get("products")[id].get("unit"),
                 "quantity":details["quantity"],
-                "marked_price":globals.BILL_DETAILS.get("products")[id].get("marked_price"),
+                "cost_price":globals.BILL_DETAILS.get("products")[id].get("cost_price"),
                 "rate":details["rate"],
             }
             loadProductDetails(globals.rateQtyFrame, data, toUpdate=True)
@@ -264,30 +269,27 @@ def deleteProductFromCart(id):
 
 
 def createBillDetailsTableFooter(parent):
-    askForDiscount = int(globals.CURRENT_SETTINGS.get("ask_for_discount")) if globals.CURRENT_SETTINGS.get("ask_for_discount") else 0
-    askForVat = int(globals.CURRENT_SETTINGS.get("ask_for_vat")) if globals.CURRENT_SETTINGS.get("ask_for_vat") else 0
-    askForTax = int(globals.CURRENT_SETTINGS.get("ask_for_tax")) if globals.CURRENT_SETTINGS.get("ask_for_tax") else 0
-    defaultVat = int(globals.CURRENT_SETTINGS.get("default_vat")) if globals.CURRENT_SETTINGS.get("default_vat") else 0
-    defaultDiscount = int(globals.CURRENT_SETTINGS.get("default_discount")) if globals.CURRENT_SETTINGS.get("default_discount") else 0
-    defaultTax = int(globals.CURRENT_SETTINGS.get("default_tax")) if globals.CURRENT_SETTINGS.get("default_tax") else 0
-
-    baseIndex = len(globals.BILL_DETAILS.get("products")) + 4
+    baseIndex = len(globals.BILL_DETAILS.get("products")) + 5
     totalAmount = float(sum([float(record["rate"])*float(record["quantity"]) for record in globals.BILL_DETAILS.get("products").values()]))
+    
     # creating final entry
     globals.BILL_DETAILS.get("final")["subtotal"] = totalAmount
 
     discountAmount = globals.BILL_DETAILS.get("extra").get("discount_amount")
     discountAmount = float(discountAmount) if discountAmount else 0
-    discountPercentage = globals.BILL_DETAILS.get("extra").get("discount_percentage") if askForDiscount else defaultDiscount
+
+    discountPercentage = globals.BILL_DETAILS.get("extra").get("discount_percentage")
     discountPercentage = float(discountPercentage) if discountPercentage else 0
+    
     if not discountAmount:
         discountAmount = float(totalAmount * (discountPercentage/100))
     discountedAmount = float(totalAmount - discountAmount)
     # creating final entry
     globals.BILL_DETAILS.get("final")["discount"] = discountAmount
 
-    vatPercentage = globals.BILL_DETAILS.get("extra").get("vat") if askForVat else defaultVat
+    vatPercentage = globals.BILL_DETAILS.get("extra").get("vat")
     vatPercentage = float(vatPercentage) if vatPercentage else float(0)
+    
     vatAmount = float(0)
     if vatPercentage:
         vatAmount = float(discountedAmount * (vatPercentage/100))
@@ -298,51 +300,78 @@ def createBillDetailsTableFooter(parent):
     # creating final entry
     globals.BILL_DETAILS.get("final")["total"] = totalPayable
 
-    Label(parent, text="Total:", font=globals.appFontSmallBold).grid(row=baseIndex,column=0, pady=(20, 0), sticky=W)
+    Label(parent, text="Sub Total:", font=globals.appFontSmallBold).grid(row=baseIndex,column=0, pady=(20, 0), sticky=W)
     Label(parent, text="Rs. {:,.2f}".format(totalAmount)).grid(row=baseIndex, column=1, pady=(20, 0), sticky=W)
     
-    if globals.BILL_DETAILS.get("extra").get("discount_percentage") or defaultDiscount:
-        Label(parent, text=f"Discount({defaultDiscount}%):" if defaultDiscount else f"Discount({globals.BILL_DETAILS.get('extra').get('discount_percentage')}%):", font=globals.appFontSmallBold).grid(row=baseIndex+1, column=0, sticky=W)
-        Label(parent, text="Rs. {:,.2f}".format(discountAmount)).grid(row=baseIndex+1, column=1, sticky=W)
+    if globals.BILL_DETAILS.get("extra").get("discount_percentage") or globals.BILL_DETAILS.get("extra").get("discount_amount"):
+        discountLabel = f"Discount({globals.BILL_DETAILS.get('extra').get('discount_percentage')}%):" if globals.BILL_DETAILS.get("extra").get("discount_percentage") else "Discount:"
+        Label(parent, text=discountLabel, font=globals.appFontSmallBold).grid(row=baseIndex+1, column=0, sticky=W)
+        Label(parent, text="- Rs. {:,.2f}".format(discountAmount)).grid(row=baseIndex+1, column=1, sticky=W)
     
-    if globals.BILL_DETAILS.get("extra").get("vat") or defaultVat:
-        Label(parent, text=f"VAT({defaultVat}%):" if defaultVat else f"VAT({globals.BILL_DETAILS.get('extra').get('vat')}%):", font=globals.appFontSmallBold).grid(row=baseIndex+2, column=0, sticky=W)
+    if globals.BILL_DETAILS.get("extra").get("vat"):
+        Label(parent, text=f"VAT({globals.BILL_DETAILS.get('extra').get('vat')}%):", font=globals.appFontSmallBold).grid(row=baseIndex+2, column=0, sticky=W)
         Label(parent, text="Rs. {:,.2f}".format(vatAmount)).grid(row=baseIndex+2, column=1, sticky=W)
     
-    if discountAmount or vatAmount or vatPercentage or defaultDiscount or defaultVat:
+    if discountAmount or discountPercentage or vatAmount or vatPercentage:
         Label(parent, text="Grand Total:", font=globals.appFontSmallBold).grid(row=baseIndex+3, column=0, sticky=W)
         Label(parent, text="Rs. {:,.2f}".format(totalPayable)).grid(row=baseIndex+3, column=1, sticky=W)
 
     detailsCommands = LabelFrame(parent, borderwidth=0)
-    detailsCommands.grid(row=baseIndex+3, column=0, columnspan=4, sticky=E, pady=5)
+    detailsCommands.grid(row=baseIndex+4, column=0, columnspan=4, sticky=E, pady=5)
 
     askForPayment = int(globals.CURRENT_SETTINGS.get("ask_for_payment")) if globals.CURRENT_SETTINGS.get("ask_for_payment") else 0
     
     def proceedToMakePayment():
         status = billUtils.preprocess_bill_details()
         if status:
-            if askForPayment:
-                paymentWindow.createPaymentWindow()
-            else:
-                billUtils.make_payment(0)
+            response = messagebox.askyesno("Purchase Entry System", "Are you sure?")
+            if response:
+                if globals.BILL_DETAILS.get("id") is None:
+                    if askForPayment:
+                        paymentWindow.createPaymentWindow()
+                    else:
+                        billUtils.make_payment_and_add_bill_entry(0)
+                else:
+                    if askForPayment:
+                        paymentWindow.createPaymentWindow(forUpdate=True)
+                    else:
+                        billUtils.make_payment_and_update_bill_entry(0)
     
-    cta = "Pay and Generate Bill" if askForPayment else "Generate Bill"
-    Button(detailsCommands,
-        text=cta,
-        bg=globals.appBlue,
-        fg=globals.appDarkGreen,
-        width=20,
-        command=proceedToMakePayment,
-        state = DISABLED if not globals.BILL_DETAILS else NORMAL
-        ).pack(side="right", padx=5)
+    if globals.BILL_DETAILS.get("id") is not None:
+        Button(detailsCommands,
+            text="Update Bill",
+            bg=globals.appBlue,
+            fg=globals.appDarkGreen,
+            width=20,
+            command=proceedToMakePayment,
+            state = DISABLED if not globals.BILL_DETAILS else NORMAL
+            ).pack(side="right", padx=3)
+
+        clear = Button(detailsCommands,
+                            text="Cancel Update",
+                            bg=globals.appBlue,
+                            fg=globals.appDarkGreen,
+                            command=clearBillingFrame)
+        clear.pack(side="right", padx=3)
+    else:
+        
+        cta = "Pay and Generate Bill" if askForPayment else "Generate Bill"
+        Button(detailsCommands,
+            text=cta,
+            bg=globals.appBlue,
+            fg=globals.appDarkGreen,
+            width=20,
+            command=proceedToMakePayment,
+            state = DISABLED if not globals.BILL_DETAILS else NORMAL
+            ).pack(side="right", padx=3)
 
 
-    clear = Button(detailsCommands,
-                        text="Clear All",
-                        bg=globals.appBlue,
-                        fg=globals.appDarkGreen,
-                        command=clearBillingFrame)
-    clear.pack(side="right", padx=5)
+        clear = Button(detailsCommands,
+                            text="Clear All",
+                            bg=globals.appBlue,
+                            fg=globals.appDarkGreen,
+                            command=clearBillingFrame)
+        clear.pack(side="right", padx=3)
 
     makeColumnResponsive(parent)
 
@@ -354,31 +383,36 @@ def createBillDetailsTableTop(parent):
     phone_num = globals.BILL_DETAILS.get("customer").get("phone_number")
     telephone = globals.BILL_DETAILS.get("customer").get("telephone")
     address = globals.BILL_DETAILS.get("customer").get("address")
+    date_of_sale = globals.BILL_DETAILS.get("extra").get("date_of_sale")
+
     contacts = []
     if phone_num: contacts.append(phone_num) 
     if telephone: contacts.append(telephone)
 
-    Label(parent, text="Customer:", font=globals.appFontSmallBold).grid(row=0, column=0, pady=(10, 5), sticky=W)
+    Label(parent, text="Date:", font=globals.appFontSmallBold).grid(row=0, column=0, pady=(10, 2), sticky=W)
+    Label(parent, text=f"{date_of_sale}", font=globals.appFontSmallBold).grid(row=0, column=1, pady=(10, 2), sticky=W)
+    
+    Label(parent, text="Customer:", font=globals.appFontSmallBold).grid(row=1, column=0, pady=(5, 2), sticky=W)
     if name:
-        Label(parent, text=name, wraplength=160, justify="left").grid(row=0, column=1, pady=(10, 5), sticky=W)
+        Label(parent, text=name, wraplength=160, justify="left").grid(row=1, column=1, pady=(5, 2), sticky=W)
     elif company:
-        Label(parent, text=company, wraplength=160, justify="left").grid(row=0, column=1, pady=(10, 5), sticky=W)
+        Label(parent, text=company, wraplength=160, justify="left").grid(row=1, column=1, pady=(5, 2), sticky=W)
     else:
-        Label(parent, text="********", wraplength=160, justify="left").grid(row=0, column=1, pady=(10, 5), sticky=W)
+        Label(parent, text="********", wraplength=160, justify="left").grid(row=1, column=1, pady=(5, 2), sticky=W)
     
     if company:
-        Label(parent, text="PAN no:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=0, column=2, pady=(10, 5), sticky=W)
-        Label(parent, text=company_pan_no if company_pan_no else "**********", wraplength=160, justify="left").grid(row=0, column=3, pady=(10, 5), sticky=W)
+        Label(parent, text="PAN no:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=1, column=2, pady=(5, 2), sticky=W)
+        Label(parent, text=company_pan_no if company_pan_no else "**********", wraplength=160, justify="left").grid(row=1, column=3, pady=(5, 2), sticky=W)
     elif name:
-        Label(parent, text="Address:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=0, column=2, pady=(10, 5), sticky=W)
-        Label(parent, text=address if address else "**********", wraplength=160, justify="left").grid(row=0, column=3, pady=(10, 5), sticky=W)
+        Label(parent, text="Address:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=1, column=2, pady=(5, 2), sticky=W)
+        Label(parent, text=address if address else "**********", wraplength=160, justify="left").grid(row=1, column=3, pady=(5, 2), sticky=W)
     
-    Label(parent, text="Contacts:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=1, column=0, pady=(5, 10), sticky=W)
-    Label(parent, text=f"{', '.join(contacts)}" if contacts else "********", wraplength=160, justify="left").grid(row=1, column=1, pady=(5, 10), sticky=W)
+    Label(parent, text="Contacts:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=2, column=0, pady=(5, 5), sticky=W)
+    Label(parent, text=f"{', '.join(contacts)}" if contacts else "********", wraplength=160, justify="left").grid(row=2, column=1, pady=(5, 5), sticky=W)
 
     if company:
-        Label(parent, text="Address:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=1, column=2, pady=(5, 10), sticky=W)
-        Label(parent, text=address if address else "**********", wraplength=160, justify="left").grid(row=1, column=3, pady=(5, 10), sticky=W)
+        Label(parent, text="Address:", font=globals.appFontSmallBold, wraplength=160, justify="left").grid(row=2, column=2, pady=(5, 5), sticky=W)
+        Label(parent, text=address if address else "**********", wraplength=160, justify="left").grid(row=2, column=3, pady=(5, 5), sticky=W)
     
     makeColumnResponsive(parent)
 
@@ -391,7 +425,7 @@ def createBillDetailsTable(parent):
     createBillDetailsTableTop(globals.billDetailsTable)
 
     billDetailsHeaderBodyMain = LabelFrame(globals.billDetailsTable, text="Products")
-    billDetailsHeaderBodyMain.grid(row=2, columnspan=4, sticky="wens")
+    billDetailsHeaderBodyMain.grid(row=3, columnspan=4, sticky="wens")
 
     canvas = Canvas(billDetailsHeaderBodyMain, bg="blue", height=220)
     
@@ -585,95 +619,133 @@ def createProductDetailsArea(parent):
 
 
 def createExtraDetailsArea(parent):
-    askForDiscount = int(globals.CURRENT_SETTINGS.get("ask_for_discount")) if globals.CURRENT_SETTINGS.get("ask_for_discount") else 0
-    askForVat = int(globals.CURRENT_SETTINGS.get("ask_for_vat")) if globals.CURRENT_SETTINGS.get("ask_for_vat") else 0
-    askForTax = int(globals.CURRENT_SETTINGS.get("ask_for_tax")) if globals.CURRENT_SETTINGS.get("ask_for_tax") else 0
-
+    bill_id = globals.BILL_DETAILS.get("id")
+    defaultVat = float(globals.CURRENT_SETTINGS.get("default_vat")) if globals.CURRENT_SETTINGS.get("default_vat") else 0
+    defaultDiscount = float(globals.CURRENT_SETTINGS.get("default_discount")) if globals.CURRENT_SETTINGS.get("default_discount") else 0
+    
     extraDetails = LabelFrame(parent, text="Extra")
     extraDetails.pack(fill="x", pady=20)
-
-    dA = globals.BILL_DETAILS.get("extra").get("discount_amount")
-    dA = dA if dA else ""
-    dP = globals.BILL_DETAILS.get("extra").get("discount_percentage")
-    dP = dP if dP else ""
-    v = globals.BILL_DETAILS.get("extra").get("vat")
-    v = v if v else ""
-    t = globals.BILL_DETAILS.get("extra").get("tax")
-    t = t if t else ""
+    
+    dA = globals.BILL_DETAILS.get("extra").get("discount_amount") if globals.BILL_DETAILS.get("extra").get("discount_amount") else 0
+    
+    if not bill_id:
+        dP = defaultDiscount if not globals.BILL_DETAILS.get("extra").get("discount_percentage") else globals.BILL_DETAILS.get("extra").get("discount_percentage")
+        v = defaultVat if not globals.BILL_DETAILS.get("extra").get("vat") else globals.BILL_DETAILS.get("extra").get("vat")
+        globals.BILL_DETAILS.get("extra")["discount_percentage"] = dP
+        globals.BILL_DETAILS.get("extra")["vat"] = v
+    else:
+        dP = 0 if not globals.BILL_DETAILS.get("extra").get("discount_percentage") else globals.BILL_DETAILS.get("extra").get("discount_percentage")
+        v = 0 if not globals.BILL_DETAILS.get("extra").get("vat") else globals.BILL_DETAILS.get("extra").get("vat")
+    
+    sale_year = globals.BILL_DETAILS.get("extra").get("sale_year")
+    sale_month = globals.BILL_DETAILS.get("extra").get("sale_month")
+    sale_day = globals.BILL_DETAILS.get("extra").get("sale_day")
+    
+    if sale_year and sale_month and sale_day:
+        date_of_sale = f'{sale_day}/{sale_month}/{sale_year}'
+        globals.BILL_DETAILS.get("extra")["date_of_sale"] = date_of_sale
+    else:
+        today = nepali_datetime.datetime.now().date()
+        date_of_sale = today.strftime("%d/%m/%Y")
+        globals.BILL_DETAILS.get("extra")["date_of_sale"] = date_of_sale
+        globals.BILL_DETAILS.get("extra")["sale_year"] = today.year
+        globals.BILL_DETAILS.get("extra")["sale_month"] = today.month
+        globals.BILL_DETAILS.get("extra")["sale_day"] = today.day
 
     Label(extraDetails, text="Discount(Amount)").grid(row=0, column=0, padx=5, sticky=W)
-    discountAmount = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+    discountAmount = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal, width=12)
     discountAmount.grid(row=0, column=1, padx=5, pady=5, sticky=W)
     discountAmount.insert(0, dA)
-    discountAmount.config(state=NORMAL if askForDiscount else DISABLED)
 
     Label(extraDetails, text="Discount(%)").grid(row=0, column=2, padx=5, sticky=W)
-    discountPercentage = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+    discountPercentage = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal, width=12)
     discountPercentage.grid(row=0, column=3, padx=5, pady=5, sticky=W)
     discountPercentage.insert(0, dP)
-    discountPercentage.config(state=NORMAL if askForDiscount else DISABLED)
 
     Label(extraDetails, text="VAT(%)").grid(row=1, column=0, padx=5, sticky=W)
-    vatPercentage = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
+    vatPercentage = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal, width=12)
     vatPercentage.grid(row=1, column=1, padx=5, pady=5, sticky=W)
     vatPercentage.insert(0, v)
-    vatPercentage.config(state=NORMAL if askForVat else DISABLED)
 
-    Label(extraDetails, text="TAX(%)").grid(row=1, column=2, padx=5, sticky=W)
-    taxPercentage = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-    taxPercentage.grid(row=1, column=3, padx=5, pady=5, sticky=W)
-    taxPercentage.insert(0, v)
-    taxPercentage.config(state=NORMAL if askForTax else DISABLED)
+    Label(extraDetails, text="Date of Sale").grid(row=0, column=4, padx=5, pady=5, sticky="nswe")
+    fromDateEntry = DateEntry(extraDetails)
+    fromDateEntry.grid(row=0, column=5, padx=5, pady=5, sticky="nswe")
+    fromDateEntry.delete(0, END)
+    fromDateEntry.insert(0, date_of_sale)
 
     def addExtraDetailsToBill():
         dA = discountAmount.get()
         dP = discountPercentage.get()
         v = vatPercentage.get()
-        t = taxPercentage.get()
+        date_of_sale = fromDateEntry.get()
+        log.info(f"Validating extra details ->{dA=} {dP=} {v=} {date_of_sale=}")
 
-        if not dA and not dP and not v:
-            return False
-        
-        if  dA and dP:
-            messagebox.showwarning("Billing system", "You can add either discount amount or discount percentage.\nYou can not add both.")
-            return False
-
-        if dA and not dA.isdigit():
+        if dA and not isfloat(dA):
             messagebox.showwarning("Invalid", "Discount amount must be a number.")
             discountAmount.focus()
             return False
 
-        if dP and not dP.isdigit():
+        if dP and not isfloat(dP):
             messagebox.showwarning("Invalid", "Discount percentage must be a number.")
             discountPercentage.focus()
             return False
-        elif dP and (int(dP) > 100):
+        elif dP and (float(dP) > 100):
             messagebox.showwarning("Invalid", "Discount percentage must not be higher than 100.")
             discountPercentage.focus()
             return False
+
+        if dA and float(dA) and dP and float(dP):
+            messagebox.showwarning("Billing system", "You can add either discount amount or discount percentage.\nYou can not add both.")
+            return False
         
-        if v and not v.isdigit():
+        if v and not isfloat(v):
             messagebox.showwarning("Invalid", "VAT percentage must be a number.")
             vatPercentage.focus()
             return False
-        elif v and (int(v) > 100):
+        elif v and (float(v) > 100):
             messagebox.showwarning("Invalid", "VAT percentage must not be higher than 100.")
             discountPercentage.focus()
             return False
-        
-        if t and not t.isdigit():
-            messagebox.showwarning("Invalid", "Tax percentage must be a number.")
-            taxPercentage.focus()
+
+        # date validation
+        ne_date_meta = date_of_sale.split("/")
+        if len(ne_date_meta)!=3:
+            messagebox.showwarning("InaBi System", "Invalid Date.")
+            fromDateEntry.focus()
             return False
-        elif t and (int(t) > 100):
-            messagebox.showwarning("Invalid", "Tax percentage must not be higher than 100.")
-            taxPercentage.focus()
+        for m in ne_date_meta:
+            if not m.isdigit():
+                messagebox.showwarning("InaBi System", "Invalid Date.")
+                fromDateEntry.focus()
+                return False
+
+        user_year = int(ne_date_meta[2])
+        user_month = int(ne_date_meta[1])
+        if user_month > 12 or user_month < 1:
+            messagebox.showwarning("InaBi System", "Invalid Date.")
+            fromDateEntry.focus()
             return False
-        
-        globals.BILL_DETAILS["extra"] = {"discount_amount": dA,
-                                        "discount_percentage": dP,
-                                        "vat": v,
-                                        "tax": t,}
+        user_day = int(ne_date_meta[0])
+        if user_day > 32 or user_day < 1:
+            messagebox.showwarning("InaBi System", "Invalid Date.")
+            fromDateEntry.focus()
+            return False
+
+        # check if user selected date is greater than today
+        date_of_sale_now = nepali_datetime.date(year=user_year, month=user_month, day=user_day)
+        if date_of_sale_now>nepali_datetime.datetime.now().date():
+            messagebox.showwarning("InaBi System", "Please select date upto today only.")
+            fromDateEntry.focus()
+            return False
+
+        globals.BILL_DETAILS["extra"]["discount_amount"] = float(dA) if dA else 0
+        globals.BILL_DETAILS["extra"]["discount_percentage"] = float(dP) if dP else 0
+        globals.BILL_DETAILS["extra"]["vat"] = float(v) if v else 0
+        globals.BILL_DETAILS["extra"]["sale_year"] = user_year
+        globals.BILL_DETAILS["extra"]["sale_month"] = user_month
+        globals.BILL_DETAILS["extra"]["sale_day"] = user_day
+        globals.BILL_DETAILS["extra"]["date_of_sale"] = date_of_sale
+
         createBillDetailsTable(globals.billDetailsFrame)
 
     Button(extraDetails,
@@ -681,7 +753,7 @@ def createExtraDetailsArea(parent):
         bg=globals.appGreen,
         fg=globals.appWhite,
         width=10,
-        command=addExtraDetailsToBill).grid(row=1, column=4, rowspan=2, padx=5, pady=5)
+        command=addExtraDetailsToBill).grid(row=1, column=4, columnspan=2, padx=5, pady=5)
 
     makeColumnResponsive(extraDetails)
 
@@ -692,20 +764,16 @@ def createDetailsArea(parent):
 
     createCustomerDetailsArea(detailsArea)
     createProductDetailsArea(detailsArea)
-
-    askForDiscount = int(globals.CURRENT_SETTINGS.get("ask_for_discount")) if globals.CURRENT_SETTINGS.get("ask_for_discount") else 0
-    askForVat = int(globals.CURRENT_SETTINGS.get("ask_for_vat")) if globals.CURRENT_SETTINGS.get("ask_for_vat") else 0
-    askForTax = int(globals.CURRENT_SETTINGS.get("ask_for_tax")) if globals.CURRENT_SETTINGS.get("ask_for_tax") else 0
-
-    if askForDiscount or askForVat or askForTax:
-        createExtraDetailsArea(detailsArea)
+    createExtraDetailsArea(detailsArea)
 
 
 def createBillDetailsArea(parent):
     cartArea = Frame(parent)
     cartArea.pack(side="right", fill="both", padx=(5,0), pady=10, expand=True)
 
-    Label(cartArea, text="Billing Details", font=globals.appFontNormalBold).pack(fill="x", pady=5)
+    bill_number = globals.BILL_DETAILS.get("extra").get("bill_number")
+    cartHeader = "Billing Details" if not bill_number else f"Billing Details (Invoice no: {bill_number})"
+    Label(cartArea, text=cartHeader, font=globals.appFontNormalBold).pack(fill="x", pady=5)
 
     globals.billDetailsFrame = LabelFrame(cartArea, borderwidth=2)
     globals.billDetailsFrame.pack(fill="both")
@@ -729,6 +797,7 @@ def clearBillingFrame(force=False):
         if not force:
             response = messagebox.askyesnocancel("Clear all", "Everything will reset.\nAre you sure?")
         if response==1:
+            globals.BILL_DETAILS.pop("id", None)
             globals.BILL_DETAILS["customer"] = {}
             globals.BILL_DETAILS["products"] = {}
             globals.BILL_DETAILS["extra"] = {}

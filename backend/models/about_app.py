@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import Column, DateTime, String, Integer, Boolean
+from sqlalchemy import Column, DateTime, String, Integer, Boolean, JSON
 from backend.database.setup import Base
 
 
@@ -12,3 +12,4 @@ class AboutApp(Base):
     unique_machine_code = Column(String)
     trial_begin_on = Column(DateTime)
     trial_completed = Column(Boolean)
+    extra_info = Column(JSON, nullable=True)

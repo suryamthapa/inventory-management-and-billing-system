@@ -100,8 +100,8 @@ def createAddCustomerWindow():
                 addressEntry.focus()
                 return False
             
-            data = {"full_name": customerNameEntry.get() if individualCustomerVar.get() and customerNameEntry.get() else None,
-                    "company":companyNameEntry.get() if not individualCustomerVar.get() and companyNameEntry.get() else None,
+            data = {"full_name": customerNameEntry.get().upper() if individualCustomerVar.get() and customerNameEntry.get() else None,
+                    "company":companyNameEntry.get().upper() if not individualCustomerVar.get() and companyNameEntry.get() else None,
                     "company_pan_no":companyPanNoEntry.get() if not individualCustomerVar.get() and companyPanNoEntry.get() else None,
                     "phone_number":phoneNumberEntry.get() if phoneNumberEntry.get() else None,
                     "telephone":telephoneEntry.get() if telephoneEntry.get() else None,

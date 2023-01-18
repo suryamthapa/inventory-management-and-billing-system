@@ -70,7 +70,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
                             width=5)
     quantityEntry.grid(row=1, column=3, padx=5, pady=(5, 10), sticky=W)
     quantityEntry.delete(0, END)
-    quantityEntry.insert(0, 1 if not toUpdate else int(productDetails["quantity"]))
+    quantityEntry.insert(0, 1 if not toUpdate else float(productDetails["quantity"]))
 
     def validateProductDetails():
         rate = rateEntry.get()
@@ -87,7 +87,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
             messagebox.showwarning("Invalid", "Rate must be a number.")
             rateEntry.focus()
             return False
-        if not quantity.isdigit():
+        if not isfloat(quantity):
             messagebox.showwarning("Invalid", "Quantity must be a number.")
             quantityEntry.focus()
             return False
@@ -107,7 +107,7 @@ def loadProductDetails(parent, productDetails, toUpdate=False):
                                                                 "stock":productDetails["stock"],
                                                                 "unit":productDetails["unit"],
                                                                 "quantity":productDetails["quantity"],
-                                                                "marked_price":productDetails["marked_price"],
+                                                                "cost_price":productDetails["cost_price"],
                                                                 "rate":productDetails["rate"]}
         clearProductDetails()
         createPurchaseDetailsTable(globals.purchaseDetailsFrame)
@@ -215,7 +215,7 @@ def createPurchaseDetailsTableBody(parent):
                 "stock":globals.PURCHASE_DETAILS.get("products")[id].get("stock"),
                 "unit":globals.PURCHASE_DETAILS.get("products")[id].get("unit"),
                 "quantity":details["quantity"],
-                "marked_price":globals.PURCHASE_DETAILS.get("products")[id].get("marked_price"),
+                "cost_price":globals.PURCHASE_DETAILS.get("products")[id].get("cost_price"),
                 "rate":details["rate"],
             }
             loadProductDetails(globals.rateQtyFrame, data, toUpdate=True)
@@ -590,8 +590,15 @@ def createExtraDetailsArea(parent):
     invoice_number = globals.PURCHASE_DETAILS.get("extra").get("invoice_number")
     invoice_number = invoice_number if invoice_number else ""
 
-    date_of_purchase = globals.PURCHASE_DETAILS.get("extra").get("date_of_purchase")
-    date_of_purchase = date_of_purchase if date_of_purchase else ""
+    purchase_year = globals.PURCHASE_DETAILS.get("extra").get("purchase_year")
+    purchase_month = globals.PURCHASE_DETAILS.get("extra").get("purchase_month")
+    purchase_day = globals.PURCHASE_DETAILS.get("extra").get("purchase_day")
+    
+    if purchase_year and purchase_month and purchase_day:
+        date_of_purchase = f'{purchase_day}/{purchase_month}/{purchase_year}'
+        globals.PURCHASE_DETAILS.get("extra")["date_of_purchase"] = date_of_purchase
+    else:
+        date_of_purchase = "Select date"
 
     excise_duty = globals.PURCHASE_DETAILS.get("extra").get("excise_duty")
     excise_duty = excise_duty if excise_duty else ""
@@ -631,7 +638,7 @@ def createExtraDetailsArea(parent):
     fromDateEntry = DateEntry(extraDetails)
     fromDateEntry.grid(row=1, column=4, padx=5, pady=5, sticky="nswe")
     fromDateEntry.delete(0, END)
-    fromDateEntry.insert(0,"Select date" if not date_of_purchase else date_of_purchase)
+    fromDateEntry.insert(0, date_of_purchase)
 
     Label(extraDetails, text="Cash Discount").grid(row=1, column=0, padx=5, pady=5, sticky=W)
     cashDiscountEntry = Entry(extraDetails, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal, width=12)
@@ -702,7 +709,7 @@ def createExtraDetailsArea(parent):
             messagebox.showwarning("Invalid", "Discount percentage must be a number.")
             percentageDiscountEntry.focus()
             return False
-        elif p_discount and (int(p_discount) > 100):
+        elif p_discount and (float(p_discount) > 100):
             messagebox.showwarning("Invalid", "Discount percentage must be less than 100.")
             percentageDiscountEntry.focus()
             return False
@@ -711,36 +718,54 @@ def createExtraDetailsArea(parent):
             messagebox.showwarning("Invalid", "VAT percentage must be a number.")
             vatEntry.focus()
             return False
-        elif vat and (int(vat) > 100):
+        elif vat and (float(vat) > 100):
             messagebox.showwarning("Invalid", "VAT percentage must be less than 100.")
             vatEntry.focus()
             return False
 
-        date_of_purchase_utc, message = get_utc_datetime_from_nepali_date(date_of_purchase)
-        if not date_of_purchase_utc:
-            log.error(f"Error on Date of purchase: {message}")
-            messagebox.showerror("Purhase View", "Please enter a valid date.")
+        # date validation
+        ne_date_meta = date_of_purchase.split("/")
+        if len(ne_date_meta)!=3:
+            messagebox.showwarning("Invalid", "Invalid Date.")
+            fromDateEntry.focus()
+            return False
+        for m in ne_date_meta:
+            if not m.isdigit():
+                messagebox.showwarning("Invalid", "Invalid Date.")
+                fromDateEntry.focus()
+                return False
+
+        user_year = int(ne_date_meta[2])
+        user_month = int(ne_date_meta[1])
+        if user_month > 12 or user_month < 1:
+            messagebox.showwarning("Invalid", "Invalid Date.")
+            fromDateEntry.focus()
+            return False
+        user_day = int(ne_date_meta[0])
+        if user_day > 32 or user_day < 1:
+            messagebox.showwarning("Invalid", "Invalid Date.")
+            fromDateEntry.focus()
             return False
 
-        utc_timezone = timezone("UTC")
-        today_utc = datetime.datetime.utcnow().astimezone(utc_timezone)
-
         # check if user selected date is greater than today
-        if date_of_purchase_utc>today_utc:
-            messagebox.showwarning("InaBi System", "Please select date upto today only.")
+        date_of_sale_now = nepali_datetime.date(year=user_year, month=user_month, day=user_day)
+        if date_of_sale_now>nepali_datetime.datetime.now().date():
+            messagebox.showwarning("Invalid", "Please select date upto today only.")
             fromDateEntry.focus()
             return False
         
         globals.PURCHASE_DETAILS["extra"] = {"invoice_number": invoice_number,
-                                            "excise_duty": excise_duty,
-                                            "cash_discount": cash_discount,
-                                            "p_discount": p_discount,
-                                            "extra_discount": extra_discount,
-                                            "vat": vat,
-                                            "cash_payment": cash_payment,
-                                            "balance_amount": balance_amount,
-                                            "date_of_purchase":date_of_purchase,
-                                            "date_of_purchase_utc":date_of_purchase_utc}
+                                            "excise_duty": excise_duty if excise_duty else 0,
+                                            "cash_discount": cash_discount if cash_discount else 0,
+                                            "p_discount": p_discount if p_discount else 0,
+                                            "extra_discount": extra_discount if extra_discount else 0,
+                                            "vat": vat if vat else 0,
+                                            "cash_payment": cash_payment if cash_payment else 0,
+                                            "balance_amount": balance_amount if balance_amount else 0,
+                                            "purchase_year": user_year,
+                                            "purchase_month": user_month,
+                                            "purchase_day": user_day,
+                                            "date_of_purchase":date_of_purchase}
         createPurchaseDetailsTable(globals.purchaseDetailsFrame)
 
     Button(extraDetails,

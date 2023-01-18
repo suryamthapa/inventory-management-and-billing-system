@@ -38,58 +38,40 @@ def createAddProductWindow():
         productNameEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
         productNameEntry.grid(row=0, column=1, padx=5, pady=5)
 
-        Label(addProductFrame, text="Unit").grid(row=1, column=0, padx=5, pady=5)
+        Label(addProductFrame, text="Unit").grid(row=0, column=2, padx=5, pady=5)
         unitEntry = AutocompleteEntry(addProductFrame, font=globals.appFontNormal,
                 completevalues=set([record["unit"] if record["unit"] else "" for record in globals.PRODUCTS_LIST]+globals.UNITS_LIST))
-        unitEntry.grid(row=1, column=1, padx=5, pady=5)
+        unitEntry.grid(row=0, column=3, padx=5, pady=5)
 
-        Label(addProductFrame, text="Stock").grid(row=1, column=2, padx=5, pady=5)
+        Label(addProductFrame, text="Stock").grid(row=1, column=0, padx=5, pady=5)
         stockEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        stockEntry.grid(row=1, column=3, padx=5, pady=5)
+        stockEntry.grid(row=1, column=1, padx=5, pady=5)
 
-        Label(addProductFrame, text="Cost Price").grid(row=2, column=0, padx=5, pady=5)
+        Label(addProductFrame, text="Cost Price").grid(row=1, column=2, padx=5, pady=5)
         costPriceEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        costPriceEntry.grid(row=2, column=1, padx=5, pady=5)
-
-        Label(addProductFrame, text="Marked Price").grid(row=2, column=2, padx=5, pady=5)
-        markedPriceEntry = Entry(addProductFrame, bd=globals.defaultEntryBorderWidth, font=globals.appFontNormal)
-        markedPriceEntry.grid(row=2, column=3, padx=5, pady=5)
+        costPriceEntry.grid(row=1, column=3, padx=5, pady=5)
 
         def validateProduct(quitWindow=False):
             if not productNameEntry.get():
                 productNameEntry.focus()
                 return False
-            elif  not costPriceEntry.get():
-                costPriceEntry.focus()
-                return False
-            elif not markedPriceEntry.get():
-                markedPriceEntry.focus()
-                return False
             elif not unitEntry.get():
                 unitEntry.focus()
                 return False
-            elif not stockEntry.get():
-                stockEntry.focus()
-                return False
 
-            if not isfloat(markedPriceEntry.get()):
-                messagebox.showwarning("Invalid", "Marked price should contain numbers only.")
-                markedPriceEntry.focus()
-                return False
-            if not isfloat(costPriceEntry.get()):
+            if costPriceEntry.get() and not isfloat(costPriceEntry.get()):
                 messagebox.showwarning("Invalid", "Cost price should contain numbers only.")
                 costPriceEntry.focus()
                 return False
-            if not stockEntry.get().isdigit():
+            if stockEntry.get() and not isfloat(stockEntry.get()):
                 stockEntry.focus()
                 messagebox.showwarning("Invalid", "Stock should contain numbers only.")
                 return False
             
-            data = {"product_name": productNameEntry.get(),
-                    "cost_price":costPriceEntry.get(),
-                    "marked_price":markedPriceEntry.get(),
-                    "unit":unitEntry.get().upper() if unitEntry.get() else unitEntry.get(),
-                    "stock":stockEntry.get()}
+            data = {"product_name": productNameEntry.get().upper(),
+                    "cost_price":costPriceEntry.get() if costPriceEntry.get() else 0,
+                    "unit":unitEntry.get().upper(),
+                    "stock":stockEntry.get() if stockEntry.get() else 0}
             status = saveProduct(data)
 
             if status:
